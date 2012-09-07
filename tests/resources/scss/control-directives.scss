@@ -1,0 +1,13 @@
+@each $animal in puma, sea-slug, egret, salamander {
+  .#{$animal}-icon #animal, .menu {
+    background-image: url('/images/#{$animal}.png');
+    @include logo(10px);
+  }
+}
+
+@mixin logo($size){
+	font: {
+		size: $size;
+		color: blue;		
+	}
+}
