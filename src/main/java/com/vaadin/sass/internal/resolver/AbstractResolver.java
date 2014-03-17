@@ -31,7 +31,6 @@ import com.vaadin.sass.internal.ScssStylesheet;
  * an import can be relative to and helpers for extracting path information from
  * the identifier.
  * 
- * @since 7.2
  * @author Vaadin Ltd
  */
 public abstract class AbstractResolver implements ScssStylesheetResolver,

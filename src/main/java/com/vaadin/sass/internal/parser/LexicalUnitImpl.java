@@ -261,7 +261,6 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
      * 
      * Result value could be null.
      * 
-     * @since 7.2
      * @return State as a string
      */
     public String printState() {

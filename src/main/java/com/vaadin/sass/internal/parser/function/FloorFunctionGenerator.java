@@ -20,7 +20,6 @@ import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
 
 /**
  * 
- * @since 7.2
  * @author Vaadin Ltd
  */
 public class FloorFunctionGenerator implements SCSSFunctionGenerator {

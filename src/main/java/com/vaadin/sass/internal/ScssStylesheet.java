@@ -205,7 +205,6 @@ public class ScssStylesheet extends Node {
     /**
      * Retrieves a list of resolvers to use when resolving imports
      * 
-     * @since 7.2
      * @return the resolvers used to resolving imports
      */
     public List<ScssStylesheetResolver> getResolvers() {
@@ -215,7 +214,6 @@ public class ScssStylesheet extends Node {
     /**
      * Sets the list of resolvers to use when resolving imports
      * 
-     * @since 7.2
      * @param resolvers
      *            the resolvers to set
      */
@@ -226,7 +224,6 @@ public class ScssStylesheet extends Node {
     /**
      * Adds the given resolver to the resolver list
      * 
-     * @since 7.2
      * @param resolver
      *            The resolver to add
      */
@@ -412,7 +409,6 @@ public class ScssStylesheet extends Node {
     /**
      * Returns the directory containing this style sheet
      * 
-     * @since 7.2
      * @return The directory containing this style sheet
      */
     public String getDirectory() {
@@ -422,7 +418,6 @@ public class ScssStylesheet extends Node {
     /**
      * Returns the full file name for this style sheet
      * 
-     * @since 7.2
      * @return The full file name for this style sheet
      */
     public String getFileName() {

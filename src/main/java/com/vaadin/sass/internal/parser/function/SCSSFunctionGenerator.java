@@ -26,7 +26,6 @@ import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
  * If there are no dedicated generator for the function then default generator
  * is used.
  * 
- * @since 7.2
  * @author Vaadin Ltd
  */
 public interface SCSSFunctionGenerator {
@@ -36,7 +35,6 @@ public interface SCSSFunctionGenerator {
      * returns <code>null</code> and is used if there is no dedicated generator
      * for given function.
      * 
-     * @since 7.2
      * @return
      */
     String getFunctionName();
@@ -46,7 +44,6 @@ public interface SCSSFunctionGenerator {
      * the function before compilation and compiled CSS content after
      * compilation.
      * 
-     * @since 7.2
      * @param function
      *            Function lexical unit to print its state
      * @param strategy

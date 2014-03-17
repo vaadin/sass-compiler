@@ -21,7 +21,6 @@ import com.vaadin.sass.internal.util.ColorUtil;
 
 /**
  * 
- * @since 7.2
  * @author Vaadin Ltd
  */
 public class DarkenFunctionGenerator implements SCSSFunctionGenerator {

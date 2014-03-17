@@ -42,7 +42,6 @@ import org.junit.runners.model.InitializationError;
  * generated test names give information about the parameters used (unlike
  * {@link Parameterized}).
  * 
- * @since 7.0
  */
 public class SassTestRunner extends BlockJUnit4ClassRunner {
 
