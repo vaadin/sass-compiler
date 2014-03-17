@@ -30,7 +30,6 @@ import java.util.logging.Logger;
 import org.w3c.css.sac.CSSException;
 import org.w3c.css.sac.InputSource;
 
-import com.vaadin.buildhelpers.CompileTheme;
 import com.vaadin.sass.internal.handler.SCSSDocumentHandler;
 import com.vaadin.sass.internal.handler.SCSSDocumentHandlerImpl;
 import com.vaadin.sass.internal.handler.SCSSErrorHandler;
@@ -474,7 +473,7 @@ public class ScssStylesheet extends Node {
         if (logFile == null) {
             try {
                 LogManager.getLogManager().readConfiguration(
-                        CompileTheme.class
+                        ScssStylesheet.class
                                 .getResourceAsStream("/logging.properties"));
             } catch (SecurityException e) {
                 e.printStackTrace();
