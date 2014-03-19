@@ -18,6 +18,19 @@
         <developerConnection>scm:git:ssh://dev.vaadin.com:29418/sass-compiler</developerConnection>
     </scm>
 
+    <distributionManagement>
+        <repository>
+            <id>vaadin-staging</id>
+            <name>Sonatype Release</name>
+            <url>http://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
+        <snapshotRepository>
+            <id>vaadin-snapshots</id>
+            <name>Vaadin snapshot repository</name>
+            <url>http://oss.sonatype.org/content/repositories/vaadin-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.organization>Vaadin</project.organization>
