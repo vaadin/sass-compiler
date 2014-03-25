@@ -16,8 +16,8 @@
     <scm>
         <connection>scm:git:https://github.com/vaadin/sass-compiler.git</connection>
         <developerConnection>scm:git:ssh://dev.vaadin.com:29418/sass-compiler</developerConnection>
+        <url>http://github.com/vaadin/sass-compiler</url>
     </scm>
-
     <distributionManagement>
         <repository>
             <id>vaadin-staging</id>
