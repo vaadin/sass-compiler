@@ -18,6 +18,13 @@
         <developerConnection>scm:git:ssh://dev.vaadin.com:29418/sass-compiler</developerConnection>
         <url>http://github.com/vaadin/sass-compiler</url>
     </scm>
+    <developers>
+        <developer>
+            <id>artur</id>
+            <name>Artur Signell</name>
+            <email>artur@vaadin.com</email>
+        </developer>
+    </developers>
     <distributionManagement>
         <repository>
             <id>vaadin-staging</id>
