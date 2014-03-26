@@ -13,6 +13,9 @@
         <url>http://vaadin.com/</url>
     </organization>
     <url>http://vaadin.com/</url>
+    <description>
+        A pure Java implementation of the http://sass-lang.com compiler
+    </description>
     <scm>
         <connection>scm:git:https://github.com/vaadin/sass-compiler.git</connection>
         <developerConnection>scm:git:ssh://dev.vaadin.com:29418/sass-compiler</developerConnection>
