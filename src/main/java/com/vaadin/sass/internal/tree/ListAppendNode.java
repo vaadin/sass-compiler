@@ -15,20 +15,36 @@
  */
 package com.vaadin.sass.internal.tree;
 
-import java.util.ArrayList;
+import com.vaadin.sass.internal.parser.SassList;
+import com.vaadin.sass.internal.parser.SassListItem;
 
 public class ListAppendNode extends ListModifyNode {
 
-    public ListAppendNode(String variable, String list, String append,
-            String separator) {
+    public ListAppendNode(String variable, SassListItem list,
+            SassListItem append, String separator) {
         this.variable = variable;
-        checkSeparator(separator, list);
+        setSeparator(separator);
         populateList(list, append);
     }
 
+    protected void checkSeparator() {
+        if (separator != null) {
+            if (list.size() > 1) {
+                separator = list.getSeparator();
+            } else if (modify.size() > 1) {
+                separator = modify.getSeparator();
+            } else {
+                separator = SassList.Separator.SPACE;
+            }
+        }
+    }
+
     @Override
-    protected void modifyList(ArrayList<String> newList) {
-        newList.addAll(modify);
+    protected SassListItem modifyList(SassListItem newList) {
+        checkSeparator();
+        SassList modifiedList = newList.addAllItems(modify);
+        modifiedList.setSeparator(separator);
+        return modifiedList;
     }
 
 }

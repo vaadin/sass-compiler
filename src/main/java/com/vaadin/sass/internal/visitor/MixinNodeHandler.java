@@ -19,7 +19,9 @@ package com.vaadin.sass.internal.visitor;
 import java.util.ArrayList;
 
 import com.vaadin.sass.internal.ScssStylesheet;
-import com.vaadin.sass.internal.parser.LexicalUnitImpl;
+import com.vaadin.sass.internal.parser.ParseException;
+import com.vaadin.sass.internal.parser.SassListItem;
+import com.vaadin.sass.internal.parser.VariableArgumentList;
 import com.vaadin.sass.internal.tree.IVariableNode;
 import com.vaadin.sass.internal.tree.MixinDefNode;
 import com.vaadin.sass.internal.tree.MixinNode;
@@ -76,61 +78,104 @@ public class MixinNodeHandler {
      * First phase replaces all the named parameters while the second replaces
      * in order of remaining unmodified parameters.
      * 
-     * @param mixinNode
-     * @param def
+     * If there are variable arguments (the last argument is of the form $x...),
+     * any remaining arguments are packaged into a list.
      */
     private static void replacePossibleArguments(MixinNode mixinNode,
             MixinDefNode def) {
         if (mixinNode.getArglist().size() > 0) {
-            ArrayList<VariableNode> remainingNodes = new ArrayList<VariableNode>(
+            ArrayList<VariableNode> remainingDefArguments = new ArrayList<VariableNode>(
                     def.getArglist());
-            ArrayList<LexicalUnitImpl> remainingUnits = new ArrayList<LexicalUnitImpl>(
+            ArrayList<VariableNode> remainingActualArguments = new ArrayList<VariableNode>(
                     mixinNode.getArglist());
-
-            for (final LexicalUnitImpl unit : mixinNode.getArglist()) {
-                if (unit.getLexicalUnitType() == LexicalUnitImpl.SCSS_VARIABLE
-                        && unit.getNextLexicalUnit() != null) {
+            String varArgName = null;
+            if (def.hasVariableArguments()) {
+                varArgName = remainingDefArguments.get(
+                        remainingDefArguments.size() - 1).getName();
+            }
+            for (final VariableNode unit : mixinNode.getArglist()) {
+                if (unit.getName() != null) {
                     for (final VariableNode node : def.getArglist()) {
-                        if (node.getName().equals(unit.getValue().toString())) {
-                            node.setExpr((LexicalUnitImpl) DeepCopy.copy(unit
-                                    .getNextLexicalUnit()));
-                            remainingNodes.remove(node);
-                            remainingUnits.remove(unit);
+                        if (!node.getName().equals(varArgName)
+                                && node.getName().equals(unit.getName())) {
+                            node.setExpr((SassListItem) DeepCopy.copy(unit
+                                    .getExpr()));
+                            remainingDefArguments.remove(node);
+                            remainingActualArguments.remove(unit);
                             break;
                         }
                     }
                 }
             }
-            checkExtraParameters(mixinNode, remainingNodes.size(),
-                    remainingUnits.size());
-            for (int i = 0; i < remainingNodes.size()
-                    && i < remainingUnits.size(); i++) {
-                LexicalUnitImpl unit = remainingUnits.get(i);
-                remainingNodes.get(i).setExpr(
-                        (LexicalUnitImpl) DeepCopy.copy(unit));
+            if (!def.hasVariableArguments()) {
+                checkExtraParameters(mixinNode, remainingDefArguments.size(),
+                        remainingActualArguments.size());
+            }
+            for (int i = 0; i < remainingDefArguments.size()
+                    && i < remainingActualArguments.size(); i++) {
+                VariableNode unit = remainingActualArguments.get(i);
+                remainingDefArguments.get(i).setExpr(
+                        (SassListItem) DeepCopy.copy(unit.getExpr()));
+            }
+            checkForUnsetParameters(mixinNode, def);
+
+            // If the mixin takes a variable number of arguments, the last
+            // argument and any remaining arguments are packaged into (one or
+            // two) lists. The unnamed and named arguments form separate lists.
+            if (def.hasVariableArguments()) {
+                VariableArgumentList remaining = new VariableArgumentList(
+                        mixinNode.getSeparator());
+                int lastIndex = def.getArglist().size() - 1;
+                SassListItem last = def.getArglist().get(lastIndex).getExpr();
+                if (last != null) {
+                    remaining.add(last);
+                }
+
+                for (int i = remainingDefArguments.size(); i < remainingActualArguments
+                        .size(); i++) {
+                    VariableNode unit = (VariableNode) DeepCopy
+                            .copy(remainingActualArguments.get(i));
+                    if (unit.getName() == null) {
+                        remaining.add(unit.getExpr());
+                    } else {
+                        remaining.addNamed(unit.getName(), unit.getExpr());
+                        // The named arguments cannot be used inside the mixin
+                        // but they can be passed to another mixin using
+                        // variable arguments in an @include.
+                    }
+                }
+                def.getArglist().get(lastIndex).setExpr(remaining);
             }
         }
-
     }
 
     protected static void checkExtraParameters(MixinNode mixinNode,
-            int remainingNodesSize, int remainingUnitsSize) {
-        if (remainingUnitsSize > remainingNodesSize) {
-            String fileName = null;
-            Node root = mixinNode.getParentNode();
-            while (root != null && !(root instanceof ScssStylesheet)) {
-                root = root.getParentNode();
+            int remainingDefArguments, int remainingActualArguments) {
+        if (remainingActualArguments > remainingDefArguments) {
+            String errorMessage = "More parameters than expected, in Mixin "
+                    + mixinNode.getName();
+            throw new ParseException(errorMessage, mixinNode);
+        }
+    }
+
+    /**
+     * Checks whether all parameters of the mixin definition node defNode have
+     * been set. Raises an exception if there are unset parameters.
+     */
+    protected static void checkForUnsetParameters(MixinNode node,
+            MixinDefNode defNode) {
+        ArrayList<VariableNode> arglist = defNode.getArglist();
+        for (int i = 0; i < arglist.size() - 1; i++) {
+            if (arglist.get(i) == null) {
+                throw new ParseException(
+                        "Less parameters than expected for mixin "
+                                + defNode.getName(), node);
             }
-            if (root != null) {
-                fileName = ((ScssStylesheet) root).getFileName();
-            }
-            StringBuilder builder = new StringBuilder();
-            builder.append("More parameters than expected, in Mixin ").append(
-                    mixinNode.getName());
-            if (fileName != null) {
-                builder.append(", in file ").append(fileName);
-            }
-            throw new RuntimeException(builder.toString());
+        }
+        if (!defNode.hasVariableArguments()
+                && arglist.get(arglist.size() - 1) == null) {
+            throw new ParseException("Less parameters than expected for mixin "
+                    + defNode.getName(), node);
         }
     }
 

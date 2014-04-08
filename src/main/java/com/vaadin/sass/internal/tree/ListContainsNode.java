@@ -15,29 +15,30 @@
  */
 package com.vaadin.sass.internal.tree;
 
-import java.util.ArrayList;
-
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
+import com.vaadin.sass.internal.parser.SassList;
+import com.vaadin.sass.internal.parser.SassListItem;
 
 public class ListContainsNode extends ListModifyNode {
 
-    public ListContainsNode(String variable, String list, String contains,
-            String separator) {
+    public ListContainsNode(String variable, SassListItem list,
+            SassListItem contains, String separator) {
         this.variable = variable;
-        checkSeparator(separator, list);
+        setSeparator(separator);
         populateList(list, contains);
     }
 
     @Override
-    protected void modifyList(ArrayList<String> newList) {
+    protected SassListItem modifyList(SassListItem newList) {
         // Does not actually modify the list
+        return newList;
     }
 
     @Override
     public VariableNode getModifiedList() {
-        String contains = "" + list.containsAll(modify);
+        String contains = "" + list.containsAllItems(modify);
         VariableNode node = new VariableNode(variable.substring(1),
-                LexicalUnitImpl.createString(contains), false);
+               LexicalUnitImpl.createString(contains), false);
         return node;
     }
 }

@@ -532,6 +532,7 @@ TOKEN :
   | < MOD       : "%" >
   | < PARENT    : "&" >
   | < DOT       : "." >
+  | < ELLIPSIS  : "..." >
   | < LPARAN    : "(" >
   | < RPARAN    : ")">
   | < COMPARE   : "==" >
@@ -565,7 +566,7 @@ TOKEN : /* basic tokens */
   | < #NMSTART    : ("-")?[ "a"-"z","_"] | <NONASCII> | <ESCAPE> >
   | < #NMCHAR	  : ["a"-"z", "0"-"9", "-", "_"] | <NONASCII> | <ESCAPE> >
   | < #STRINGCHAR : [ "\t"," ","!","#","$","%","&","("-"~" ] 
-                    | "\\\n" | "\\\r\n" | "\\\r" | "\\\f" 
+                    | "\\\n" | "\\\r\n" | "\\\r" | "\\\f"
                     | <NONASCII> | <ESCAPE> >
   | < #D          : ["0"-"9"] >
   | < #NAME       : ( <NMCHAR> )+ >
@@ -1483,45 +1484,78 @@ String hash(String pred) :
 
 void variable() :
 {
-	String name;
-	LexicalUnitImpl exp = null;
-	boolean guarded = false;
-	String raw;
+    String name;
+    SassListItem l = null;
+    boolean guarded = false;
+    String raw;
 }
 {
-	try{
-		name = variableName()
-		":" ( <S> )* exp=expr() ( guarded=guarded() )? semicolonTerminator()
-		//raw=skipStatementUntilSemiColon()
-		{
-		    exp = replaceNullValues(exp);
-		    documentHandler.variable(name, exp, guarded);
-		}
-	}catch (JumpException e) {
-	    skipAfterExpression();
-	} catch (NumberFormatException e) {
-	    if (errorHandler != null) {
-		errorHandler.error(new CSSParseException("Invalid number " 
-						  + e.getMessage(),
-						  getLocator(), 
-						  e));
-	    }
-	    reportWarningSkipText(getLocator(), skipAfterExpression());
-	 } catch (ParseException e) {
-	    if (errorHandler != null) {
-	    	if (e.currentToken != null) {
-	    		LocatorImpl li = new LocatorImpl(this,
-						      e.currentToken.next.beginLine,
-						      e.currentToken.next.beginColumn-1);
-	    		reportError(li, e);
-	    	} else {
-	    		reportError(getLocator(), e);
-	    }
-		skipAfterExpression();
-	    } else {
-		skipAfterExpression();
-	    }
-	}
+    try{
+        name = variableName()
+        ":" ( <S> )* l=expressionList() ( guarded=guarded() )? semicolonTerminator()
+        //raw=skipStatementUntilSemiColon()
+        {
+            l = l.flatten();
+            documentHandler.variable(name, l, guarded);
+        }
+    } catch (JumpException e) {
+        skipAfterExpression();
+    } catch (NumberFormatException e) {
+        if (errorHandler != null) {
+            errorHandler.error(new CSSParseException("Invalid number "
+                               + e.getMessage(), getLocator(), e));
+        }
+        reportWarningSkipText(getLocator(), skipAfterExpression());
+    } catch (ParseException e) {
+        if (errorHandler != null) {
+            if (e.currentToken != null) {
+                LocatorImpl li = new LocatorImpl(this,
+                              e.currentToken.next.beginLine,
+                              e.currentToken.next.beginColumn-1);
+                reportError(li, e);
+            } else {
+                reportError(getLocator(), e);
+            }
+            skipAfterExpression();
+        } else {
+        skipAfterExpression();
+        }
+    }
+}
+
+SassList expressionList():
+{
+    // Empty lists and parenthesized lists are not supported yet.
+    SassList primaryList = new SassList(SassList.Separator.COMMA);
+    primaryList.setSourcePosition(token.beginLine, token.beginColumn);
+    SassList subList;
+}
+{
+    subList = expressionSubList(){ primaryList.add(subList); }
+    ( <COMMA> (<S>)* subList = expressionSubList(){ primaryList.add(subList); })*
+    { return primaryList; }
+}
+
+SassList expressionSubList():
+{
+    // Empty lists and parenthesized lists are not supported yet.
+    LexicalUnitImpl unit;
+    SassList list = new SassList(SassList.Separator.SPACE);
+    list.setSourcePosition(token.beginLine, token.beginColumn);
+}
+{
+    (LOOKAHEAD(2) unit = variableListItem(){ list.add(unit); })+
+    {return list;}
+}
+
+LexicalUnitImpl variableListItem():
+{
+    LexicalUnitImpl first, res;
+}
+{
+    first = term(null){ res = first; }
+    (LOOKAHEAD(2)(res = nonCommaOperator(res) res = term(res)))*
+    {first = replaceNullValues(first); return first; }
 }
 
 JAVACODE
@@ -1535,7 +1569,7 @@ LexicalUnitImpl replaceNullValues(LexicalUnitImpl unit) {
     if (unit.getLexicalUnitType() == SCSSLexicalUnit.SAC_IDENT
             && "null".equals(unit.getStringValue())) {
         LexicalUnitImpl next = unit.getNextLexicalUnit();
-        unit = LexicalUnitImpl.createNull(unit.getLineNumber(), unit.getColumnNumber(), 
+        unit = LexicalUnitImpl.createNull(unit.getLineNumber(), unit.getColumnNumber(),
                                           unit.getPreviousLexicalUnit());
         unit.setNextLexicalUnit(next);
     }
@@ -1625,36 +1659,40 @@ String booleanExpressionToken() :
   
 void eachDirective() :
 {
-  Token var;
-  ArrayList<String> list = null;
-  String listVariable = null;
+    Token var;
+    SassList list = null;
+    String listVariable = null;
 }
 {
-  < EACH_SYM >
-  (< S >)*
-  var = < VARIABLE > (< S >)* < EACH_IN > (< S >)*
-  (list = stringList()
-  {documentHandler.startEachDirective(var.image, list);}
-  |listVariable = variableName()
-  {documentHandler.startEachDirective(var.image, listVariable);}
-  )
-  < LBRACE >(< S >)*
-  ( ifContentStatement() )*	  
-  < RBRACE >(< S >)*
-  { documentHandler.endEachDirective();}
+    < EACH_SYM >
+    (< S >)*
+    var = < VARIABLE > (< S >)* < EACH_IN > (< S >)*
+    (   list = stringList() 
+        {documentHandler.startEachDirective(var.image, list);}
+       |listVariable = variableName()
+        {documentHandler.startEachDirective(var.image, listVariable);}
+    )
+    < LBRACE >(< S >)*
+    ( ifContentStatement() )*
+    < RBRACE >(< S >)*
+    { documentHandler.endEachDirective();}
 }
 
-ArrayList<String > stringList():
+SassList stringList():
 {
-	ArrayList<String > strings = new ArrayList<String >();
-	Token input;
+    SassList strings = new SassList();
+    LexicalUnitImpl unit;
+    Token input;
 }
 {
-	(input = < IDENT > (< S >)*)
-	{ strings.add(input.image); }
+    (input = < IDENT > (< S >)*)
+    { unit = LexicalUnitImpl.createIdent(input.beginLine, input.beginColumn,
+                                         null, input.image); strings.add(unit); }
 
-	(< COMMA >(< S >)* input = < IDENT > { strings.add(input.image); } (< S >)*)*
-	{ return strings; }
+    (< COMMA >(< S >)* input = < IDENT > 
+        { unit = LexicalUnitImpl.createIdent(input.beginLine, input.beginColumn,
+                                             null, input.image); strings.add(unit); } (< S >)*)*
+    { return strings; }
 
 }
 
@@ -1662,30 +1700,36 @@ void mixinDirective() :
 {
     String name;
     ArrayList<VariableNode> args = null;
+    boolean hasVariableArgs = false;
     String body;
 }
 {
     <MIXIN_SYM>
     (<S>)*
-    (name = property()
-    |(name = functionName() 
-      args = arglist()) <RPARAN> (<S>)*) <LBRACE> (<S>)*
-    {documentHandler.startMixinDirective(name, args);}
+    (   name = property()
+       |(name = functionName() args = arglist()
+          (<ELLIPSIS> {hasVariableArgs = true;} (<S>)*)? <RPARAN> (<S>)*)
+    )
+    <LBRACE> (<S>)*
+    {documentHandler.startMixinDirective(name, args, hasVariableArgs);}
     ( ifContentStatement() | fontFace() | page())*
     <RBRACE>(<S>)*
-    {documentHandler.endMixinDirective(name, args);}
+    {documentHandler.endMixinDirective();}
 }
 
 ArrayList<VariableNode> arglist() :
 {
     ArrayList<VariableNode> args = new ArrayList<VariableNode>();
     VariableNode arg;
-    boolean hasNonOptionalArgument = false;
+    boolean hasOptionalArguments = false;
 }
 {
-    (arg=mixinArg() ( <COMMA> (<S>)* { hasNonOptionalArgument = checkMixinForNonOptionalArguments(arg, hasNonOptionalArgument); args.add(arg); }
-        arg=mixinArg() )*
-    { hasNonOptionalArgument = checkMixinForNonOptionalArguments(arg, hasNonOptionalArgument); args.add(arg); }
+    (   arg=mixinArg()
+        (   <COMMA> (<S>)* { hasOptionalArguments = checkMixinForOptionalArguments(arg,
+                                              hasOptionalArguments); args.add(arg); }
+            arg=mixinArg()
+        )*
+        { hasOptionalArguments = checkMixinForOptionalArguments(arg, hasOptionalArguments); args.add(arg); }
     )?
     {
         return args;
@@ -1693,79 +1737,87 @@ ArrayList<VariableNode> arglist() :
 }
 
 JAVACODE
-boolean checkMixinForNonOptionalArguments(VariableNode arg, boolean hasNonOptionalArguments)
-{
-	boolean currentArgHasArguments = arg.getExpr() != null && arg.getExpr().getLexicalUnitType() == LexicalUnitImpl.SCSS_VARIABLE && arg.getExpr().getNextLexicalUnit() != null;
-  
-	if(currentArgHasArguments)
-	{
-		if(hasNonOptionalArguments)
-		{
-			throw new ParseException("Sass Error: Required argument $"+ arg.getName() +" must come before any optional arguments.");
-		}
-		return hasNonOptionalArguments;
-	}else
-	{
-	return true;
-	}
+// This method is used for checking whether the argument list of a mixin is legal. No required
+// arguments should come after an optional argument. An argument is optional if it has a
+// default value.
+boolean checkMixinForOptionalArguments(VariableNode arg, boolean hasOptionalArguments){
+    boolean argumentHasDefaultValue = arg.getExpr() != null && arg.getExpr().size() > 0;
+    if(argumentHasDefaultValue){
+        return true;
+    }
+    else if(hasOptionalArguments){
+        throw new ParseException("Sass Error: Required argument $"+ arg.getName() +" must come "
+                                  +  "before any optional arguments.");
+    }
+    else{
+        return false;
+    }
 }
 
 VariableNode mixinArg() :
 {
     String name;
     Token variable = null;
-    LexicalUnitImpl first = null;
-    LexicalUnitImpl prev = null;
-    LexicalUnitImpl next = null;
+    SassList l = null;
+    LexicalUnitImpl unit = null;
 }
 {
-    name=variableName() (< COLON > (< S >)*
-
+    name=variableName() (< COLON > {l = new SassList(SassList.Separator.SPACE);} (< S >)*
     (
-      first = nonVariableTerm(null)
-      {
-        prev = first;
-      }
-	  (LOOKAHEAD(3)(< COMMA >(< S >)*)? prev = nonVariableTerm(prev))*
-	)
-	| (variable = < VARIABLE >{ first = LexicalUnitImpl.createVariable(token.beginLine, token.beginColumn,
-                 prev, variable.image);}
-		
+        (unit = nonVariableTerm(null){l.add(unit); })+
+    )
+    | (variable = < VARIABLE >{ unit = LexicalUnitImpl.createVariable(variable.beginLine, variable.beginColumn,
+                null, variable.image); l.add(unit); }
        )
     )?
     {
-        VariableNode arg = new VariableNode(name, first, false);
+        VariableNode arg = new VariableNode(name, l, false);
         return arg;
     }
 }
 
-ArrayList<LexicalUnitImpl> argValuelist() :
+ArrayList<VariableNode> argValuelist() :
 {
-    ArrayList<LexicalUnitImpl> args = new ArrayList<LexicalUnitImpl>();
-    LexicalUnitImpl first = null;
-    LexicalUnitImpl next = null;
-    LexicalUnitImpl prev = null;
+    ArrayList<VariableNode> args = new ArrayList<VariableNode>();
+    VariableNode current;
 }
 {
-    (first = term(null) { args.add(first); prev = first;}((< COLON > (< S >)*)?next=term(prev){prev.setNextLexicalUnit(next); prev = next;})*
-      ( <COMMA> (<S>)*
-      first = term(null) { args.add(first); prev = first;}((< COLON > (< S >)*)?next=term(prev){prev.setNextLexicalUnit(next); prev = next;})*
-      )*
+    (current = argValueListItem(){ args.add(current); }
+      ( <COMMA> (<S>)* current = argValueListItem(){ args.add(current); } )*
     )?
     {return args;}
+}
+
+VariableNode argValueListItem():
+{
+    LexicalUnitImpl unit;
+    String name = null;
+    SassList value = new SassList(SassList.Separator.SPACE);
+}
+{
+    (LOOKAHEAD(3) // the lookahead is needed because both variableName and term can match a variable
+    (name = variableName() (<COLON> (< S >)*) (unit = term(null){value.add(unit); } )*)
+    | (unit = term(null){ value.add(unit); } )+)
+    {
+        SassListItem flattenedValue = value.flatten();
+        VariableNode var = new VariableNode(name, flattenedValue, false);
+        return var;
+    }
 }
 
 void includeDirective() :
 {
     String name;
-    ArrayList<LexicalUnitImpl> args=null;
+    ArrayList<VariableNode> args=null;
+    boolean hasVariableArgs = false;
 }
 {
     <INCLUDE_SYM>
     (<S>)*
     (name = property() | name = variableName(){ name = "$"+name;} 
-     | (name = functionName() args = argValuelist()) <RPARAN>(<S>)*)
-    {documentHandler.startInclude(name, args);}
+     | (name = functionName() args = argValuelist()) ((<ELLIPSIS>){hasVariableArgs = true;}
+         (<S>)*)? <RPARAN>(<S>)*)
+    {documentHandler.startInclude(name, args, hasVariableArgs);}
     (includeDirectiveBlockContents() | semicolonTerminator())
     {documentHandler.endInclude();}
 }
@@ -1812,8 +1864,8 @@ String interpolation() :
 
 void listModifyDirective() :
 {
-    String list = null;
-    String remove = null;
+    SassListItem list = null;
+    SassListItem remove = null;
     String separator = null;
     String variable = null;
     Token n = null;
@@ -1855,11 +1907,11 @@ void listModifyDirective() :
  */
 void appendDirective() :
 {
-	String list = null;
-	String remove = null;
-	String separator = null;
-	String variable = null;
-	Token n = null;
+    SassListItem list = null;
+    SassListItem remove = null;
+    String separator = null;
+    String variable = null;
+    Token n = null;
 }
 {
   n = < VARIABLE >{ variable = n.image; }(< S >)* ":" (< S >)*
@@ -1878,8 +1930,8 @@ void appendDirective() :
  */
 void removeDirective() :
 {
-    String list = null;
-    String remove = null;
+    SassListItem list = null;
+    SassListItem remove = null;
     String separator = null;
     String variable = null;
     Token n = null;
@@ -1901,8 +1953,8 @@ void removeDirective() :
  */
 String containsDirective() :
 {
-	String list = null;
-	String remove = null;
+	SassListItem list = null;
+	SassListItem remove = null;
 	String separator = null;
 	String variable = null;
 	Token n = null;
@@ -1930,7 +1982,33 @@ String containsDirective() :
 }
 
 JAVACODE
-String listModifyDirectiveArgs(int nest)
+SassListItem listModifyDirectiveArgs(int nest)
+{
+    String listString = listModifyDirectiveArgsAsString(nest);
+    SassList result = new SassList(SassList.Separator.COMMA);
+    String[] subListStrings = listString.split(",");
+    for(String subListString : subListStrings){
+        subListString = subListString.trim();
+        String[] parts = subListString.split(" ");
+        SassList subList = new SassList(SassList.Separator.SPACE);
+        for(String part : parts){
+            part = part.trim();
+            LexicalUnitImpl unit;
+            if(part.startsWith("$")){
+                unit = LexicalUnitImpl.createVariable(token.beginLine, token.beginColumn, null, part.substring(1));
+            }
+            else{
+                unit = LexicalUnitImpl.createIdent(token.beginLine, token.beginColumn, null, part);
+            }
+            subList.add(unit);
+        }
+        result.add(subList);
+    }
+    return result.flatten();
+}
+
+JAVACODE
+String listModifyDirectiveArgsAsString(int nest)
 {
   	String list = "";
 	int nesting = nest;
@@ -1938,7 +2016,7 @@ String listModifyDirectiveArgs(int nest)
 	
 	while(true)
 	{
-	        t = getToken(1);
+	    t = getToken(1);
 		String s = t.image;
 		if(t.kind == VARIABLE||t.kind == IDENT)
 		{
@@ -2176,7 +2254,7 @@ void styleRuleOrDeclarationOrNestedProperties() :
 void declarationOrNestedProperties() :
 { boolean important = false;
   String name;
-  LexicalUnitImpl exp;
+  SassListItem exp;
   Token save;
   String comment = null;
 }
@@ -2185,8 +2263,9 @@ void declarationOrNestedProperties() :
      name=property()
      { save = token; }
      ":" ( <S> )* 
-     (exp=expr() ( important=prio() )?
+     (exp=expressionList() ( important=prio() )?
      {
+         exp = exp.flatten();
          Token next = getToken(1);
          if(next.kind == SEMICOLON || next.kind == RBRACE){
              while(next.kind == SEMICOLON){
@@ -2251,16 +2330,17 @@ void declarationOrNestedProperties() :
 void declaration() :
 { boolean important = false;
   String name;
-  LexicalUnit exp;
+  SassListItem exp;
   Token save;
 }
 {
  try {
      name=property()
      { save = token; }
-     ":" ( <S> )* exp=expr() ( important=prio() )?
+     ":" ( <S> )* exp=expressionList() ( important=prio() )?
      {
-	 documentHandler.property(name, exp, important);
+        exp = exp.flatten();
+        documentHandler.property(name, exp, important);
      }
  } catch (JumpException e) {
      skipAfterExpression();
@@ -2350,6 +2430,34 @@ n="," ( <S> )* { return LexicalUnitImpl.createComma(n.beginLine,
 | n="-" ( <S> )+{ return LexicalUnitImpl.createMinus(n.beginLine,
         n.beginColumn,
         prev); }
+}
+
+/**
+ * @exception ParseException exception during the parse
+ */
+LexicalUnitImpl nonCommaOperator(LexicalUnitImpl prev) :
+{Token n;}
+{
+    /* (comments copied from basic_arithmetics.scss)
+     *supports:
+     * 1. standard arithmetic operations (+, -, *, /, %)
+     * 2. / is treated as css operator, unless one of its operands is variable or there is another binary arithmetic operator
+     *limits:
+     * 1. space between add and minus operator and their following operand is mandatory. e.g. "1 + 2" is valid, "1+2" is not
+     * 2. parenthesis is not supported now.
+     */
+    n="/" ( <S> )* { return LexicalUnitImpl.createSlash(n.beginLine, n.beginColumn, prev); }
+    | n="*" ( <S> )* { return LexicalUnitImpl.createMultiply(n.beginLine, n.beginColumn, prev); }
+    | n="%" ( <S> )* { return LexicalUnitImpl.createModulo(n.beginLine, n.beginColumn, prev); }
+    /*
+     * for '+', since it can be either a binary operator or an unary operator,
+     * which is ambiguous. To avoid this, the binary operator '+' always has
+     * a space before the following term. so '2+3' is not a valid binary expression,
+     * but '2 + 3' is.  The same for '-' operator.
+    */
+
+    | n="+" ( <S> )+{ return LexicalUnitImpl.createAdd(n.beginLine, n.beginColumn, prev); }
+    | n="-" ( <S> )+{ return LexicalUnitImpl.createMinus(n.beginLine, n.beginColumn, prev); }
 }
 
 /**

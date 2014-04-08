@@ -16,16 +16,17 @@
 package com.vaadin.sass.internal.tree;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import com.vaadin.sass.internal.ScssStylesheet;
-import com.vaadin.sass.internal.parser.LexicalUnitImpl;
+import com.vaadin.sass.internal.parser.SassList;
+import com.vaadin.sass.internal.parser.SassListItem;
+import com.vaadin.sass.internal.util.DeepCopy;
 
 public abstract class ListModifyNode extends Node implements IVariableNode {
 
-    protected ArrayList<String> list;
-    protected ArrayList<String> modify;
-    protected String separator = " ";
+    protected SassListItem list;
+    protected SassListItem modify;
+    protected SassList.Separator separator = null;
     protected String variable;
 
     public String getNewVariable() {
@@ -39,86 +40,38 @@ public abstract class ListModifyNode extends Node implements IVariableNode {
     }
 
     public VariableNode getModifiedList() {
-        final ArrayList<String> newList = new ArrayList<String>(list);
-        modifyList(newList);
+        SassListItem newList = (SassListItem) DeepCopy.copy(list);
+        newList = modifyList(newList);
 
-        LexicalUnitImpl unit = null;
-        if (newList.size() > 0) {
-            unit = LexicalUnitImpl.createIdent(newList.get(0));
-            LexicalUnitImpl last = unit;
-            for (int i = 1; i < newList.size(); i++) {
-                LexicalUnitImpl current = LexicalUnitImpl.createIdent(newList
-                        .get(i));
-                last.setNextLexicalUnit(current);
-                last = current;
-            }
-
-        }
-        VariableNode node = new VariableNode(variable.substring(1), unit, false);
+        VariableNode node = new VariableNode(variable.substring(1), newList,
+                false);
         return node;
     }
 
-    protected abstract void modifyList(ArrayList<String> newList);
+    protected abstract SassListItem modifyList(SassListItem newList);
 
-    protected void checkSeparator(String separator, String list) {
+    protected void setSeparator(String separator) {
         String lowerCase = "";
         if (separator == null
                 || (lowerCase = separator.toLowerCase()).equals("auto")) {
-            if (list.contains(",")) {
-                this.separator = ",";
-            }
+            // The separator will be chosen when modifying the list
+            this.separator = null;
         } else if (lowerCase.equals("comma")) {
-            this.separator = ",";
+            this.separator = SassList.Separator.COMMA;
         } else if (lowerCase.equals("space")) {
-            this.separator = " ";
+            this.separator = SassList.Separator.SPACE;
         }
     }
 
-    protected void populateList(String list, String modify) {
-        this.list = new ArrayList<String>(Arrays.asList(list.split(separator)));
-        this.modify = new ArrayList<String>(Arrays.asList(modify
-                .split(separator)));
+    protected void populateList(SassListItem list, SassListItem modify) {
+        this.list = (SassListItem) DeepCopy.copy(list);
+        this.modify = (SassListItem) DeepCopy.copy(modify);
     }
 
     @Override
     public void replaceVariables(ArrayList<VariableNode> variables) {
-        for (final String listVar : new ArrayList<String>(list)) {
-            replacePossibleVariable(variables, listVar, list);
-        }
-
-        for (final String listVar : new ArrayList<String>(modify)) {
-            replacePossibleVariable(variables, listVar, modify);
-        }
-
-    }
-
-    private void replacePossibleVariable(ArrayList<VariableNode> variables,
-            final String listVar, ArrayList<String> list) {
-        if (listVar.startsWith("$")) {
-
-            for (final VariableNode var : variables) {
-
-                if (var.getName().equals(listVar.substring(1))) {
-
-                    String[] split = null;
-                    if (var.getExpr().printState().contains(",")) {
-                        split = var.getExpr().printState().split(",");
-                    } else {
-                        split = var.getExpr().printState().split(" ");
-                    }
-                    int i = list.indexOf(listVar);
-                    for (final String s : split) {
-                        list.add(i, s.trim());
-                        i++;
-                    }
-
-                    list.remove(listVar);
-                    break;
-
-                }
-            }
-
-        }
+        list = list.replaceVariables(variables);
+        modify = modify.replaceVariables(variables);
     }
 
     @Override

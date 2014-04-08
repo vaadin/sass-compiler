@@ -25,7 +25,8 @@ import org.w3c.css.sac.DocumentHandler;
 import org.w3c.css.sac.SACMediaList;
 
 import com.vaadin.sass.internal.ScssStylesheet;
-import com.vaadin.sass.internal.parser.LexicalUnitImpl;
+import com.vaadin.sass.internal.parser.SassList;
+import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.ForNode;
 import com.vaadin.sass.internal.tree.VariableNode;
 import com.vaadin.sass.internal.tree.WhileNode;
@@ -34,11 +35,12 @@ import com.vaadin.sass.internal.tree.controldirective.EachDefNode;
 public interface SCSSDocumentHandler extends DocumentHandler {
     ScssStylesheet getStyleSheet();
 
-    void variable(String name, LexicalUnitImpl value, boolean guarded);
+    void variable(String name, SassListItem value, boolean guarded);
 
-    void startMixinDirective(String name, Collection<VariableNode> args);
+    void startMixinDirective(String name, Collection<VariableNode> args,
+            boolean hasVariableArgs);
 
-    void endMixinDirective(String name, Collection<VariableNode> args);
+    void endMixinDirective();
 
     void debugDirective();
 
@@ -53,10 +55,10 @@ public interface SCSSDocumentHandler extends DocumentHandler {
 
     void importStyle(String uri, SACMediaList media, boolean isURL);
 
-    void property(String name, LexicalUnitImpl value, boolean important,
+    void property(String name, SassListItem value, boolean important,
             String comment);
 
-    EachDefNode startEachDirective(String variable, ArrayList<String> list);
+    EachDefNode startEachDirective(String variable, SassList list);
 
     void endEachDirective();
 
@@ -78,14 +80,14 @@ public interface SCSSDocumentHandler extends DocumentHandler {
 
     EachDefNode startEachDirective(String var, String listVariable);
 
-    void removeDirective(String variable, String list, String remove,
-            String separator);
+    void removeDirective(String variable, SassListItem list,
+            SassListItem remove, String separator);
 
-    void appendDirective(String variable, String list, String remove,
-            String separator);
+    void appendDirective(String variable, SassListItem list,
+            SassListItem append, String separator);
 
-    void containsDirective(String variable, String list, String contains,
-            String separator);
+    void containsDirective(String variable, SassListItem list,
+            SassListItem contains, String separator);
 
     void startKeyFrames(String keyframeName, String animationname);
 
@@ -97,7 +99,8 @@ public interface SCSSDocumentHandler extends DocumentHandler {
 
     void contentDirective();
 
-    void startInclude(String name, List<LexicalUnitImpl> args);
+    void startInclude(String name, List<VariableNode> args,
+            boolean hasVariableArgs);
 
     void endInclude();
 

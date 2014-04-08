@@ -16,13 +16,12 @@
 
 package com.vaadin.sass.internal.expression;
 
-import static com.vaadin.sass.internal.parser.SCSSLexicalUnit.SCSS_VARIABLE;
-
 import java.util.Stack;
 
 import com.vaadin.sass.internal.expression.exception.ArithmeticException;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.SCSSLexicalUnit;
+import com.vaadin.sass.internal.parser.SassListItem;
 
 public class ArithmeticExpressionEvaluator {
     private static ArithmeticExpressionEvaluator instance;
@@ -41,31 +40,8 @@ public class ArithmeticExpressionEvaluator {
                 rightOperand));
     }
 
-    public boolean containsArithmeticalOperator(LexicalUnitImpl term) {
-        LexicalUnitImpl current = term;
-        while (current != null) {
-            for (BinaryOperator operator : BinaryOperator.values()) {
-                /*
-                 * '/' is treated as an arithmetical operator when one of its
-                 * operands is Variable, or there is another binary operator.
-                 * Otherwise, '/' is treated as a CSS operator.
-                 */
-                if (current.getLexicalUnitType() == operator.type) {
-                    if (current.getLexicalUnitType() != BinaryOperator.DIV.type) {
-                        return true;
-                    } else {
-                        if (current.getPreviousLexicalUnit()
-                                .getLexicalUnitType() == SCSS_VARIABLE
-                                || current.getNextLexicalUnit()
-                                        .getLexicalUnitType() == SCSS_VARIABLE) {
-                            return true;
-                        }
-                    }
-                }
-            }
-            current = current.getNextLexicalUnit();
-        }
-        return false;
+    public boolean containsArithmeticalOperator(SassListItem term) {
+        return term.containsArithmeticalOperator();
     }
 
     private Object createExpression(LexicalUnitImpl term) {

@@ -1,0 +1,17 @@
+@mixin test($arg... ) {
+    transform: $arg;
+}
+
+@mixin testCommaSeparated($arg...){
+    font: $arg;
+}
+
+@mixin testSeveralArgs($arg...){
+    test-order: $arg;
+}
+
+body {
+    @include test(rotate(90deg) scale(2));
+    @include testCommaSeparated(bold 15px Georgia,serif);
+    @include testSeveralArgs(1, 2, 3, 4, 5, 6, 7, 8, 9);
+}

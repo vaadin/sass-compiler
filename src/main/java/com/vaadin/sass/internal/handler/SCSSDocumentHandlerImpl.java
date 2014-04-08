@@ -30,7 +30,8 @@ import org.w3c.css.sac.SACMediaList;
 import org.w3c.css.sac.SelectorList;
 
 import com.vaadin.sass.internal.ScssStylesheet;
-import com.vaadin.sass.internal.parser.LexicalUnitImpl;
+import com.vaadin.sass.internal.parser.SassList;
+import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.BlockNode;
 import com.vaadin.sass.internal.tree.CommentNode;
 import com.vaadin.sass.internal.tree.ContentNode;
@@ -87,7 +88,7 @@ public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
     }
 
     @Override
-    public void variable(String name, LexicalUnitImpl value, boolean guarded) {
+    public void variable(String name, SassListItem value, boolean guarded) {
         VariableNode node = new VariableNode(name, value, guarded);
         nodeStack.peek().appendChild(node);
     }
@@ -105,7 +106,7 @@ public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
     }
 
     @Override
-    public EachDefNode startEachDirective(String var, ArrayList<String> list) {
+    public EachDefNode startEachDirective(String var, SassList list) {
         EachDefNode node = new EachDefNode(var, list);
         nodeStack.peek().appendChild(node);
         nodeStack.push(node);
@@ -203,14 +204,13 @@ public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
         nodeStack.pop();
     }
 
-    @Override
-    public void property(String name, LexicalUnit value, boolean important)
+    public void property(String name, SassListItem value, boolean important)
             throws CSSException {
-        property(name, (LexicalUnitImpl) value, important, null);
+        property(name, value, important, null);
     }
 
     @Override
-    public void property(String name, LexicalUnitImpl value, boolean important,
+    public void property(String name, SassListItem value, boolean important,
             String comment) {
         RuleNode node = new RuleNode(name, value, important, comment);
         nodeStack.peek().appendChild(node);
@@ -235,14 +235,15 @@ public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
     }
 
     @Override
-    public void startMixinDirective(String name, Collection<VariableNode> args) {
-        MixinDefNode node = new MixinDefNode(name.trim(), args);
+    public void startMixinDirective(String name, Collection<VariableNode> args,
+            boolean hasVariableArgs) {
+        MixinDefNode node = new MixinDefNode(name.trim(), args, hasVariableArgs);
         nodeStack.peek().appendChild(node);
         nodeStack.push(node);
     }
 
     @Override
-    public void endMixinDirective(String name, Collection<VariableNode> args) {
+    public void endMixinDirective() {
         nodeStack.pop();
     }
 
@@ -314,24 +315,24 @@ public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
     }
 
     @Override
-    public void removeDirective(String variable, String list, String remove,
-            String separator) {
+    public void removeDirective(String variable, SassListItem list,
+            SassListItem remove, String separator) {
         ListRemoveNode node = new ListRemoveNode(variable, list, remove,
                 separator);
         nodeStack.peek().appendChild(node);
     }
 
     @Override
-    public void appendDirective(String variable, String list, String append,
-            String separator) {
+    public void appendDirective(String variable, SassListItem list,
+            SassListItem append, String separator) {
         ListAppendNode node = new ListAppendNode(variable, list, append,
                 separator);
         nodeStack.peek().appendChild(node);
     }
 
     @Override
-    public void containsDirective(String variable, String list,
-            String contains, String separator) {
+    public void containsDirective(String variable, SassListItem list,
+            SassListItem contains, String separator) {
         ListContainsNode node = new ListContainsNode(variable, list, contains,
                 separator);
         nodeStack.peek().appendChild(node);
@@ -371,8 +372,9 @@ public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
     }
 
     @Override
-    public void startInclude(String name, List<LexicalUnitImpl> args) {
-        MixinNode node = new MixinNode(name, args);
+    public void startInclude(String name, List<VariableNode> args,
+            boolean hasVariableArgs) {
+        MixinNode node = new MixinNode(name, args, hasVariableArgs);
         nodeStack.peek().appendChild(node);
         nodeStack.push(node);
 
@@ -395,4 +397,13 @@ public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
         Logger.getLogger(SCSSDocumentHandlerImpl.class.getName()).log(
                 Level.INFO, msg);
     }
+
+    @Override
+    public void property(String name, LexicalUnit value, boolean important)
+            throws CSSException {
+        // This method needs to be here due to an implemented interface.
+        throw new CSSException("Unsupported call: property(" + name + ", "
+                + value + ", important: " + important + ")");
+    }
+
 }

@@ -65,6 +65,10 @@ public enum BinaryOperator {
         this.precedence = precedence;
     }
 
+    /**
+     * Evaluates an arithmetic expression. The parameters leftValue and
+     * rightValue must not be list-valued.
+     */
     public abstract LexicalUnitImpl eval(LexicalUnitImpl leftValue,
             LexicalUnitImpl rightValue);
 }

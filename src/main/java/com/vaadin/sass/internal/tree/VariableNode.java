@@ -20,29 +20,28 @@ import java.util.ArrayList;
 
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.expression.ArithmeticExpressionEvaluator;
-import com.vaadin.sass.internal.parser.LexicalUnitImpl;
-import com.vaadin.sass.internal.util.StringUtil;
+import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.visitor.VariableNodeHandler;
 
 public class VariableNode extends Node implements IVariableNode {
     private static final long serialVersionUID = 7003372557547748734L;
 
     private String name;
-    private LexicalUnitImpl expr;
+    private SassListItem expr;
     private boolean guarded;
 
-    public VariableNode(String name, LexicalUnitImpl expr, boolean guarded) {
+    public VariableNode(String name, SassListItem expr, boolean guarded) {
         super();
         this.name = name;
         this.expr = expr;
         this.guarded = guarded;
     }
 
-    public LexicalUnitImpl getExpr() {
+    public SassListItem getExpr() {
         return expr;
     }
 
-    public void setExpr(LexicalUnitImpl expr) {
+    public void setExpr(SassListItem expr) {
         this.expr = expr;
     }
 
@@ -74,33 +73,7 @@ public class VariableNode extends Node implements IVariableNode {
 
     @Override
     public void replaceVariables(ArrayList<VariableNode> variables) {
-        for (final VariableNode node : variables) {
-            if (!equals(node)) {
-
-                if (StringUtil.containsVariable(expr.printState(),
-                        node.getName())) {
-                    if (expr.getParameters() != null
-                            && StringUtil.containsVariable(expr.getParameters()
-                                    .printState(), node.getName())) {
-                        replaceValues(expr.getParameters(), node);
-                    } else if (expr.getLexicalUnitType() == LexicalUnitImpl.SCSS_VARIABLE) {
-                        replaceValues(expr, node);
-                    }
-                }
-            }
-        }
-    }
-
-    private void replaceValues(LexicalUnitImpl unit, VariableNode node) {
-        while (unit != null) {
-
-            if (unit.getLexicalUnitType() == LexicalUnitImpl.SCSS_VARIABLE
-                    && unit.getValueAsString().equals(node.getName())) {
-                LexicalUnitImpl.replaceValues(unit, node.getExpr());
-            }
-
-            unit = unit.getNextLexicalUnit();
-        }
+        expr = expr.replaceVariables(variables);
     }
 
     @Override
@@ -116,7 +89,7 @@ public class VariableNode extends Node implements IVariableNode {
         if (ArithmeticExpressionEvaluator.get().containsArithmeticalOperator(
                 expr)) {
             replaceVariables(ScssStylesheet.getVariables());
-            expr = ArithmeticExpressionEvaluator.get().evaluate(expr);
+            expr = expr.evaluateArithmeticExpressions();
         } else {
             replaceVariables(ScssStylesheet.getVariables());
         }

@@ -27,12 +27,15 @@ public class MixinDefNode extends Node implements IVariableNode {
 
     private String name;
     private ArrayList<VariableNode> arglist;
+    private boolean hasVariableArguments = false;
     private String body;
 
-    public MixinDefNode(String name, Collection<VariableNode> args) {
+    public MixinDefNode(String name, Collection<VariableNode> args,
+            boolean hasVariableArgs) {
         super();
         this.name = name;
         arglist = new ArrayList<VariableNode>();
+        hasVariableArguments = hasVariableArgs;
         if (args != null && !args.isEmpty()) {
             arglist.addAll(args);
         }
@@ -58,6 +61,10 @@ public class MixinDefNode extends Node implements IVariableNode {
 
     public void setArglist(ArrayList<VariableNode> arglist) {
         this.arglist = arglist;
+    }
+
+    public boolean hasVariableArguments() {
+        return hasVariableArguments;
     }
 
     @Override

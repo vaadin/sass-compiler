@@ -1,0 +1,10 @@
+@mixin textProperties($color, $style, $size) {
+  color: $color;
+  font-style: $style;
+  font-size: $size;
+}
+
+$values: red, italic, 20px;
+h1 {
+  @include textProperties($values...);
+}

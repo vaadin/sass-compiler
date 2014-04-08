@@ -23,15 +23,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.w3c.css.sac.CSSException;
-import org.w3c.css.sac.LexicalUnit;
 
 import com.vaadin.sass.internal.ScssStylesheet;
-import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
+import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.ImportNode;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.RuleNode;
-import com.vaadin.sass.internal.util.StringUtil;
 
 public class ImportNodeHandler {
 
@@ -110,21 +108,10 @@ public class ImportNodeHandler {
     private static void updateUrlInImportedSheet(Node node, String prefix) {
         for (Node child : node.getChildren()) {
             if (child instanceof RuleNode) {
-                LexicalUnit value = ((RuleNode) child).getValue();
-                while (value != null) {
-                    if (value.getLexicalUnitType() == LexicalUnit.SAC_URI) {
-                        String path = value.getStringValue()
-                                .replaceAll("^\"|\"$", "")
-                                .replaceAll("^'|'$", "");
-                        if (!path.startsWith("/") && !path.contains(":")) {
-                            path = prefix + path;
-                            path = StringUtil.cleanPath(path);
-                            ((LexicalUnitImpl) value).setStringValue(path);
-                        }
-                    }
-                    value = value.getNextLexicalUnit();
+                SassListItem value = ((RuleNode) child).getValue();
+                if (value != null) {
+                    value.updateUrl(prefix);
                 }
-
             }
             updateUrlInImportedSheet(child, prefix);
         }

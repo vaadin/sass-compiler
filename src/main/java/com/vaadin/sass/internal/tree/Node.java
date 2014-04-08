@@ -20,7 +20,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import com.vaadin.sass.internal.parser.LexicalUnitImpl;
+import com.vaadin.sass.internal.parser.SassListItem;
 
 public abstract class Node implements Serializable {
 
@@ -149,7 +149,7 @@ public abstract class Node implements Serializable {
 
         String build(Node node);
 
-        String build(LexicalUnitImpl unit);
+        String build(SassListItem expr);
     }
 
     public static class PrintStrategy implements BuildStringStrategy {
@@ -160,8 +160,8 @@ public abstract class Node implements Serializable {
         }
 
         @Override
-        public String build(LexicalUnitImpl unit) {
-            return unit.printState();
+        public String build(SassListItem expr) {
+            return expr.printState();
         }
 
     }
@@ -174,8 +174,8 @@ public abstract class Node implements Serializable {
         }
 
         @Override
-        public String build(LexicalUnitImpl unit) {
-            return unit.toString();
+        public String build(SassListItem expr) {
+            return expr.toString();
         }
 
     }

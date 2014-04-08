@@ -21,18 +21,17 @@ import java.util.regex.Pattern;
 
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.expression.ArithmeticExpressionEvaluator;
-import com.vaadin.sass.internal.parser.LexicalUnitImpl;
-import com.vaadin.sass.internal.util.StringUtil;
+import com.vaadin.sass.internal.parser.SassListItem;
 
 public class RuleNode extends Node implements IVariableNode {
     private static final long serialVersionUID = 6653493127869037022L;
 
     String variable;
-    LexicalUnitImpl value;
+    SassListItem value;
     String comment;
     private boolean important;
 
-    public RuleNode(String variable, LexicalUnitImpl value, boolean important,
+    public RuleNode(String variable, SassListItem value, boolean important,
             String comment) {
         this.variable = variable;
         this.value = value;
@@ -48,11 +47,11 @@ public class RuleNode extends Node implements IVariableNode {
         this.variable = variable;
     }
 
-    public LexicalUnitImpl getValue() {
+    public SassListItem getValue() {
         return value;
     }
 
-    public void setValue(LexicalUnitImpl value) {
+    public void setValue(SassListItem value) {
         this.value = value;
     }
 
@@ -91,50 +90,9 @@ public class RuleNode extends Node implements IVariableNode {
             if (variable != null && variable.contains(interpolation)) {
                 variable = variable.replaceAll(Pattern.quote(interpolation),
                         node.getExpr().unquotedString());
-
-            }
-
-            if (value.getLexicalUnitType() == LexicalUnitImpl.SAC_FUNCTION) {
-
-                if (value.getParameters() != null) {
-                    if (StringUtil.containsVariable(value.getParameters()
-                            .printState(), node.getName())) {
-                        LexicalUnitImpl param = value.getParameters();
-                        while (param != null) {
-                            if (param.getLexicalUnitType() == LexicalUnitImpl.SCSS_VARIABLE
-                                    && param.getValueAsString().equals(
-                                            node.getName())) {
-                                param.replaceValue(node.getExpr());
-                            }
-                            param = param.getNextLexicalUnit();
-                        }
-                    }
-                }
-            } else if (value.getStringValue() != null
-                    && value.getStringValue().contains(interpolation)) {
-                LexicalUnitImpl current = value;
-                while (current != null) {
-                    if (current.getValueAsString().contains(interpolation)) {
-
-                        current.setStringValue(current.getValueAsString()
-                                .replaceAll(Pattern.quote(interpolation),
-                                        node.getExpr().unquotedString()));
-                    }
-                    current = current.getNextLexicalUnit();
-                }
-            } else {
-                LexicalUnitImpl current = value;
-                while (current != null) {
-                    if (current.getLexicalUnitType() == LexicalUnitImpl.SCSS_VARIABLE
-                            && current.getValueAsString()
-                                    .equals(node.getName())) {
-
-                        current.replaceValue(node.getExpr());
-                    }
-                    current = current.getNextLexicalUnit();
-                }
             }
         }
+        value = value.replaceVariables(variables);
     }
 
     @Override
@@ -150,7 +108,7 @@ public class RuleNode extends Node implements IVariableNode {
         if (ArithmeticExpressionEvaluator.get().containsArithmeticalOperator(
                 value)) {
             replaceVariables(ScssStylesheet.getVariables());
-            value = ArithmeticExpressionEvaluator.get().evaluate(value);
+            value = value.evaluateArithmeticExpressions();
         } else {
             replaceVariables(ScssStylesheet.getVariables());
         }

@@ -18,6 +18,9 @@ package com.vaadin.sass.internal.parser;
 
 import org.w3c.css.sac.CSSException;
 
+import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.tree.Node;
+
 /**
  * This exception is thrown when parse errors are encountered. You can
  * explicitly create objects of this exception type by calling the method
@@ -67,11 +70,34 @@ public class ParseException extends CSSException {
         specialConstructor = false;
     }
 
+    public ParseException(String message, LexicalUnitImpl unit) {
+        this(message);
+        currentUnit = unit;
+    }
+
+    public ParseException(String message, Node node) {
+        super(message);
+        currentNode = node;
+
+    }
+
     /**
      * This variable determines which constructor was used to create this object
      * and thereby affects the semantics of the "getMessage" method (see below).
      */
     protected boolean specialConstructor;
+
+    /**
+     * When not using a special constructor, if the current unit is not null, it
+     * is used to determine the location of the exception in the parsed file.
+     */
+    private LexicalUnitImpl currentUnit;
+
+    /**
+     * When not using a special constructor, if the current node is not null, it
+     * is used to determine the location of the exception in the parsed file.
+     */
+    private Node currentNode;
 
     /**
      * This is the last token that has been consumed successfully. If this
@@ -106,7 +132,14 @@ public class ParseException extends CSSException {
     @Override
     public String getMessage() {
         if (!specialConstructor) {
-            return super.getMessage();
+            String message = super.getMessage();
+            if (currentUnit != null) {
+                message = message + " at line " + currentUnit.getLineNumber()
+                        + ", column " + currentUnit.getColumnNumber();
+            } else if (currentNode != null) {
+                message = message + getNodeLocation();
+            }
+            return message;
         }
         String expected = "";
         int maxSize = 0;
@@ -198,6 +231,23 @@ public class ParseException extends CSSException {
             }
         }
         return retval.toString();
+    }
+
+    private String getNodeLocation() {
+
+        String fileName = null;
+        Node root = currentNode.getParentNode();
+        while (root != null && !(root instanceof ScssStylesheet)) {
+            root = root.getParentNode();
+        }
+        if (root != null) {
+            fileName = ((ScssStylesheet) root).getFileName();
+        }
+        if (fileName != null) {
+            return ", in file " + fileName;
+        } else {
+            return "";
+        }
     }
 
 }

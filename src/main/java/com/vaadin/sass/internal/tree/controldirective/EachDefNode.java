@@ -17,24 +17,24 @@
 package com.vaadin.sass.internal.tree.controldirective;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import com.vaadin.sass.internal.ScssStylesheet;
-import com.vaadin.sass.internal.parser.LexicalUnitImpl;
+import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.tree.IVariableNode;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.VariableNode;
+import com.vaadin.sass.internal.util.DeepCopy;
 import com.vaadin.sass.internal.visitor.EachNodeHandler;
 
 public class EachDefNode extends Node implements IVariableNode {
     private static final long serialVersionUID = 7943948981204906221L;
 
     private String var;
-    private ArrayList<String> list;
+    private SassList list;
 
     private String listVariable;
 
-    public EachDefNode(String var, ArrayList<String> list) {
+    public EachDefNode(String var, SassList list) {
         super();
         this.var = var;
         this.list = list;
@@ -45,7 +45,7 @@ public class EachDefNode extends Node implements IVariableNode {
         this.listVariable = listVariable;
     }
 
-    public List<String> getVariables() {
+    public SassList getVariables() {
         return list;
     }
 
@@ -73,22 +73,11 @@ public class EachDefNode extends Node implements IVariableNode {
         if (listVariable != null) {
             for (final VariableNode var : variables) {
                 if (listVariable.equals(var.getName())) {
-
-                    LexicalUnitImpl current = var.getExpr();
-                    list = new ArrayList<String>();
-
-                    while (current != null) {
-                        if (current.getValue() != null
-                                && current.getLexicalUnitType() != LexicalUnitImpl.SAC_OPERATOR_COMMA) {
-                            list.add(current.getValueAsString());
-                        }
-                        current = current.getNextLexicalUnit();
-                    }
+                    list = (SassList) DeepCopy.copy((Object) var.getExpr());
                     listVariable = null;
                     break;
                 }
             }
-
         }
     }
 

@@ -1,6 +1,6 @@
 $borderWeight : solid;
 
-@mixin animals($list : puma, sea-slug, egret, salamander){
+@mixin animals($list : puma sea-slug egret salamander){
 	@each $animal in $list {
 	  .#{$animal}-icon #animal, .menu {
 	    background-image: url('/images/#{$animal}.png');

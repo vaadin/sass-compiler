@@ -18,7 +18,7 @@ package com.vaadin.sass.internal.visitor;
 import java.util.ArrayList;
 
 import com.vaadin.sass.internal.ScssStylesheet;
-import com.vaadin.sass.internal.parser.LexicalUnitImpl;
+import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.IVariableNode;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.VariableNode;
@@ -34,9 +34,10 @@ public class EachNodeHandler {
     private static void replaceEachDefNode(EachDefNode defNode) {
         Node last = defNode;
 
-        for (final String var : defNode.getVariables()) {
+        for (final SassListItem var : defNode.getVariables()) {
+            SassListItem varCopy = (SassListItem) DeepCopy.copy(var);
             VariableNode varNode = new VariableNode(defNode.getVariableName()
-                    .substring(1), LexicalUnitImpl.createIdent(var), false);
+                    .substring(1), varCopy, false);
             ArrayList<VariableNode> variables = new ArrayList<VariableNode>(
                     ScssStylesheet.getVariables());
             variables.add(varNode);
@@ -66,7 +67,5 @@ public class EachNodeHandler {
         for (Node c : copy.getChildren()) {
             replaceInterpolation(c, variables);
         }
-
     }
-
 }

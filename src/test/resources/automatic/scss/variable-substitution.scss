@@ -1,0 +1,15 @@
+.variables {
+  $a: 3px;
+  $b: 4px;
+  $c: $b + $a;
+  $d: $a + $b;
+  height: $c;
+  width: $d;
+}
+
+.direct{
+  $a: 3px;
+  $b: 4px;
+  width: $a + $b;
+  height: $b + $a;
+}

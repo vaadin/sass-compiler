@@ -15,21 +15,22 @@
  */
 package com.vaadin.sass.internal.tree;
 
-import java.util.ArrayList;
+import com.vaadin.sass.internal.parser.SassList;
+import com.vaadin.sass.internal.parser.SassListItem;
 
 public class ListRemoveNode extends ListModifyNode {
 
-    public ListRemoveNode(String variable, String list, String remove,
-            String separator) {
+    public ListRemoveNode(String variable, SassListItem list,
+            SassListItem remove, String separator) {
         this.variable = variable;
-        checkSeparator(separator, list);
+        setSeparator(separator);
         populateList(list, remove);
 
     }
 
     @Override
-    protected void modifyList(ArrayList<String> newList) {
-        newList.removeAll(modify);
+    protected SassList modifyList(SassListItem newList) {
+        return newList.removeAllItems(modify);
     }
 
 }
