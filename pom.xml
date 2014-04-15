@@ -291,7 +291,7 @@
         <dependency>
             <groupId>net.sourceforge.cssparser</groupId>
             <artifactId>cssparser</artifactId>
-            <version>0.9.5</version>
+            <version>0.9.11</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
