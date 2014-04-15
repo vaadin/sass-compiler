@@ -2645,7 +2645,7 @@ LexicalUnitImpl result = null;
  */
 LexicalUnitImpl function(char operator, LexicalUnitImpl prev) :
 {Token n;
- LexicalUnit params = null;
+ SassList params = new SassList(SassList.Separator.COMMA);
 }
 {
     n=<FUNCTION> ( <S> )*  
@@ -2661,207 +2661,146 @@ LexicalUnitImpl function(char operator, LexicalUnitImpl prev) :
                  null, "expression("+body);
         }
     }
-    ( params=expr() )? ")"
+    ( params=expressionList() {
+        SassListItem item = params.flatten();
+        if (item instanceof SassList) {
+            params = (SassList) item;
+        } else {
+            params = new SassList(SassList.Separator.COMMA, item);
+        }
+    }  )? ")"
     {
         if (operator != ' ') {
-	    throw new CSSParseException("invalid operator before a function.", 
-					getLocator());
-	}
-	String f = convertIdent(n.image);
-        LexicalUnitImpl l = (LexicalUnitImpl) params;
-	boolean loop = true;
-	if ("rgb(".equals(f)) {
-	    // this is a RGB declaration (e.g. rgb(255, 50%, 0) )
-	    int i = 0;
-	    boolean hasVariables = false;
-	    while (loop && l != null && i < 5) {
-		switch (i) {
-		    case 0:
-		    case 2:
-		    case 4:
-		    if (l.getLexicalUnitType() == SCSSLexicalUnit.SCSS_VARIABLE) {
+        throw new CSSParseException("invalid operator before a function.", 
+                    getLocator());
+    }
+    String f = convertIdent(n.image);
+    boolean loop = true;
+    if ("rgb(".equals(f)) {
+        // this is a RGB declaration (e.g. rgb(255, 50%, 0) )
+        int i = 0;
+        boolean hasVariables = false;
+        boolean ok = true;
+        LexicalUnitImpl badLui = null;
+        while (ok && i < 3 && i < params.size()) {
+            SassListItem item = params.get(i);
+            if (!(item instanceof LexicalUnitImpl)) {
+                throw new ParseException("Only simple values are allowed as rgb() parameters: " + params);
+            }
+            LexicalUnitImpl lui = (LexicalUnitImpl) item;
+            if (lui.getLexicalUnitType() == SCSSLexicalUnit.SCSS_VARIABLE) {
                         hasVariables = true;
-			} else if ((l.getLexicalUnitType() != LexicalUnit.SAC_INTEGER)
-			    && (l.getLexicalUnitType() != LexicalUnit.SAC_PERCENTAGE)) {
-			    loop = false;
-			}
-			break;
-		    case 1:
-		    case 3:
-			if (l.getLexicalUnitType() != LexicalUnit.SAC_OPERATOR_COMMA) {
-			    loop = false;
-			}
-			break;
-		    default:
-                        throw new ParseException("implementation error");
-		}
-		if (loop) {
-		    l = (LexicalUnitImpl) l.getNextLexicalUnit();
-		    i ++;
-		}
-	    }
-	    if ((i == 5) && loop && (l == null)) {
-	    	if (hasVariables) {
-            return LexicalUnitImpl.createFunction(n.beginLine,
+            } else if ((lui.getLexicalUnitType() != LexicalUnit.SAC_INTEGER)
+                && (lui.getLexicalUnitType() != LexicalUnit.SAC_PERCENTAGE)) {
+                ok = false;
+                badLui = lui;
+            }
+            i ++;
+        }
+        if (params.size() == 3 && ok) {
+            if (hasVariables) {
+                return LexicalUnitImpl.createFunction(n.beginLine,
                         n.beginColumn, prev,
                         f.substring(0, f.length() - 1), params);
-		} else {
-           return LexicalUnitImpl.createRGBColor(n.beginLine,
+            } else {
+                return LexicalUnitImpl.createRGBColor(n.beginLine,
                         n.beginColumn,
                         prev, params);
-		}
-	    } else {
-		if (errorHandler != null) {
-		    String errorText;
-		    Locator loc;
-		    if (i < 5) {
-			if (params == null) {
-			    loc = new LocatorImpl(this, n.beginLine,
-						  n.beginColumn-1);
-			    errorText = "not enough parameters.";
-			} else if (l == null) {
-			    loc = new LocatorImpl(this, n.beginLine,
-						  n.beginColumn-1);
-			    errorText = "not enough parameters: " 
-				+ params.toString();
-			} else {
-			    loc = new LocatorImpl(this, l.getLineNumber(),
-						  l.getColumnNumber());
-			    errorText = "invalid parameter: "
-				+ l.toString();
-			}
-		    } else {
-			loc = new LocatorImpl(this, l.getLineNumber(),
-					      l.getColumnNumber());
-			errorText = "too many parameters: "
-			    + l.toString();
-		    }
-		    errorHandler.error(new CSSParseException(errorText, loc));
-		}
+            }
+        } else {
+            if (errorHandler != null) {
+                String errorText;
+                Locator loc;
+                if (i < 3) {
+                    if (badLui == null) {
+                        loc = new LocatorImpl(this, n.beginLine,
+                                  n.beginColumn-1);
+                        errorText = "not enough parameters: " 
+                            + params.toString();
+                    } else {
+                        loc = new LocatorImpl(this, badLui.getLineNumber(),
+                                  badLui.getColumnNumber());
+                        errorText = "invalid parameter: "
+                            + badLui.toString();
+                    }
+                } else {
+                    loc = new LocatorImpl(this, n.beginLine, n.beginColumn);
+                    errorText = "too many parameters: "
+                        + params.toString();
+                }
+                errorHandler.error(new CSSParseException(errorText, loc));
+            }
 
-		throw new JumpException();
-	    }
-	} else if ("counter".equals(f)) {
-	    int i = 0;
-	    while (loop && l != null && i < 3) {
-		switch (i) {
-		    case 0:
-		    case 2:
-			if (l.getLexicalUnitType() != LexicalUnit.SAC_IDENT) {
-			    loop = false;
-			}
-			break;
-		    case 1:
-			if (l.getLexicalUnitType() != LexicalUnit.SAC_OPERATOR_COMMA) {
-			    loop = false;
-			}
-			break;
-		    default:
-                        throw new ParseException("implementation error");
-		}
-		l = (LexicalUnitImpl) l.getNextLexicalUnit();
-		i ++;
-	    }
-	    if (((i == 1) || (i == 3)) && loop && (l == null)) {
-		return LexicalUnitImpl.createCounter(n.beginLine, n.beginColumn,
-						     prev, params);
-	    }
-
-	} else if ("counters(".equals(f)) {
-	    
-	    int i = 0;
-	    while (loop && l != null && i < 5) {
-		switch (i) {
-		    case 0:
-		    case 4:
-			if (l.getLexicalUnitType() != LexicalUnit.SAC_IDENT) {
-			    loop = false;
-			}
-			break;
-		    case 2:
-			if (l.getLexicalUnitType() != LexicalUnit.SAC_STRING_VALUE) {
-			    loop = false;
-			}
-			break;
-		    case 1:
-		    case 3:
-			if (l.getLexicalUnitType() != LexicalUnit.SAC_OPERATOR_COMMA) {
-			    loop = false;
-			}
-			break;
-		    default:
-                        throw new ParseException("implementation error");
-		}
-		l = (LexicalUnitImpl) l.getNextLexicalUnit();
-		i ++;
-	    }
-	    if (((i == 3) || (i == 5)) && loop && (l == null)) {
-		return LexicalUnitImpl.createCounters(n.beginLine, n.beginColumn,
-						      prev, params);
-	    }
-	} else if ("attr(".equals(f)) {
-	    if ((l != null)
-		&& (l.getNextLexicalUnit() == null)
-		&& (l.getLexicalUnitType() == LexicalUnit.SAC_IDENT)) {
-                return LexicalUnitImpl.createAttr(l.getLineNumber(), 
-						  l.getColumnNumber(),
-						  prev, l.getStringValue());
-	    }
-	} else if ("rect(".equals(f)) {
-	    int i = 0;
-	    while (loop && l != null && i < 7) {
-		switch (i) {
-		    case 0:
-		    case 2:
-		    case 4:
-		    case 6:
-			switch (l.getLexicalUnitType()) {
-			case LexicalUnit.SAC_INTEGER:
-			    if (l.getIntegerValue() != 0) {
-				loop = false;
-			    }
-			    break;
-			case LexicalUnit.SAC_IDENT:
-			    if (!l.getStringValue().equals("auto")) {
-				loop = false;
-			    }
-			    break;
-			case LexicalUnit.SAC_EM:
-			case LexicalUnit.SAC_EX:
-			case LexicalUnit.SAC_PIXEL:
-			case LexicalUnit.SAC_CENTIMETER:
-			case LexicalUnit.SAC_MILLIMETER:
-			case LexicalUnit.SAC_INCH:
-			case LexicalUnit.SAC_POINT:
-			case LexicalUnit.SAC_PICA:
-			    // nothing
-			    break;
-			default:
-			    loop = false;
-			}
-			break;
-		    case 1:
-		    case 3:
-		    case 5:
-			if (l.getLexicalUnitType() != LexicalUnit.SAC_OPERATOR_COMMA) {
-			    loop = false;
-			}
-			break;
-		    default:
-                        throw new ParseException("implementation error");
-		}
-		l = (LexicalUnitImpl) l.getNextLexicalUnit();
-		i ++;
-	    }
-	    if ((i == 7) && loop && (l == null)) {
-		return LexicalUnitImpl.createRect(n.beginLine, n.beginColumn,
-						  prev, params);
-	    }
-	} 
-	return LexicalUnitImpl.createFunction(n.beginLine, n.beginColumn, prev, 
-					      f.substring(0, 
-							f.length() -1),
-					      params);
+            throw new JumpException();
+        }
+    } else if ("counter".equals(f)) {
+        if (params.size() == 1 || params.size() == 2) {
+            boolean ok = true;
+            if (!(params.get(0) instanceof LexicalUnitImpl) || ((LexicalUnitImpl) params.get(0)).getLexicalUnitType() != LexicalUnit.SAC_IDENT) {
+                ok = false;
+            }
+            if (params.size() >= 2){
+                if(!(params.get(1) instanceof LexicalUnitImpl) || ((LexicalUnitImpl) params.get(1)).getLexicalUnitType() != LexicalUnit.SAC_IDENT) {
+                    ok = false;
+                }
+            }
+            if (ok) {
+                 return LexicalUnitImpl.createCounter(n.beginLine, n.beginColumn,
+                             prev, params);
+            }
+        }
+    } else if ("counters(".equals(f)) {
+        if (params.size() == 2 || params.size() == 3) {
+            boolean ok = true;
+            if (!(params.get(0) instanceof LexicalUnitImpl) || ((LexicalUnitImpl) params.get(0)).getLexicalUnitType() != LexicalUnit.SAC_IDENT) {
+                ok = false;
+            }
+            if (!(params.get(1) instanceof LexicalUnitImpl) || ((LexicalUnitImpl) params.get(1)).getLexicalUnitType() != LexicalUnit.SAC_STRING_VALUE) {
+                ok = false;
+            }
+            if (params.size() >= 3){
+                if(!(params.get(2) instanceof LexicalUnitImpl) || ((LexicalUnitImpl) params.get(2)).getLexicalUnitType() != LexicalUnit.SAC_IDENT) {
+                    ok = false;
+                }
+            }
+            if (ok) {
+                return LexicalUnitImpl.createCounters(n.beginLine, n.beginColumn,
+                                       prev, params);
+            }
+        }
+    } else if ("attr(".equals(f)) {
+        if (params.size() == 1 && params.get(0) instanceof LexicalUnitImpl && ((LexicalUnitImpl) params.get(0)).getLexicalUnitType() == LexicalUnit.SAC_IDENT) {
+            return LexicalUnitImpl.createAttr(n.beginLine, n.beginColumn, prev, ((LexicalUnitImpl) params.get(0)).getStringValue());
+        }
+    } else if ("rect(".equals(f)) {
+        int i = 0;
+        boolean ok = true;
+        while (ok && i < 4 && i < params.size()) {
+            SassListItem item = params.get(i);
+            if (!(item instanceof LexicalUnitImpl)) {
+                throw new ParseException("Only simple values are allowed as rect() parameters: " + params);
+            }
+            LexicalUnitImpl lui = (LexicalUnitImpl) item;
+            short luiType = lui.getLexicalUnitType();
+            if (luiType == SCSSLexicalUnit.SAC_INTEGER && lui.getIntegerValue() != 0) {
+                ok = false;
+            } else if (luiType == SCSSLexicalUnit.SAC_IDENT && !"auto".equals(lui.getStringValue())) {
+                ok = false;
+            } else if ((luiType != LexicalUnit.SAC_EM) && (luiType != LexicalUnit.SAC_EX) && (luiType != LexicalUnit.SAC_PIXEL) && (luiType != LexicalUnit.SAC_CENTIMETER) &&
+                       (luiType != LexicalUnit.SAC_MILLIMETER) && (luiType != LexicalUnit.SAC_INCH) && (luiType != LexicalUnit.SAC_POINT) && (luiType != LexicalUnit.SAC_PICA) ) {
+                ok = false;
+            }
+            i ++;
+        }
+        if (params.size() == 4 && ok) {
+            return LexicalUnitImpl.createRect(n.beginLine, n.beginColumn,
+                          prev, params);
+        }
+    } 
+    return LexicalUnitImpl.createFunction(n.beginLine, n.beginColumn, prev, 
+                          f.substring(0, 
+                            f.length() -1),
+                          params);
     }
 }
 

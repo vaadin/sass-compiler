@@ -1,0 +1,6 @@
+.query-bar-color {
+	background: -webkit-linear-gradient(left, rgba(240, 45, 12, 0.9), rgba(115, 22, 6, 1));
+	background: -o-linear-gradient(right, rgba(240, 45, 12, 0.9), rgba(115, 22, 6, 1));
+	background: -moz-linear-gradient(right, rgba(240, 45, 12, 0.9), rgba(115, 22, 6, 1));
+	background: linear-gradient(to right, rgba(240, 45, 12, 0.9), rgba(115, 22, 6, 1));
+}

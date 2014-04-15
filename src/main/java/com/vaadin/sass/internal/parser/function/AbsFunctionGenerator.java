@@ -16,25 +16,20 @@
 package com.vaadin.sass.internal.parser.function;
 
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
-import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
+import com.vaadin.sass.internal.util.DeepCopy;
 
-/**
- * 
- * @author Vaadin Ltd
- */
-public class AbsFunctionGenerator implements SCSSFunctionGenerator {
+public class AbsFunctionGenerator extends
+        AbstractSingleParameterFunctionGenerator {
 
-    @Override
-    public String getFunctionName() {
-        return "abs";
+    public AbsFunctionGenerator() {
+        super("abs");
     }
 
     @Override
-    public String printState(LexicalUnitImpl function,
-            BuildStringStrategy strategy) {
-        LexicalUnitImpl firstParam = function.getParameters();
-        firstParam.setFloatValue(Math.abs(firstParam.getFloatValue()));
-        return strategy.build(firstParam);
+    protected LexicalUnitImpl compute(LexicalUnitImpl param) {
+        param = (LexicalUnitImpl) DeepCopy.copy(param);
+        param.setFloatValue(Math.abs(param.getFloatValue()));
+        return param;
     }
 
 }

@@ -1,0 +1,8 @@
+$colorRgbaLeft: 240, 45, 12, 0.9;
+$colorRgbaRight: 115, 22, 6, 1;
+.query-bar-color {
+        background: -webkit-linear-gradient(left, rgba($colorRgbaLeft), rgba($colorRgbaRight)); /* For Safari */
+	background: -o-linear-gradient(right, rgba($colorRgbaLeft), rgba($colorRgbaRight)); /* For Opera 11.1 to 12.0 */
+	background: -moz-linear-gradient(right, rgba($colorRgbaLeft), rgba($colorRgbaRight)); /* For Firefox 3.6 to 15 */
+	background: linear-gradient(to right, rgba($colorRgbaLeft), rgba($colorRgbaRight)); /* Standard syntax (must be last) */
+}

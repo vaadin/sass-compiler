@@ -16,25 +16,20 @@
 package com.vaadin.sass.internal.parser.function;
 
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
-import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
+import com.vaadin.sass.internal.util.DeepCopy;
 
-/**
- * 
- * @author Vaadin Ltd
- */
-public class CeilFunctionGenerator implements SCSSFunctionGenerator {
+public class CeilFunctionGenerator extends
+        AbstractSingleParameterFunctionGenerator {
 
-    @Override
-    public String getFunctionName() {
-        return "ceil";
+    public CeilFunctionGenerator() {
+        super("ceil");
     }
 
     @Override
-    public String printState(LexicalUnitImpl function,
-            BuildStringStrategy strategy) {
-        LexicalUnitImpl firstParam = function.getParameters();
-        firstParam.setFloatValue((float) Math.ceil(firstParam.getFloatValue()));
-        return strategy.build(firstParam);
+    protected LexicalUnitImpl compute(LexicalUnitImpl param) {
+        param = (LexicalUnitImpl) DeepCopy.copy(param);
+        param.setFloatValue((float) Math.ceil(param.getFloatValue()));
+        return param;
     }
 
 }

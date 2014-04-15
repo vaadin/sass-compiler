@@ -43,6 +43,7 @@ import com.vaadin.sass.internal.parser.function.DarkenFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.DefaultFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.FloorFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.LightenFunctionGenerator;
+import com.vaadin.sass.internal.parser.function.PercentageFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.RoundFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.SCSSFunctionGenerator;
 import com.vaadin.sass.internal.tree.Node;
@@ -61,9 +62,6 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         SassListItem, Serializable {
     private static final long serialVersionUID = -6649833716809789399L;
 
-    private static int PRECISION = 100000;
-    private static int PERC_PRECISION_FACTOR = 100 * PRECISION;
-
     LexicalUnitImpl prev;
     LexicalUnitImpl next;
 
@@ -77,7 +75,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     String sdimension;
     String s;
     String fname;
-    LexicalUnitImpl params;
+    SassList params;
 
     LexicalUnitImpl(short type, int line, int column, LexicalUnitImpl p) {
         if (p != null) {
@@ -111,7 +109,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     }
 
     LexicalUnitImpl(short type, int line, int column, LexicalUnitImpl previous,
-            String fname, LexicalUnitImpl params) {
+            String fname, SassList params) {
         this(type, line, column, previous);
         this.fname = fname;
         this.params = params;
@@ -152,6 +150,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         return prev;
     }
 
+    @Deprecated
     public void setPrevLexicalUnit(LexicalUnitImpl n) {
         prev = n;
     }
@@ -161,7 +160,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         return i;
     }
 
-    void setIntegerValue(int i) {
+    public void setIntegerValue(int i) {
         this.i = i;
         f = i;
     }
@@ -253,12 +252,19 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
 
     @Override
     public LexicalUnitImpl getParameters() {
+        // use getParameterList() instead
+        return null;
+    }
+
+    public SassList getParameterList() {
         return params;
     }
 
     @Override
     public LexicalUnitImpl getSubValues() {
-        return params;
+        // should not be used, this method is only here because of an
+        // implemented interface
+        return null;
     }
 
     /**
@@ -371,7 +377,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         prev = deepCopyAnother.getPreviousLexicalUnit();
         dimension = deepCopyAnother.getDimension();
         sdimension = deepCopyAnother.getSdimension();
-        params = deepCopyAnother.getParameters();
+        params = deepCopyAnother.getParameterList();
 
         LexicalUnitImpl finalNextInAnother = deepCopyAnother;
         while (finalNextInAnother.getNextLexicalUnit() != null) {
@@ -382,7 +388,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         next = deepCopyAnother.next;
     }
 
-    public void setParameters(LexicalUnitImpl params) {
+    public void setParameterList(SassList params) {
         this.params = params;
     }
 
@@ -569,33 +575,35 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     }
 
     static LexicalUnitImpl createCounter(int line, int column,
-            LexicalUnitImpl previous, LexicalUnit params) {
+            LexicalUnitImpl previous, SassList params) {
         return new LexicalUnitImpl(SAC_COUNTER_FUNCTION, line, column,
-                previous, "counter", (LexicalUnitImpl) params);
+                previous, "counter", params);
     }
 
     public static LexicalUnitImpl createCounters(int line, int column,
-            LexicalUnitImpl previous, LexicalUnit params) {
+            LexicalUnitImpl previous, SassList params) {
         return new LexicalUnitImpl(SAC_COUNTERS_FUNCTION, line, column,
-                previous, "counters", (LexicalUnitImpl) params);
+                previous, "counters", params);
     }
 
     public static LexicalUnitImpl createRGBColor(int line, int column,
-            LexicalUnitImpl previous, LexicalUnit params) {
+            LexicalUnitImpl previous, SassList params) {
         return new LexicalUnitImpl(SAC_RGBCOLOR, line, column, previous, "rgb",
-                (LexicalUnitImpl) params);
+                params);
     }
 
     public static LexicalUnitImpl createRect(int line, int column,
-            LexicalUnitImpl previous, LexicalUnit params) {
+            LexicalUnitImpl previous, SassList params) {
         return new LexicalUnitImpl(SAC_RECT_FUNCTION, line, column, previous,
-                "rect", (LexicalUnitImpl) params);
+                "rect", params);
     }
 
     public static LexicalUnitImpl createFunction(int line, int column,
-            LexicalUnitImpl previous, String fname, LexicalUnit params) {
+            LexicalUnitImpl previous, String fname, SassList params) {
+        // TODO: this copy is only needed for ColorUtil.adjust.
+        params = (SassList) DeepCopy.copy((Object) params);
         return new LexicalUnitImpl(SAC_FUNCTION, line, column, previous, fname,
-                (LexicalUnitImpl) params);
+                params);
     }
 
     public static LexicalUnitImpl createUnicodeRange(int line, int column,
@@ -691,8 +699,8 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         unit.setFloatValue(replaceWith.getFloatValue());
         unit.setFunctionName(replaceWith.getFunctionName());
 
-        if (replaceWith.getParameters() != null) {
-            unit.setParameters(replaceWith.getParameters());
+        if (replaceWith.getParameterList() != null) {
+            unit.setParameterList(replaceWith.getParameterList());
         }
 
     }
@@ -715,17 +723,10 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
             VariableNode node) {
         SassListItem replacement = lexUnit;
         String interpolation = "#{$" + node.getName() + "}";
-        if (lexUnit.getParameters() != null) {
-            LexicalUnitImpl params = lexUnit.getParameters();
-            SassListItem newParams = replaceVariable(params, node);
-            if (!(newParams instanceof LexicalUnitImpl)) {
-                throw new ParseException(
-                        "Expected a single value for a variable, actual value was a list. Variable: "
-                                + params.toString() + ". Value: "
-                                + newParams.toString(), params);
-            } else {
-                lexUnit.setParameters((LexicalUnitImpl) newParams);
-            }
+        SassList params = lexUnit.getParameterList();
+        if (params != null) {
+            SassList newParams = params.replaceVariable(node);
+            lexUnit.setParameterList(newParams);
         }
         String stringValue = lexUnit.getStringValue();
         if (lexUnit.getLexicalUnitType() == LexicalUnitImpl.SCSS_VARIABLE
@@ -788,43 +789,6 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         list.add(new RoundFunctionGenerator());
         list.add(new PercentageFunctionGenerator());
         return list;
-    }
-
-    private static class PercentageFunctionGenerator implements
-            SCSSFunctionGenerator {
-
-        @Override
-        public String getFunctionName() {
-            return "percentage";
-        }
-
-        @Override
-        public String printState(LexicalUnitImpl function,
-                BuildStringStrategy strategy) {
-            StringBuilder builder = new StringBuilder();
-            LexicalUnitImpl firstParam = function.getParameters();
-            float value = firstParam.getFloatValue();
-            value *= PERC_PRECISION_FACTOR;
-            int intValue = Math.round(value);
-            value = ((float) intValue) / PRECISION;
-
-            int resultIntValue = (int) value;
-
-            firstParam.type = SAC_PERCENTAGE;
-
-            if (intValue == resultIntValue * PRECISION) {
-                builder.append(resultIntValue);
-                firstParam.setIntegerValue(resultIntValue);
-            } else {
-                builder.append(value);
-                firstParam.setFloatValue(value);
-            }
-
-            firstParam.setStringValue(builder.append('%').toString());
-
-            return strategy.build(firstParam);
-        }
-
     }
 
     private static final Map<String, SCSSFunctionGenerator> SERIALIZERS = new HashMap<String, SCSSFunctionGenerator>();
@@ -941,7 +905,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
                 text = "@@TODO";
                 break;
             case LexicalUnit.SAC_SUB_EXPRESSION:
-                text = strategy.build(getSubValues());
+                text = strategy.build(getParameterList());
                 break;
             default:
                 text = "@unknown";
