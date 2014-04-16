@@ -687,8 +687,8 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
             LexicalUnitImpl replaceWith) {
         unit.setLexicalUnitType(replaceWith.getLexicalUnitType());
         unit.setStringValue(replaceWith.getStringValue());
-        unit.setFloatValue(replaceWith.getFloatValue());
         unit.setIntegerValue(replaceWith.getIntegerValue());
+        unit.setFloatValue(replaceWith.getFloatValue());
         unit.setFunctionName(replaceWith.getFunctionName());
 
         if (replaceWith.getParameters() != null) {
