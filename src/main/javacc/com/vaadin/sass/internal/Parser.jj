@@ -2651,14 +2651,10 @@ LexicalUnitImpl function(char operator, LexicalUnitImpl prev) :
     n=<FUNCTION> ( <S> )*  
     {
         String fname = convertIdent(n.image);
-        if("alpha(".equals(fname)){
+        if("alpha(".equals(fname) || "expression(".equals(fname)){
             String body = skipStatementUntilSemiColon();
             return LexicalUnitImpl.createIdent(n.beginLine, n.beginColumn,
-                 null, "alpha("+body);
-        }else if("expression(".equals(fname)){
-            String body = skipStatementUntilSemiColon();
-            return LexicalUnitImpl.createIdent(n.beginLine, n.beginColumn,
-                 null, "expression("+body);
+                 null, fname+body);
         }
     }
     ( params=expressionList() {
@@ -2673,134 +2669,10 @@ LexicalUnitImpl function(char operator, LexicalUnitImpl prev) :
         if (operator != ' ') {
         throw new CSSParseException("invalid operator before a function.", 
                     getLocator());
-    }
-    String f = convertIdent(n.image);
-    boolean loop = true;
-    if ("rgb(".equals(f)) {
-        // this is a RGB declaration (e.g. rgb(255, 50%, 0) )
-        int i = 0;
-        boolean hasVariables = false;
-        boolean ok = true;
-        LexicalUnitImpl badLui = null;
-        while (ok && i < 3 && i < params.size()) {
-            SassListItem item = params.get(i);
-            if (!(item instanceof LexicalUnitImpl)) {
-                throw new ParseException("Only simple values are allowed as rgb() parameters: " + params);
-            }
-            LexicalUnitImpl lui = (LexicalUnitImpl) item;
-            if (lui.getLexicalUnitType() == SCSSLexicalUnit.SCSS_VARIABLE) {
-                        hasVariables = true;
-            } else if ((lui.getLexicalUnitType() != LexicalUnit.SAC_INTEGER)
-                && (lui.getLexicalUnitType() != LexicalUnit.SAC_PERCENTAGE)) {
-                ok = false;
-                badLui = lui;
-            }
-            i ++;
-        }
-        if (params.size() == 3 && ok) {
-            if (hasVariables) {
-                return LexicalUnitImpl.createFunction(n.beginLine,
-                        n.beginColumn, prev,
-                        f.substring(0, f.length() - 1), params);
-            } else {
-                return LexicalUnitImpl.createRGBColor(n.beginLine,
-                        n.beginColumn,
-                        prev, params);
-            }
-        } else {
-            if (errorHandler != null) {
-                String errorText;
-                Locator loc;
-                if (i < 3) {
-                    if (badLui == null) {
-                        loc = new LocatorImpl(this, n.beginLine,
-                                  n.beginColumn-1);
-                        errorText = "not enough parameters: " 
-                            + params.toString();
-                    } else {
-                        loc = new LocatorImpl(this, badLui.getLineNumber(),
-                                  badLui.getColumnNumber());
-                        errorText = "invalid parameter: "
-                            + badLui.toString();
-                    }
-                } else {
-                    loc = new LocatorImpl(this, n.beginLine, n.beginColumn);
-                    errorText = "too many parameters: "
-                        + params.toString();
-                }
-                errorHandler.error(new CSSParseException(errorText, loc));
-            }
-
-            throw new JumpException();
-        }
-    } else if ("counter".equals(f)) {
-        if (params.size() == 1 || params.size() == 2) {
-            boolean ok = true;
-            if (!(params.get(0) instanceof LexicalUnitImpl) || ((LexicalUnitImpl) params.get(0)).getLexicalUnitType() != LexicalUnit.SAC_IDENT) {
-                ok = false;
-            }
-            if (params.size() >= 2){
-                if(!(params.get(1) instanceof LexicalUnitImpl) || ((LexicalUnitImpl) params.get(1)).getLexicalUnitType() != LexicalUnit.SAC_IDENT) {
-                    ok = false;
-                }
-            }
-            if (ok) {
-                 return LexicalUnitImpl.createCounter(n.beginLine, n.beginColumn,
-                             prev, params);
-            }
-        }
-    } else if ("counters(".equals(f)) {
-        if (params.size() == 2 || params.size() == 3) {
-            boolean ok = true;
-            if (!(params.get(0) instanceof LexicalUnitImpl) || ((LexicalUnitImpl) params.get(0)).getLexicalUnitType() != LexicalUnit.SAC_IDENT) {
-                ok = false;
-            }
-            if (!(params.get(1) instanceof LexicalUnitImpl) || ((LexicalUnitImpl) params.get(1)).getLexicalUnitType() != LexicalUnit.SAC_STRING_VALUE) {
-                ok = false;
-            }
-            if (params.size() >= 3){
-                if(!(params.get(2) instanceof LexicalUnitImpl) || ((LexicalUnitImpl) params.get(2)).getLexicalUnitType() != LexicalUnit.SAC_IDENT) {
-                    ok = false;
-                }
-            }
-            if (ok) {
-                return LexicalUnitImpl.createCounters(n.beginLine, n.beginColumn,
-                                       prev, params);
-            }
-        }
-    } else if ("attr(".equals(f)) {
-        if (params.size() == 1 && params.get(0) instanceof LexicalUnitImpl && ((LexicalUnitImpl) params.get(0)).getLexicalUnitType() == LexicalUnit.SAC_IDENT) {
-            return LexicalUnitImpl.createAttr(n.beginLine, n.beginColumn, prev, ((LexicalUnitImpl) params.get(0)).getStringValue());
-        }
-    } else if ("rect(".equals(f)) {
-        int i = 0;
-        boolean ok = true;
-        while (ok && i < 4 && i < params.size()) {
-            SassListItem item = params.get(i);
-            if (!(item instanceof LexicalUnitImpl)) {
-                throw new ParseException("Only simple values are allowed as rect() parameters: " + params);
-            }
-            LexicalUnitImpl lui = (LexicalUnitImpl) item;
-            short luiType = lui.getLexicalUnitType();
-            if (luiType == SCSSLexicalUnit.SAC_INTEGER && lui.getIntegerValue() != 0) {
-                ok = false;
-            } else if (luiType == SCSSLexicalUnit.SAC_IDENT && !"auto".equals(lui.getStringValue())) {
-                ok = false;
-            } else if ((luiType != LexicalUnit.SAC_EM) && (luiType != LexicalUnit.SAC_EX) && (luiType != LexicalUnit.SAC_PIXEL) && (luiType != LexicalUnit.SAC_CENTIMETER) &&
-                       (luiType != LexicalUnit.SAC_MILLIMETER) && (luiType != LexicalUnit.SAC_INCH) && (luiType != LexicalUnit.SAC_POINT) && (luiType != LexicalUnit.SAC_PICA) ) {
-                ok = false;
-            }
-            i ++;
-        }
-        if (params.size() == 4 && ok) {
-            return LexicalUnitImpl.createRect(n.beginLine, n.beginColumn,
-                          prev, params);
-        }
-    } 
-    return LexicalUnitImpl.createFunction(n.beginLine, n.beginColumn, prev, 
-                          f.substring(0, 
-                            f.length() -1),
-                          params);
+        }            
+        String f = convertIdent(n.image);
+        // f contains the opening parenthesis of the function call
+        return LexicalUnitImpl.createFunction(n.beginLine, n.beginColumn, prev, f.substring(0, f.length() -1), params);
     }
 }
 

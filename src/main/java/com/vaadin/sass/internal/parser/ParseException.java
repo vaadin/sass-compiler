@@ -81,6 +81,10 @@ public class ParseException extends CSSException {
 
     }
 
+    public ParseException(String message, int line, int column) {
+        super(message + " in line " + line + ", column " + column);
+    }
+
     /**
      * This variable determines which constructor was used to create this object
      * and thereby affects the semantics of the "getMessage" method (see below).

@@ -600,10 +600,130 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
 
     public static LexicalUnitImpl createFunction(int line, int column,
             LexicalUnitImpl previous, String fname, SassList params) {
+        if ("rgb".equals(fname)) {
+            // this is a RGB declaration (e.g. rgb(255, 50%, 0) )
+            if (params.size() != 3) {
+                throw new ParseException(
+                        "The function rgb() requires exactly 3 parameters",
+                        line, column);
+            }
+            for (int i = 0; i < 3; ++i) {
+                SassListItem item = params.get(i);
+                if (checkLexicalUnitType(item, SCSS_VARIABLE)) {
+                    // TODO: this copy is only needed for ColorUtil.adjust.
+                    SassList paramsCopy = (SassList) DeepCopy
+                            .copy((Object) params);
+                    return new LexicalUnitImpl(SAC_FUNCTION, line, column,
+                            previous, fname, paramsCopy);
+                }
+
+                if (!checkLexicalUnitType(item, SAC_INTEGER, SAC_PERCENTAGE)) {
+                    throw new ParseException(
+                            "Invalid parameter to the function rgb(): "
+                                    + item.toString(), line, column);
+                }
+            }
+            return LexicalUnitImpl.createRGBColor(line, column, previous,
+                    params);
+        } else if ("counter".equals(fname)) {
+            if (params.size() == 1 || params.size() == 2) {
+                boolean ok = true;
+                if (!checkLexicalUnitType(params.get(0), LexicalUnit.SAC_IDENT)) {
+                    ok = false;
+                }
+                if (params.size() >= 2) {
+                    if (!checkLexicalUnitType(params.get(1),
+                            LexicalUnit.SAC_IDENT)) {
+                        ok = false;
+                    }
+                }
+                if (ok) {
+                    return LexicalUnitImpl.createCounter(line, column,
+                            previous, params);
+                }
+            }
+        } else if ("counters".equals(fname)) {
+            if (params.size() == 2 || params.size() == 3) {
+                boolean ok = true;
+                if (!checkLexicalUnitType(params.get(0), LexicalUnit.SAC_IDENT)) {
+                    ok = false;
+                }
+                if (params.size() >= 2) {
+                    if (!checkLexicalUnitType(params.get(1),
+                            LexicalUnit.SAC_STRING_VALUE)) {
+                        ok = false;
+                    }
+                }
+                if (params.size() >= 3) {
+                    if (!checkLexicalUnitType(params.get(2),
+                            LexicalUnit.SAC_IDENT)) {
+                        ok = false;
+                    }
+                }
+                if (ok) {
+                    return LexicalUnitImpl.createCounters(line, column,
+                            previous, params);
+                }
+            }
+        } else if ("attr".equals(fname)) {
+            if (params.size() == 1
+                    && checkLexicalUnitType(params.get(0),
+                            LexicalUnit.SAC_IDENT)) {
+                return LexicalUnitImpl.createAttr(line, column, previous,
+                        ((LexicalUnitImpl) params.get(0)).getStringValue());
+            }
+        } else if ("rect".equals(fname)) {
+            int i = 0;
+            boolean ok = true;
+            while (ok && i < 4 && i < params.size()) {
+                SassListItem item = params.get(i);
+                if (!(item instanceof LexicalUnitImpl)) {
+                    throw new ParseException(
+                            "Only simple values are allowed as rect() parameters: "
+                                    + params);
+                }
+                LexicalUnitImpl lui = (LexicalUnitImpl) item;
+                short luiType = lui.getLexicalUnitType();
+                if (luiType == SCSSLexicalUnit.SAC_INTEGER
+                        && lui.getIntegerValue() != 0) {
+                    ok = false;
+                } else if (luiType == SCSSLexicalUnit.SAC_IDENT
+                        && !"auto".equals(lui.getStringValue())) {
+                    ok = false;
+                } else if ((luiType != LexicalUnit.SAC_EM)
+                        && (luiType != LexicalUnit.SAC_EX)
+                        && (luiType != LexicalUnit.SAC_PIXEL)
+                        && (luiType != LexicalUnit.SAC_CENTIMETER)
+                        && (luiType != LexicalUnit.SAC_MILLIMETER)
+                        && (luiType != LexicalUnit.SAC_INCH)
+                        && (luiType != LexicalUnit.SAC_POINT)
+                        && (luiType != LexicalUnit.SAC_PICA)) {
+                    ok = false;
+                }
+                i++;
+            }
+            if (params.size() == 4 && ok) {
+                return LexicalUnitImpl.createRect(line, column, previous,
+                        params);
+            }
+        }
         // TODO: this copy is only needed for ColorUtil.adjust.
-        params = (SassList) DeepCopy.copy((Object) params);
+        SassList paramsCopy = (SassList) DeepCopy.copy((Object) params);
         return new LexicalUnitImpl(SAC_FUNCTION, line, column, previous, fname,
-                params);
+                paramsCopy);
+    }
+
+    private static boolean checkLexicalUnitType(SassListItem item,
+            short... lexicalUnitTypes) {
+        if (!(item instanceof LexicalUnitImpl)) {
+            return false;
+        }
+        for (short s : lexicalUnitTypes) {
+            if (((LexicalUnitImpl) item).getLexicalUnitType() == s) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static LexicalUnitImpl createUnicodeRange(int line, int column,
