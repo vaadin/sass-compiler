@@ -43,14 +43,19 @@ public class SCSSErrorHandler implements ErrorHandler {
 
     @Override
     public void warning(CSSParseException arg0) throws CSSException {
-        log("Warning when parsing file \n" + arg0.getURI() + " on line "
+        warn("Warning when parsing file \n" + arg0.getURI() + " on line "
                 + arg0.getLineNumber() + ", column " + arg0.getColumnNumber());
-        log(arg0.getMessage() + "\n");
+        warn(arg0.getMessage() + "\n");
     }
 
     private void log(String msg) {
         Logger.getLogger(SCSSDocumentHandlerImpl.class.getName()).log(
                 Level.SEVERE, msg);
+    }
+
+    private void warn(String msg) {
+        Logger.getLogger(SCSSDocumentHandlerImpl.class.getName()).log(
+                Level.WARNING, msg);
     }
 
 }
