@@ -72,6 +72,8 @@ public abstract class ListModifyNode extends Node implements IVariableNode {
     public void replaceVariables(ArrayList<VariableNode> variables) {
         list = list.replaceVariables(variables);
         modify = modify.replaceVariables(variables);
+        list = list.replaceFunctions();
+        modify = modify.replaceFunctions();
     }
 
     @Override

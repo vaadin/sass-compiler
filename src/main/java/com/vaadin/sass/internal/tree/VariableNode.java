@@ -74,6 +74,7 @@ public class VariableNode extends Node implements IVariableNode {
     @Override
     public void replaceVariables(ArrayList<VariableNode> variables) {
         expr = expr.replaceVariables(variables);
+        expr = expr.replaceFunctions();
     }
 
     @Override

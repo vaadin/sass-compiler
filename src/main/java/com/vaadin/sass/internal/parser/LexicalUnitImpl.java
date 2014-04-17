@@ -610,11 +610,8 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
             for (int i = 0; i < 3; ++i) {
                 SassListItem item = params.get(i);
                 if (checkLexicalUnitType(item, SCSS_VARIABLE)) {
-                    // TODO: this copy is only needed for ColorUtil.adjust.
-                    SassList paramsCopy = (SassList) DeepCopy
-                            .copy((Object) params);
                     return new LexicalUnitImpl(SAC_FUNCTION, line, column,
-                            previous, fname, paramsCopy);
+                            previous, fname, params);
                 }
 
                 if (!checkLexicalUnitType(item, SAC_INTEGER, SAC_PERCENTAGE)) {
@@ -707,10 +704,8 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
                         params);
             }
         }
-        // TODO: this copy is only needed for ColorUtil.adjust.
-        SassList paramsCopy = (SassList) DeepCopy.copy((Object) params);
         return new LexicalUnitImpl(SAC_FUNCTION, line, column, previous, fname,
-                paramsCopy);
+                params);
     }
 
     private static boolean checkLexicalUnitType(SassListItem item,
@@ -890,6 +885,17 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         }
     }
 
+    @Override
+    public SassListItem replaceFunctions() {
+        if (params != null) {
+            LexicalUnitImpl copy = createFunction(line, column, prev, fname,
+                    params.replaceFunctions());
+            SCSSFunctionGenerator generator = getGenerator(getFunctionName());
+            return generator.compute(copy);
+        }
+        return this;
+    }
+
     private static SCSSFunctionGenerator getGenerator(String funcName) {
         SCSSFunctionGenerator serializer = SERIALIZERS.get(funcName);
         if (serializer == null) {
@@ -1009,7 +1015,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
             case LexicalUnit.SAC_COUNTERS_FUNCTION:
             case LexicalUnit.SAC_RECT_FUNCTION:
             case LexicalUnit.SAC_FUNCTION:
-                text = buildFunctionString(strategy);
+                text = fname + "(" + params.buildString(strategy) + ")";
                 break;
             case LexicalUnit.SAC_IDENT:
                 text = getStringValue();
@@ -1040,12 +1046,6 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         } else {
             return text;
         }
-    }
-
-    private String buildFunctionString(BuildStringStrategy strategy) {
-        SCSSFunctionGenerator generator = getGenerator(getFunctionName());
-        SassListItem value = generator.compute(this);
-        return strategy.build(value);
     }
 
     static {

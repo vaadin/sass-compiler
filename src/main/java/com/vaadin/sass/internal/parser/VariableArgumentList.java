@@ -17,6 +17,7 @@ package com.vaadin.sass.internal.parser;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 
 import com.vaadin.sass.internal.tree.VariableNode;
 
@@ -39,6 +40,32 @@ public class VariableArgumentList extends SassList implements Serializable {
     public void addNamed(String name, SassListItem sassListItem) {
         VariableNode node = new VariableNode(name, sassListItem, false);
         namedVariables.add(node);
+    }
+
+    @Override
+    public VariableArgumentList replaceVariables(
+            Collection<VariableNode> variables) {
+        VariableArgumentList result = new VariableArgumentList(getSeparator());
+        for (SassListItem item : this) { // Handle the ordinary SassList items
+            result.add(item.replaceVariables(variables));
+        }
+        for (VariableNode node : namedVariables) {
+            result.addNamed(node.getName(),
+                    node.getExpr().replaceVariables(variables));
+        }
+        return result;
+    }
+
+    @Override
+    public VariableArgumentList replaceFunctions() { // handle the VariableNodes
+        VariableArgumentList result = new VariableArgumentList(getSeparator());
+        for (SassListItem item : this) {
+            result.add(item.replaceFunctions());
+        }
+        for (VariableNode node : namedVariables) {
+            result.addNamed(node.getName(), node.getExpr().replaceFunctions());
+        }
+        return result;
     }
 
 }

@@ -93,6 +93,7 @@ public class RuleNode extends Node implements IVariableNode {
             }
         }
         value = value.replaceVariables(variables);
+        value = value.replaceFunctions();
     }
 
     @Override

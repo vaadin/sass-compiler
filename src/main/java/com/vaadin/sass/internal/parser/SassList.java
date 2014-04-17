@@ -203,6 +203,15 @@ public class SassList extends ArrayList<SassListItem> implements SassListItem,
     }
 
     @Override
+    public SassList replaceFunctions() {
+        SassList copy = new SassList(getSeparator());
+        for (SassListItem item : this) {
+            copy.add(item.replaceFunctions());
+        }
+        return copy;
+    }
+
+    @Override
     public String buildString(BuildStringStrategy strategy) {
         String result = "";
         for (int i = 0; i < size(); i++) {

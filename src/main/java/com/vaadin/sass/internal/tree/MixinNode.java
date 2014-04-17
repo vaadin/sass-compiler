@@ -92,7 +92,9 @@ public class MixinNode extends Node implements IVariableNode {
     @Override
     public void replaceVariables(ArrayList<VariableNode> variables) {
         for (final VariableNode arg : arglist) {
-            arg.setExpr(arg.getExpr().replaceVariables(variables));
+            SassListItem expr = arg.getExpr().replaceVariables(variables);
+            expr = expr.replaceFunctions();
+            arg.setExpr(expr);
         }
         for (final VariableNode var : variables) {
             if (name.startsWith("$")) {

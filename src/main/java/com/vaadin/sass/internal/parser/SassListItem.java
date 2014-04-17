@@ -59,6 +59,16 @@ public interface SassListItem extends Iterable<SassListItem> {
     public SassListItem evaluateArithmeticExpressions();
 
     /**
+     * Returns a new item that is the result of evaluating all functions in this
+     * item. Does not modify this item. If the item does not change as a result
+     * of evaluating functions, an implementation can return the item itself.
+     * Otherwise a new item should be returned. For a list with both changed and
+     * unchanged items, the unchanged items can be references to the same
+     * objects as in the original list.
+     */
+    public SassListItem replaceFunctions();
+
+    /**
      * Returns a new item that is otherwise equal to this one but all
      * occurrences of the given variables have been replaced by the values given
      * in the VariableNodes. Does not modify this item.

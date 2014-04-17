@@ -214,9 +214,14 @@ public class ColorUtil {
 
     private static LexicalUnitImpl adjust(LexicalUnitImpl color,
             float amountByPercent, ColorOperation op, LexicalUnitImpl pre) {
+
         if (color.getLexicalUnitType() == LexicalUnit.SAC_FUNCTION) {
             SassList funcParam = color.getParameterList();
             if ("hsl".equals(color.getFunctionName())) {
+                SassList newParams = new SassList(funcParam.getSeparator());
+                newParams.add(funcParam.get(0));
+                newParams.add(funcParam.get(1));
+
                 LexicalUnit lightness = funcParam.get(2).getContainedValue();
                 float newValue = 0f;
                 if (op == ColorOperation.Darken) {
@@ -226,10 +231,14 @@ public class ColorUtil {
                     newValue = lightness.getFloatValue() + amountByPercent;
                     newValue = newValue > 100 ? 100 : newValue;
                 }
-                ((LexicalUnitImpl) lightness).setFloatValue(newValue);
+                LexicalUnitImpl newLightness = (LexicalUnitImpl) DeepCopy
+                        .copy(lightness);
+                newLightness.setFloatValue(newValue);
+                newParams.add(newLightness);
+
                 return LexicalUnitImpl.createFunction(color.getLineNumber(),
                         color.getColumnNumber(), pre, color.getFunctionName(),
-                        funcParam);
+                        newParams);
             }
 
         } else if (color.getLexicalUnitType() == LexicalUnit.SAC_IDENT) {
