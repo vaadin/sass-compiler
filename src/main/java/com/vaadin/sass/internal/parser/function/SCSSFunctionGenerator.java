@@ -16,7 +16,7 @@
 package com.vaadin.sass.internal.parser.function;
 
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
-import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
+import com.vaadin.sass.internal.parser.SassListItem;
 
 /**
  * Generator class is used to handle SCSS functions. Generator is applied to the
@@ -40,15 +40,12 @@ public interface SCSSFunctionGenerator {
     String getFunctionName();
 
     /**
-     * Prints out the current state of the function. State is SCSS content of
-     * the function before compilation and compiled CSS content after
-     * compilation.
+     * Computes the value of the function. The parameters should be evaluated
+     * before this method is called.
      * 
      * @param function
      *            Function lexical unit to print its state
-     * @param strategy
-     *            Strategy to build string from nodes
-     * @return String state representation of the function
+     * @return SassListItem the value of the function
      */
-    String printState(LexicalUnitImpl function, BuildStringStrategy strategy);
+    SassListItem compute(LexicalUnitImpl function);
 }

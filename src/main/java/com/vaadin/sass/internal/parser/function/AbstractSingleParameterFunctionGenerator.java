@@ -18,7 +18,7 @@ package com.vaadin.sass.internal.parser.function;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassList;
-import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
+import com.vaadin.sass.internal.parser.SassListItem;
 
 /**
  * AbstractSingleParameterFunctionGenerator is used as a base class for
@@ -43,15 +43,14 @@ public abstract class AbstractSingleParameterFunctionGenerator implements
     }
 
     @Override
-    public String printState(LexicalUnitImpl function,
-            BuildStringStrategy strategy) {
+    public SassListItem compute(LexicalUnitImpl function) {
         SassList params = function.getParameterList();
         if (params.size() != 1 || !(params.get(0) instanceof LexicalUnitImpl)) {
             throw new ParseException("Function " + getFunctionName()
                     + " must have exactly one single value parameter", function);
         }
         LexicalUnitImpl firstParam = (LexicalUnitImpl) params.get(0);
-        return strategy.build(compute(firstParam));
+        return computeForParam(firstParam);
     }
 
     /**
@@ -63,6 +62,6 @@ public abstract class AbstractSingleParameterFunctionGenerator implements
      * @param firstParam
      * @return
      */
-    protected abstract LexicalUnitImpl compute(LexicalUnitImpl firstParam);
+    protected abstract LexicalUnitImpl computeForParam(LexicalUnitImpl firstParam);
 
 }

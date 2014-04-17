@@ -34,7 +34,7 @@ public class PercentageFunctionGenerator extends
     }
 
     @Override
-    protected LexicalUnitImpl compute(LexicalUnitImpl firstParam) {
+    protected LexicalUnitImpl computeForParam(LexicalUnitImpl firstParam) {
         StringBuilder builder = new StringBuilder();
         float value = firstParam.getFloatValue();
         value *= PERC_PRECISION_FACTOR;

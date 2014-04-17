@@ -26,7 +26,7 @@ public class CeilFunctionGenerator extends
     }
 
     @Override
-    protected LexicalUnitImpl compute(LexicalUnitImpl param) {
+    protected LexicalUnitImpl computeForParam(LexicalUnitImpl param) {
         param = (LexicalUnitImpl) DeepCopy.copy(param);
         param.setFloatValue((float) Math.ceil(param.getFloatValue()));
         return param;

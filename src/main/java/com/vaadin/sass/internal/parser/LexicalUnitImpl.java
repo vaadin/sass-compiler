@@ -1044,7 +1044,8 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
 
     private String buildFunctionString(BuildStringStrategy strategy) {
         SCSSFunctionGenerator generator = getGenerator(getFunctionName());
-        return generator.printState(this, strategy);
+        SassListItem value = generator.compute(this);
+        return strategy.build(value);
     }
 
     static {

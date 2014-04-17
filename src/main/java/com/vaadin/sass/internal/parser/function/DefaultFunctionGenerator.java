@@ -16,6 +16,8 @@
 package com.vaadin.sass.internal.parser.function;
 
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
+import com.vaadin.sass.internal.parser.SassListItem;
+import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
 
 public class DefaultFunctionGenerator implements SCSSFunctionGenerator {
@@ -26,11 +28,10 @@ public class DefaultFunctionGenerator implements SCSSFunctionGenerator {
     }
 
     @Override
-    public String printState(LexicalUnitImpl function,
-            BuildStringStrategy strategy) {
-        StringBuilder builder = new StringBuilder(function.getFunctionName());
-        return builder.append('(').append(printParameters(function, strategy))
-                .append(')').toString();
+    public SassListItem compute(LexicalUnitImpl function) {
+        // TODO use custom functions
+        return LexicalUnitImpl.createIdent(function.getFunctionName() + "("
+                + printParameters(function, Node.PRINT_STRATEGY) + ")");
     }
 
     private String printParameters(LexicalUnitImpl function,

@@ -26,7 +26,7 @@ public class FloorFunctionGenerator extends
     }
 
     @Override
-    protected LexicalUnitImpl compute(LexicalUnitImpl param) {
+    protected LexicalUnitImpl computeForParam(LexicalUnitImpl param) {
         param = (LexicalUnitImpl) DeepCopy.copy(param);
         param.setFloatValue((float) Math.floor(param.getFloatValue()));
         return param;
