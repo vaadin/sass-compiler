@@ -38,6 +38,7 @@ import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
@@ -1526,26 +1527,36 @@ void variable() :
 SassList expressionList():
 {
     // Empty lists and parenthesized lists are not supported yet.
-    SassList primaryList = new SassList(SassList.Separator.COMMA);
-    primaryList.setSourcePosition(token.beginLine, token.beginColumn);
+    List<SassListItem> primaryList = new ArrayList<SassListItem>();
+    int line = token.beginLine;
+    int column = token.beginColumn;
     SassList subList;
 }
 {
     subList = expressionSubList(){ primaryList.add(subList); }
     ( <COMMA> (<S>)* subList = expressionSubList(){ primaryList.add(subList); })*
-    { return primaryList; }
+    {
+        SassList result = new SassList(SassList.Separator.COMMA, primaryList);
+        result.setSourcePosition(line, column);
+        return result;
+    }
 }
 
 SassList expressionSubList():
 {
     // Empty lists and parenthesized lists are not supported yet.
     LexicalUnitImpl unit;
-    SassList list = new SassList(SassList.Separator.SPACE);
-    list.setSourcePosition(token.beginLine, token.beginColumn);
+    List<SassListItem> list = new ArrayList<SassListItem>();
+    int line = token.beginLine;
+    int column = token.beginColumn;
 }
 {
     (LOOKAHEAD(2) unit = variableListItem(){ list.add(unit); })+
-    {return list;}
+    {
+        SassList result = new SassList(SassList.Separator.SPACE, list);
+        result.setSourcePosition(line, column);
+        return result;
+    }
 }
 
 LexicalUnitImpl variableListItem():
@@ -1680,7 +1691,7 @@ void eachDirective() :
 
 SassList stringList():
 {
-    SassList strings = new SassList();
+    List<SassListItem> strings = new ArrayList<SassListItem>();
     LexicalUnitImpl unit;
     Token input;
 }
@@ -1692,7 +1703,9 @@ SassList stringList():
     (< COMMA >(< S >)* input = < IDENT > 
         { unit = LexicalUnitImpl.createIdent(input.beginLine, input.beginColumn,
                                              null, input.image); strings.add(unit); } (< S >)*)*
-    { return strings; }
+    {
+        return new SassList(SassList.Separator.COMMA, strings);
+    }
 
 }
 
@@ -1758,11 +1771,11 @@ VariableNode mixinArg() :
 {
     String name;
     Token variable = null;
-    SassList l = null;
+    List<SassListItem> l = null;
     LexicalUnitImpl unit = null;
 }
 {
-    name=variableName() (< COLON > {l = new SassList(SassList.Separator.SPACE);} (< S >)*
+    name=variableName() (< COLON > {l = new ArrayList<SassListItem>();} (< S >)*
     (
         (unit = nonVariableTerm(null){l.add(unit); })+
     )
@@ -1771,7 +1784,8 @@ VariableNode mixinArg() :
        )
     )?
     {
-        VariableNode arg = new VariableNode(name, l, false);
+        SassList value = (l == null) ? null : new SassList(SassList.Separator.SPACE, l);
+        VariableNode arg = new VariableNode(name, value, false);
         return arg;
     }
 }
@@ -1792,14 +1806,14 @@ VariableNode argValueListItem():
 {
     LexicalUnitImpl unit;
     String name = null;
-    SassList value = new SassList(SassList.Separator.SPACE);
+    List<SassListItem> value = new ArrayList<SassListItem>();
 }
 {
     (LOOKAHEAD(3) // the lookahead is needed because both variableName and term can match a variable
     (name = variableName() (<COLON> (< S >)*) (unit = term(null){value.add(unit); } )*)
     | (unit = term(null){ value.add(unit); } )+)
     {
-        SassListItem flattenedValue = value.flatten();
+        SassListItem flattenedValue = new SassList(SassList.Separator.SPACE, value).flatten();
         VariableNode var = new VariableNode(name, flattenedValue, false);
         return var;
     }
@@ -1985,12 +1999,12 @@ JAVACODE
 SassListItem listModifyDirectiveArgs(int nest)
 {
     String listString = listModifyDirectiveArgsAsString(nest);
-    SassList result = new SassList(SassList.Separator.COMMA);
+    List<SassListItem> result = new ArrayList<SassListItem>();
     String[] subListStrings = listString.split(",");
     for(String subListString : subListStrings){
         subListString = subListString.trim();
         String[] parts = subListString.split(" ");
-        SassList subList = new SassList(SassList.Separator.SPACE);
+        List<SassListItem> subList = new ArrayList<SassListItem>();
         for(String part : parts){
             part = part.trim();
             LexicalUnitImpl unit;
@@ -2002,9 +2016,9 @@ SassListItem listModifyDirectiveArgs(int nest)
             }
             subList.add(unit);
         }
-        result.add(subList);
+        result.add(new SassList(SassList.Separator.SPACE, subList));
     }
-    return result.flatten();
+    return new SassList(SassList.Separator.COMMA, result).flatten();
 }
 
 JAVACODE

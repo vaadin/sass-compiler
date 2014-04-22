@@ -17,7 +17,11 @@ package com.vaadin.sass.internal.parser;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
@@ -28,8 +32,7 @@ import com.vaadin.sass.internal.util.DeepCopy;
  * SassList is a list that has a specified separator character (comma or space)
  * and data items. The data items can be lists.
  */
-public class SassList extends ArrayList<SassListItem> implements SassListItem,
-        Serializable {
+public class SassList implements SassListItem, Serializable {
 
     public enum Separator {
         COMMA(", "), SPACE(" ");
@@ -51,21 +54,24 @@ public class SassList extends ArrayList<SassListItem> implements SassListItem,
 
     private Separator separator;
 
+    private final List<SassListItem> items;
+
     public SassList() {
         this(Separator.SPACE);
     }
 
-    public SassList(SassListItem containedValue) {
-        this(Separator.SPACE, containedValue);
+    public SassList(SassListItem... items) {
+        this(Separator.SPACE, items);
     }
 
-    public SassList(Separator sep) {
+    public SassList(Separator sep, SassListItem... items) {
         separator = sep;
+        this.items = Arrays.asList(items);
     }
 
-    public SassList(Separator sep, SassListItem containedValue) {
-        this(sep);
-        add(containedValue);
+    public SassList(Separator sep, List<SassListItem> items) {
+        separator = sep;
+        this.items = items;
     }
 
     @Override
@@ -141,19 +147,16 @@ public class SassList extends ArrayList<SassListItem> implements SassListItem,
      */
     @Override
     public SassListItem flatten() {
-        // Recursively flatten the elements of this list.
-        SassList copy = (SassList) DeepCopy.copy((Object) this);
-        for (int i = 0; i < copy.size(); i++) {
-            SassListItem item = copy.get(i);
-            if (item instanceof SassList) {
-                copy.set(i, ((SassList) item).flatten());
-            }
-        }
         // Flatten this list (i.e., return its contents) if possible.
-        if (copy.size() == 1) {
-            return copy.get(0);
+        if (size() == 1) {
+            return get(0).flatten();
         }
-        return copy;
+        // Recursively flatten the elements of this list.
+        List<SassListItem> list = new ArrayList<SassListItem>();
+        for (SassListItem item : this) {
+            list.add(item.flatten());
+        }
+        return new SassList(getSeparator(), list);
     }
 
     @Override
@@ -168,47 +171,33 @@ public class SassList extends ArrayList<SassListItem> implements SassListItem,
 
     @Override
     public SassList evaluateArithmeticExpressions() {
-        SassList clone = (SassList) DeepCopy.copy((Object) this);
-        for (int i = 0; i < size(); i++) {
-            SassListItem item = clone.get(i);
-            SassListItem newItem = item.evaluateArithmeticExpressions();
-            clone.set(i, newItem);
+        List<SassListItem> list = new ArrayList<SassListItem>();
+        for (SassListItem item : this) {
+            list.add(item.evaluateArithmeticExpressions());
         }
-        return clone;
+        return new SassList(getSeparator(), list);
     }
 
     @Override
     public SassList replaceVariables(Collection<VariableNode> variables) {
-        SassList copy = (SassList) DeepCopy.copy((Object) this);
-        for (VariableNode variable : variables) {
-            copy = copy.replaceVariable(variable);
-        }
-        return copy;
-    }
-
-    @Override
-    public SassList replaceVariable(VariableNode variable) {
-        replaceVariable(this, variable);
-        return this;
-    }
-
-    private void replaceVariable(SassList l, VariableNode variable) {
+        // TODO this can be removed once LUI is immutable
+        SassList copy = (SassList) DeepCopy.copy(this);
         // The actual replacing happens in LexicalUnitImpl, which also
         // implements SassListItem.
-        for (int i = 0; i < l.size(); i++) {
-            SassListItem item = l.get(i);
-            SassListItem newItem = item.replaceVariable(variable);
-            l.set(i, newItem);
+        List<SassListItem> list = new ArrayList<SassListItem>();
+        for (SassListItem item : copy) {
+            list.add(item.replaceVariables(variables));
         }
+        return new SassList(getSeparator(), list);
     }
 
     @Override
     public SassList replaceFunctions() {
-        SassList copy = new SassList(getSeparator());
+        List<SassListItem> list = new ArrayList<SassListItem>();
         for (SassListItem item : this) {
-            copy.add(item.replaceFunctions());
+            list.add(item.replaceFunctions());
         }
-        return copy;
+        return new SassList(getSeparator(), list);
     }
 
     @Override
@@ -294,29 +283,25 @@ public class SassList extends ArrayList<SassListItem> implements SassListItem,
     // single LexicalUnitImpl objects similarly to lists.
 
     @Override
-    public SassList addItem(SassListItem item) {
-        super.add(item);
-        return this;
-    }
-
-    @Override
     public SassList addAllItems(SassListItem items) {
+        ArrayList<SassListItem> values = new ArrayList<SassListItem>(this.items);
         SassList otherItems = getItemsAsList(items);
-        addAll(otherItems);
-        return this;
+        values.addAll(otherItems.items);
+        return new SassList(getSeparator(), values);
     }
 
     @Override
     public SassList removeAllItems(SassListItem items) {
+        ArrayList<SassListItem> values = new ArrayList<SassListItem>(this.items);
         SassList otherItems = getItemsAsList(items);
-        removeAll(otherItems);
-        return this;
+        values.removeAll(otherItems.items);
+        return new SassList(getSeparator(), values);
     }
 
     @Override
     public boolean containsAllItems(SassListItem items) {
         SassList otherItems = getItemsAsList(items);
-        return containsAll(otherItems);
+        return this.items.containsAll(otherItems.items);
     }
 
     private SassList getItemsAsList(SassListItem items) {
@@ -325,5 +310,20 @@ public class SassList extends ArrayList<SassListItem> implements SassListItem,
         } else {
             return new SassList(items);
         }
+    }
+
+    @Override
+    public int size() {
+        return items.size();
+    }
+
+    @Override
+    public SassListItem get(int index) {
+        return items.get(index);
+    }
+
+    @Override
+    public Iterator<SassListItem> iterator() {
+        return (Collections.unmodifiableList(items)).iterator();
     }
 }

@@ -187,20 +187,25 @@ public class ColorUtil {
 
     private static SassList createRgbParameters(int red, int green, int blue,
             int line, int column) {
-        SassList result = new SassList(Separator.COMMA);
-        result.add(LexicalUnitImpl.createInteger(line, column, null, red));
-        result.add(LexicalUnitImpl.createInteger(line, column, null, green));
-        result.add(LexicalUnitImpl.createInteger(line, column, null, blue));
-        return result;
+        LexicalUnitImpl redUnit = LexicalUnitImpl.createInteger(line, column,
+                null, red);
+        LexicalUnitImpl greenUnit = LexicalUnitImpl.createInteger(line, column,
+                null, green);
+        LexicalUnitImpl blueUnit = LexicalUnitImpl.createInteger(line, column,
+                null, blue);
+        return new SassList(Separator.COMMA, redUnit, greenUnit, blueUnit);
     }
 
     private static SassList createHslParameters(int hue, int saturation,
             int lightness, int ln, int cn) {
-        SassList result = new SassList(Separator.COMMA);
-        result.add(LexicalUnitImpl.createInteger(ln, cn, null, hue));
-        result.add(LexicalUnitImpl.createPercentage(ln, cn, null, saturation));
-        result.add(LexicalUnitImpl.createPercentage(ln, cn, null, lightness));
-        return result;
+        LexicalUnitImpl hueUnit = LexicalUnitImpl.createInteger(ln, cn, null,
+                hue);
+        LexicalUnitImpl saturationUnit = LexicalUnitImpl.createPercentage(ln,
+                cn, null, saturation);
+        LexicalUnitImpl lightnessUnit = LexicalUnitImpl.createPercentage(ln,
+                cn, null, lightness);
+        return new SassList(Separator.COMMA, hueUnit, saturationUnit,
+                lightnessUnit);
     }
 
     public static LexicalUnitImpl darken(LexicalUnitImpl darkenFunc) {
@@ -218,10 +223,6 @@ public class ColorUtil {
         if (color.getLexicalUnitType() == LexicalUnit.SAC_FUNCTION) {
             SassList funcParam = color.getParameterList();
             if ("hsl".equals(color.getFunctionName())) {
-                SassList newParams = new SassList(funcParam.getSeparator());
-                newParams.add(funcParam.get(0));
-                newParams.add(funcParam.get(1));
-
                 LexicalUnit lightness = funcParam.get(2).getContainedValue();
                 float newValue = 0f;
                 if (op == ColorOperation.Darken) {
@@ -234,7 +235,9 @@ public class ColorUtil {
                 LexicalUnitImpl newLightness = (LexicalUnitImpl) DeepCopy
                         .copy(lightness);
                 newLightness.setFloatValue(newValue);
-                newParams.add(newLightness);
+
+                SassList newParams = new SassList(funcParam.getSeparator(),
+                        funcParam.get(0), funcParam.get(1), newLightness);
 
                 return LexicalUnitImpl.createFunction(color.getLineNumber(),
                         color.getColumnNumber(), pre, color.getFunctionName(),

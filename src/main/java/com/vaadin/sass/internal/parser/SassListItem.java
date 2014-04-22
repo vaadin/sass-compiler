@@ -82,22 +82,6 @@ public interface SassListItem extends Iterable<SassListItem> {
     public SassListItem replaceVariables(Collection<VariableNode> variable);
 
     /**
-     * Returns a new item that is otherwise equal to this one but all
-     * occurrences of the given variable have been replaced by the value given
-     * in the VariableNode.
-     * 
-     * Note that unlike replaceVariables, this method may modify the current
-     * item.
-     * 
-     * @param variable
-     *            A node containing the name and the current value of the
-     *            variable to be replaced.
-     * @return A SassListItem where all occurrences of variable have been
-     *         replaced by its value.
-     */
-    public SassListItem replaceVariable(VariableNode variable);
-
-    /**
      * Updates all url's of this item by, e.g., adding the prefix to an url not
      * starting with slash "/" and not containing the symbol ":". This is a
      * mutating method, i.e. it modifies the contents of the current object.
@@ -164,26 +148,6 @@ public interface SassListItem extends Iterable<SassListItem> {
      *         appearing in items.
      */
     public SassList removeAllItems(SassListItem items);
-
-    /**
-     * Adds an item to the end of this list. The parameter item can be a single
-     * item or a list. If this element is a single value, it is treated like a
-     * list containing the value.
-     * 
-     * Note that contrary to most list modification methods, item is not treated
-     * like a list with one element if it is not a list. For example, adding the
-     * single value 3 to (1, 2) yields the list (1, 2, 3) whereas adding the
-     * list (3) to the list yields (1, 2, (3)), a nested list.
-     * 
-     * Does not actually modify this list but returns a new list with the
-     * modification.
-     * 
-     * @param item
-     *            The item to be added to this list.
-     * @return A new list that is otherwise identical to this one but with the
-     *         specified item added to the end.
-     */
-    public SassList addItem(SassListItem item);
 
     /**
      * Returns a list that is obtained from this list by adding all given items

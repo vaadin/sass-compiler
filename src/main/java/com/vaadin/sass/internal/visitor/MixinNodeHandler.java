@@ -17,6 +17,7 @@
 package com.vaadin.sass.internal.visitor;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.ParseException;
@@ -123,12 +124,12 @@ public class MixinNodeHandler {
             // argument and any remaining arguments are packaged into (one or
             // two) lists. The unnamed and named arguments form separate lists.
             if (def.hasVariableArguments()) {
-                VariableArgumentList remaining = new VariableArgumentList(
-                        mixinNode.getSeparator());
+                List<SassListItem> unnamed = new ArrayList<SassListItem>();
+                List<VariableNode> named = new ArrayList<VariableNode>();
                 int lastIndex = def.getArglist().size() - 1;
                 SassListItem last = def.getArglist().get(lastIndex).getExpr();
                 if (last != null) {
-                    remaining.add(last);
+                    unnamed.add(last);
                 }
 
                 for (int i = remainingDefArguments.size(); i < remainingActualArguments
@@ -136,14 +137,17 @@ public class MixinNodeHandler {
                     VariableNode unit = (VariableNode) DeepCopy
                             .copy(remainingActualArguments.get(i));
                     if (unit.getName() == null) {
-                        remaining.add(unit.getExpr());
+                        unnamed.add(unit.getExpr());
                     } else {
-                        remaining.addNamed(unit.getName(), unit.getExpr());
+                        named.add(new VariableNode(unit.getName(), unit
+                                .getExpr(), false));
                         // The named arguments cannot be used inside the mixin
                         // but they can be passed to another mixin using
                         // variable arguments in an @include.
                     }
                 }
+                VariableArgumentList remaining = new VariableArgumentList(
+                        mixinNode.getSeparator(), unnamed, named);
                 def.getArglist().get(lastIndex).setExpr(remaining);
             }
         }

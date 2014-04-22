@@ -25,6 +25,7 @@ package com.vaadin.sass.internal.parser;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -822,16 +823,17 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
 
     @Override
     public SassListItem replaceVariables(Collection<VariableNode> variables) {
-        SassListItem copy = (LexicalUnitImpl) DeepCopy.copy(this);
-        for (VariableNode variable : variables) {
-            copy = copy.replaceVariable(variable);
+        // TODO remove when LUI is immutable
+        SassListItem result = (LexicalUnitImpl) DeepCopy.copy(this);
+        Iterator<VariableNode> it = variables.iterator();
+        while (it.hasNext() && result instanceof LexicalUnitImpl) {
+            LexicalUnitImpl lui = (LexicalUnitImpl) result;
+            result = lui.replaceVariable(lui, it.next());
         }
-        return copy;
-    }
-
-    @Override
-    public SassListItem replaceVariable(VariableNode node) {
-        return replaceVariable(this, node);
+        if (!(result instanceof LexicalUnitImpl)) {
+            result = result.replaceVariables(variables);
+        }
+        return result;
     }
 
     private SassListItem replaceVariable(LexicalUnitImpl lexUnit,
@@ -840,7 +842,8 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         String interpolation = "#{$" + node.getName() + "}";
         SassList params = lexUnit.getParameterList();
         if (params != null) {
-            SassList newParams = params.replaceVariable(node);
+            SassList newParams = params.replaceVariables(Collections
+                    .singletonList(node));
             lexUnit.setParameterList(newParams);
         }
         String stringValue = lexUnit.getStringValue();
@@ -1153,32 +1156,18 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         return this;
     }
 
-    public SassList addItem(SassListItem item) {
-        SassList list = new SassList(this);
-        list.add(item);
-        return list;
-    }
-
     public SassList addAllItems(SassListItem items) {
-        SassList list = new SassList(this);
-        SassList itemList = getItemsAsList(items);
-        list.addAll(itemList);
-        return list;
+        return new SassList(items.getSeparator(), this).addAllItems(items);
     }
 
     @Override
     public SassList removeAllItems(SassListItem items) {
-        SassList list = new SassList(this);
-        SassList itemList = getItemsAsList(items);
-        list.removeAll(itemList);
-        return list;
+        return new SassList(getSeparator(), this).removeAllItems(items);
     }
 
     @Override
     public boolean containsAllItems(SassListItem items) {
-        SassList list = new SassList(this);
-        SassList otherItems = getItemsAsList(items);
-        return list.containsAll(otherItems);
+        return new SassList(getSeparator(), this).containsAllItems(items);
     }
 
     @Override
@@ -1186,11 +1175,4 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         return this;
     }
 
-    private SassList getItemsAsList(SassListItem items) {
-        if (items instanceof SassList) {
-            return (SassList) items;
-        } else {
-            return new SassList(items);
-        }
-    }
 }

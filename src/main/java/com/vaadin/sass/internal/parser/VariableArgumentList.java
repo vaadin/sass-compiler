@@ -18,8 +18,11 @@ package com.vaadin.sass.internal.parser;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import com.vaadin.sass.internal.tree.VariableNode;
+import com.vaadin.sass.internal.util.DeepCopy;
 
 /**
  * A VariableArgumentList is used for packing arguments into a list. There can
@@ -27,45 +30,58 @@ import com.vaadin.sass.internal.tree.VariableNode;
  * VariableArgumentLists are used as parameter lists of mixins and functions.
  */
 public class VariableArgumentList extends SassList implements Serializable {
-    private ArrayList<VariableNode> namedVariables = new ArrayList<VariableNode>();
+    private List<VariableNode> namedVariables = new ArrayList<VariableNode>();
 
     public VariableArgumentList(SassList.Separator sep) {
         super(sep);
     }
 
-    public ArrayList<VariableNode> getNamedVariables() {
-        return namedVariables;
+    public VariableArgumentList(Separator separator, List<SassListItem> list,
+            List<VariableNode> named) {
+        super(separator, list);
+        namedVariables = named;
     }
 
-    public void addNamed(String name, SassListItem sassListItem) {
-        VariableNode node = new VariableNode(name, sassListItem, false);
-        namedVariables.add(node);
+    public List<VariableNode> getNamedVariables() {
+        return Collections.unmodifiableList(namedVariables);
     }
 
     @Override
     public VariableArgumentList replaceVariables(
             Collection<VariableNode> variables) {
-        VariableArgumentList result = new VariableArgumentList(getSeparator());
-        for (SassListItem item : this) { // Handle the ordinary SassList items
-            result.add(item.replaceVariables(variables));
+        // TODO this can be removed once LUI is immutable
+        SassList copy = (SassList) DeepCopy.copy(this);
+        // The actual replacing happens in LexicalUnitImpl, which also
+        // implements SassListItem.
+        List<SassListItem> list = new ArrayList<SassListItem>();
+        for (SassListItem item : copy) {
+            list.add(item.replaceVariables(variables));
         }
+        List<VariableNode> named = new ArrayList<VariableNode>();
         for (VariableNode node : namedVariables) {
-            result.addNamed(node.getName(),
-                    node.getExpr().replaceVariables(variables));
+            named.add(new VariableNode(node.getName(), node.getExpr()
+                    .replaceVariables(variables), node.isGuarded()));
         }
-        return result;
+        return new VariableArgumentList(getSeparator(), list, named);
     }
 
     @Override
     public VariableArgumentList replaceFunctions() { // handle the VariableNodes
-        VariableArgumentList result = new VariableArgumentList(getSeparator());
+        List<SassListItem> list = new ArrayList<SassListItem>();
         for (SassListItem item : this) {
-            result.add(item.replaceFunctions());
+            list.add(item.replaceFunctions());
         }
+        List<VariableNode> named = new ArrayList<VariableNode>();
         for (VariableNode node : namedVariables) {
-            result.addNamed(node.getName(), node.getExpr().replaceFunctions());
+            named.add(new VariableNode(node.getName(), node.getExpr()
+                    .replaceFunctions(), node.isGuarded()));
         }
-        return result;
+        return new VariableArgumentList(getSeparator(), list, named);
+
     }
 
+    @Override
+    public SassListItem flatten() {
+        throw new UnsupportedOperationException();
+    }
 }
