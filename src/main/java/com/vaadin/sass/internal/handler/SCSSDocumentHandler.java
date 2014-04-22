@@ -42,6 +42,11 @@ public interface SCSSDocumentHandler extends DocumentHandler {
 
     void endMixinDirective();
 
+    void startFunctionDirective(String name, Collection<VariableNode> args,
+            boolean hasVariableArgs);
+
+    void endFunctionDirective();
+
     void debugDirective();
 
     ForNode forDirective(String var, String from, String to, boolean exclusive,
@@ -89,6 +94,8 @@ public interface SCSSDocumentHandler extends DocumentHandler {
     void endKeyframeSelector();
 
     void contentDirective();
+
+    void returnDirective(SassListItem expr);
 
     void startInclude(String name, List<VariableNode> args,
             boolean hasVariableArgs);

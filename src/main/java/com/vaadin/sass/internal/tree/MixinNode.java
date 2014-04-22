@@ -90,7 +90,7 @@ public class MixinNode extends Node implements IVariableNode {
      * Replace variable references with their values in the mixin argument list.
      */
     @Override
-    public void replaceVariables(ArrayList<VariableNode> variables) {
+    public void replaceVariables(Collection<VariableNode> variables) {
         for (final VariableNode arg : arglist) {
             SassListItem expr = arg.getExpr().replaceVariables(variables);
             expr = expr.replaceFunctions();

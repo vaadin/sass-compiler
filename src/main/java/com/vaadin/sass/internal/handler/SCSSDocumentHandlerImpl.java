@@ -38,6 +38,7 @@ import com.vaadin.sass.internal.tree.ContentNode;
 import com.vaadin.sass.internal.tree.ExtendNode;
 import com.vaadin.sass.internal.tree.FontFaceNode;
 import com.vaadin.sass.internal.tree.ForNode;
+import com.vaadin.sass.internal.tree.FunctionDefNode;
 import com.vaadin.sass.internal.tree.ImportNode;
 import com.vaadin.sass.internal.tree.KeyframeSelectorNode;
 import com.vaadin.sass.internal.tree.KeyframesNode;
@@ -47,6 +48,7 @@ import com.vaadin.sass.internal.tree.MixinDefNode;
 import com.vaadin.sass.internal.tree.MixinNode;
 import com.vaadin.sass.internal.tree.NestPropertiesNode;
 import com.vaadin.sass.internal.tree.Node;
+import com.vaadin.sass.internal.tree.ReturnNode;
 import com.vaadin.sass.internal.tree.RuleNode;
 import com.vaadin.sass.internal.tree.SimpleNode;
 import com.vaadin.sass.internal.tree.VariableNode;
@@ -245,6 +247,20 @@ public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
     }
 
     @Override
+    public void startFunctionDirective(String name,
+            Collection<VariableNode> args, boolean hasVariableArgs) {
+        FunctionDefNode node = new FunctionDefNode(name.trim(), args,
+                hasVariableArgs);
+        nodeStack.peek().appendChild(node);
+        nodeStack.push(node);
+    }
+
+    @Override
+    public void endFunctionDirective() {
+        nodeStack.pop();
+    }
+
+    @Override
     public void importStyle(String uri, SACMediaList media, boolean isURL) {
         ImportNode node = new ImportNode(uri, media, isURL);
         nodeStack.peek().appendChild(node);
@@ -341,6 +357,12 @@ public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
     @Override
     public void contentDirective() {
         ContentNode node = new ContentNode();
+        nodeStack.peek().appendChild(node);
+    }
+
+    @Override
+    public void returnDirective(SassListItem expr) {
+        ReturnNode node = new ReturnNode(expr);
         nodeStack.peek().appendChild(node);
     }
 

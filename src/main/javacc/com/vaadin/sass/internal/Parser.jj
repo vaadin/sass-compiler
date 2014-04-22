@@ -773,7 +773,7 @@ void afterImportDeclaration() :
 }
 {
   ( 
-     ( debuggingDirective() | mixinDirective() | controlDirective() | includeDirective() | styleRule() | media() 
+     ( debuggingDirective() | mixinDirective() | functionDirective() | controlDirective() | includeDirective() | styleRule() | media() 
              | page() | fontFace() | keyframes() | variable()
       | { l = getLocator(); } ret=skipStatement() 
       {
@@ -1691,7 +1691,6 @@ void mixinDirective() :
     String name;
     ArrayList<VariableNode> args = null;
     boolean hasVariableArgs = false;
-    String body;
 }
 {
     <MIXIN_SYM>
@@ -1705,6 +1704,23 @@ void mixinDirective() :
     ( ifContentStatement() | fontFace() | page())*
     <RBRACE>(<S>)*
     {documentHandler.endMixinDirective();}
+}
+
+void functionDirective() :
+{
+    String name;
+    ArrayList<VariableNode> args = null;
+    boolean hasVariableArgs = false;
+}
+{
+    <FUNCTION_SYM>
+    (<S>)*
+    ( name = functionName() args = arglist() (<ELLIPSIS> {hasVariableArgs = true;} (<S>)*)? <RPARAN> (<S>)*)
+    <LBRACE> (<S>)*
+    {documentHandler.startFunctionDirective(name, args, hasVariableArgs);} 
+    returnDirective()   
+    <RBRACE>(<S>)*
+    {documentHandler.endFunctionDirective();}
 }
 
 ArrayList<VariableNode> arglist() :
@@ -1797,6 +1813,15 @@ VariableNode argValueListItem():
     }
 }
 
+void returnDirective() :
+{
+    SassList expr;
+}
+{
+    (<RETURN_SYM> (<S>)* expr = expressionList() semicolonTerminator())
+    { documentHandler.returnDirective(expr.flatten()); }
+}
+
 void includeDirective() :
 {
     String name;
@@ -1852,15 +1877,6 @@ String interpolation() :
   {
     return n.image;
   }
-}
-
-Node returnDirective() :
-{
-    String raw;
-}
-{
-	raw = skipStatement()
-	{return null;}
 }
 
 void debuggingDirective() :

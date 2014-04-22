@@ -13,22 +13,32 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.sass.internal.parser.function;
+package com.vaadin.sass.internal.tree;
 
-import com.vaadin.sass.internal.parser.LexicalUnitImpl;
+import java.util.Collection;
+
 import com.vaadin.sass.internal.parser.SassListItem;
 
-public class DefaultFunctionGenerator implements SCSSFunctionGenerator {
+public class ReturnNode extends Node implements IVariableNode {
 
-    @Override
-    public String getFunctionName() {
-        return null;
+    private SassListItem expr;
+
+    public ReturnNode(SassListItem expression) {
+        expr = expression.replaceChains();
     }
 
     @Override
-    public SassListItem compute(LexicalUnitImpl function) {
-        return function;
+    public void replaceVariables(Collection<VariableNode> variables) {
+        expr = expr.replaceVariables(variables);
+    }
 
+    @Override
+    public void traverse() {
+        // nothing to do for now
+    }
+
+    public SassListItem getExpr() {
+        return expr;
     }
 
 }

@@ -17,6 +17,7 @@
 package com.vaadin.sass.internal.tree;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,7 +38,7 @@ public class ExtendNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void replaceVariables(ArrayList<VariableNode> variables) {
+    public void replaceVariables(Collection<VariableNode> variables) {
 
     }
 

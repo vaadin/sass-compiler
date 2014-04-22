@@ -16,7 +16,7 @@
 
 package com.vaadin.sass.internal.tree;
 
-import java.util.ArrayList;
+import java.util.Collection;
 
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.SassListItem;
@@ -75,7 +75,7 @@ public class VariableNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void replaceVariables(ArrayList<VariableNode> variables) {
+    public void replaceVariables(Collection<VariableNode> variables) {
         expr = expr.replaceVariables(variables);
         expr = expr.replaceFunctions();
     }

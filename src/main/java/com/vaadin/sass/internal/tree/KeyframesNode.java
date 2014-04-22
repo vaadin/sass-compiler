@@ -16,7 +16,7 @@
 
 package com.vaadin.sass.internal.tree;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.regex.Pattern;
 
 import com.vaadin.sass.internal.ScssStylesheet;
@@ -46,7 +46,7 @@ public class KeyframesNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void replaceVariables(ArrayList<VariableNode> variables) {
+    public void replaceVariables(Collection<VariableNode> variables) {
         for (final VariableNode node : variables) {
             String interpolation = "#{$" + node.getName() + "}";
             if (animationName != null && animationName.contains(interpolation)) {

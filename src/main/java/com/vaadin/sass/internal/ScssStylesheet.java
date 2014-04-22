@@ -40,6 +40,7 @@ import com.vaadin.sass.internal.resolver.ClassloaderResolver;
 import com.vaadin.sass.internal.resolver.FilesystemResolver;
 import com.vaadin.sass.internal.resolver.ScssStylesheetResolver;
 import com.vaadin.sass.internal.tree.BlockNode;
+import com.vaadin.sass.internal.tree.FunctionDefNode;
 import com.vaadin.sass.internal.tree.MixinDefNode;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.VariableNode;
@@ -56,6 +57,8 @@ public class ScssStylesheet extends Node {
     private static final HashMap<String, VariableNode> variables = new HashMap<String, VariableNode>();
 
     private static final Map<String, MixinDefNode> mixinDefs = new HashMap<String, MixinDefNode>();
+
+    private static final Map<String, FunctionDefNode> functionDefs = new HashMap<String, FunctionDefNode>();
 
     private static final HashSet<IfElseDefNode> ifElseDefNodes = new HashSet<IfElseDefNode>();
 
@@ -239,6 +242,7 @@ public class ScssStylesheet extends Node {
     public void compile() throws Exception {
         mainStyleSheet = this;
         mixinDefs.clear();
+        functionDefs.clear();
         variables.clear();
         ifElseDefNodes.clear();
         lastNodeAdded.clear();
@@ -256,6 +260,10 @@ public class ScssStylesheet extends Node {
     private void populateDefinitions(Node node) {
         if (node instanceof MixinDefNode) {
             mixinDefs.put(((MixinDefNode) node).getName(), (MixinDefNode) node);
+            node.getParentNode().removeChild(node);
+        } else if (node instanceof FunctionDefNode) {
+            functionDefs.put(((FunctionDefNode) node).getName(),
+                    (FunctionDefNode) node);
             node.getParentNode().removeChild(node);
         } else if (node instanceof IfElseDefNode) {
             ifElseDefNodes.add((IfElseDefNode) node);
@@ -400,6 +408,10 @@ public class ScssStylesheet extends Node {
 
     public static MixinDefNode getMixinDefinition(String name) {
         return mixinDefs.get(name);
+    }
+
+    public static FunctionDefNode getFunctionDefinition(String name) {
+        return functionDefs.get(name);
     }
 
     public void setFile(File file) {

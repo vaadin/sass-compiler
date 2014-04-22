@@ -16,7 +16,7 @@
 
 package com.vaadin.sass.internal.tree.controldirective;
 
-import java.util.ArrayList;
+import java.util.Collection;
 
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.SassList;
@@ -68,7 +68,7 @@ public class EachDefNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void replaceVariables(ArrayList<VariableNode> variables) {
+    public void replaceVariables(Collection<VariableNode> variables) {
         if (listVariable != null) {
             for (final VariableNode var : variables) {
                 if (listVariable.equals(var.getName())) {

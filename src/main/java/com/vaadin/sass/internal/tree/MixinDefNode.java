@@ -19,75 +19,20 @@ package com.vaadin.sass.internal.tree;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.util.DeepCopy;
 
-public class MixinDefNode extends Node implements IVariableNode {
+public class MixinDefNode extends DefNode {
     private static final long serialVersionUID = 5469294053247343948L;
-
-    private String name;
-    private ArrayList<VariableNode> arglist;
-    private boolean hasVariableArguments = false;
 
     public MixinDefNode(String name, Collection<VariableNode> args,
             boolean hasVariableArgs) {
-        super();
-        this.name = name;
-        arglist = new ArrayList<VariableNode>();
-        hasVariableArguments = hasVariableArgs;
-        if (args != null && !args.isEmpty()) {
-            arglist.addAll(args);
-        }
+        super(name, args, hasVariableArgs);
     }
 
     @Override
     public String toString() {
-        return "Mixin Definition Node: {name: " + name + ", args: "
-                + arglist.size() + "}";
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public ArrayList<VariableNode> getArglist() {
-        return arglist;
-    }
-
-    public void setArglist(ArrayList<VariableNode> arglist) {
-        this.arglist = arglist;
-    }
-
-    public boolean hasVariableArguments() {
-        return hasVariableArguments;
-    }
-
-    @Override
-    public void replaceVariables(ArrayList<VariableNode> variables) {
-        for (final VariableNode var : variables) {
-            for (final VariableNode arg : new ArrayList<VariableNode>(arglist)) {
-                if (arg.getName().equals(var.getName())
-                        && arg.getExpr() == null) {
-                    arglist.add(arglist.indexOf(arg), var.copy());
-                    arglist.remove(arg);
-                }
-            }
-        }
-    }
-
-    @Override
-    public void traverse() {
-        if (!arglist.isEmpty()) {
-            for (final VariableNode arg : arglist) {
-                if (arg.getExpr() != null) {
-                    ScssStylesheet.addVariable(arg);
-                }
-            }
-        }
+        return "Mixin Definition Node: {name: " + getName() + ", args: "
+                + getArglist().size() + "}";
     }
 
     /**

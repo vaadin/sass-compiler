@@ -24,6 +24,7 @@
 package com.vaadin.sass.internal.parser;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,6 +36,7 @@ import java.util.regex.Pattern;
 
 import org.w3c.css.sac.LexicalUnit;
 
+import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.expression.exception.IncompatibleUnitsException;
 import com.vaadin.sass.internal.parser.function.AbsFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.CeilFunctionGenerator;
@@ -47,8 +49,10 @@ import com.vaadin.sass.internal.parser.function.RGBFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.RectFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.RoundFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.SCSSFunctionGenerator;
+import com.vaadin.sass.internal.tree.FunctionDefNode;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
+import com.vaadin.sass.internal.tree.ReturnNode;
 import com.vaadin.sass.internal.tree.VariableNode;
 import com.vaadin.sass.internal.util.ColorUtil;
 import com.vaadin.sass.internal.util.StringUtil;
@@ -724,21 +728,55 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     @Override
     public SassListItem replaceFunctions() {
         if (params != null) {
+            SCSSFunctionGenerator generator = getGenerator(getFunctionName());
+            if (generator == null) {
+                SassListItem result = replaceCustomFunctions();
+                if (result != null) {
+                    return result;
+                }
+            }
+            if (generator == null) {
+                generator = DEFAULT_SERIALIZER;
+            }
             LexicalUnitImpl copy = createFunction(line, column, null, fname,
                     params.replaceFunctions());
-            return getGenerator(getFunctionName()).compute(copy);
+            return generator.compute(copy);
         } else {
             return this;
         }
     }
 
-    private static SCSSFunctionGenerator getGenerator(String funcName) {
-        SCSSFunctionGenerator serializer = SERIALIZERS.get(funcName);
-        if (serializer == null) {
-            return DEFAULT_SERIALIZER;
-        } else {
-            return serializer;
+    private SassListItem replaceCustomFunctions() {
+        FunctionDefNode functionDef = ScssStylesheet
+                .getFunctionDefinition(getFunctionName());
+        if (functionDef != null) {
+            if (params.size() != functionDef.getArglist().size()) {
+                throw new ParseException(
+                        "Incorrect number of parameters to the function "
+                                + getFunctionName(), this);
+            }
+            // TODO varargs etc.
+            List<VariableNode> actualParams = new ArrayList<VariableNode>();
+            for (int i = 0; i < params.size(); ++i) {
+                actualParams.add(new VariableNode(functionDef.getArglist()
+                        .get(i).getName(), params.get(i), false));
+            }
+            // TODO this is ensured by the parser for now
+            SassListItem expr = ((ReturnNode) functionDef.getChildren().get(0))
+                    .getExpr();
+            boolean arith = expr.containsArithmeticalOperator();
+            expr = expr.replaceVariables(actualParams);
+            expr = expr.replaceFunctions();
+            if (arith) {
+                expr = expr.evaluateArithmeticExpressions();
+            }
+            return expr;
         }
+        return null;
+    }
+
+    private static SCSSFunctionGenerator getGenerator(String funcName) {
+        return SERIALIZERS.get(funcName);
     }
 
     private static List<SCSSFunctionGenerator> initSerializers() {

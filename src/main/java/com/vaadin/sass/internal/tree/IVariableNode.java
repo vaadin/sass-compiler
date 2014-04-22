@@ -15,10 +15,10 @@
  */
 package com.vaadin.sass.internal.tree;
 
-import java.util.ArrayList;
+import java.util.Collection;
 
 public interface IVariableNode {
 
-    public void replaceVariables(ArrayList<VariableNode> variables);
+    public void replaceVariables(Collection<VariableNode> variables);
 
 }
