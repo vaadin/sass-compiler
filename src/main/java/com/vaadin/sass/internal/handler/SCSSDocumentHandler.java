@@ -80,15 +80,6 @@ public interface SCSSDocumentHandler extends DocumentHandler {
 
     EachDefNode startEachDirective(String var, String listVariable);
 
-    void removeDirective(String variable, SassListItem list,
-            SassListItem remove, String separator);
-
-    void appendDirective(String variable, SassListItem list,
-            SassListItem append, String separator);
-
-    void containsDirective(String variable, SassListItem list,
-            SassListItem contains, String separator);
-
     void startKeyFrames(String keyframeName, String animationname);
 
     void endKeyFrames();

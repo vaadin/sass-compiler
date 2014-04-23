@@ -774,7 +774,7 @@ void afterImportDeclaration() :
 {
   ( 
      ( debuggingDirective() | mixinDirective() | controlDirective() | includeDirective() | styleRule() | media() 
-             | page() | fontFace() | keyframes() | LOOKAHEAD(variable()) variable() | listModifyDirective()
+             | page() | fontFace() | keyframes() | variable()
       | { l = getLocator(); } ret=skipStatement() 
       {
 	  if ((ret == null) || (ret.length() == 0)) {
@@ -1579,7 +1579,7 @@ void ifContentStatement() :
 {}
 {
     contentDirective() | includeDirective() | media() | extendDirective() | styleRuleOrDeclarationOrNestedProperties()
-    | keyframes() | LOOKAHEAD(variable()) variable() | listModifyDirective() | controlDirective() | atRuleDeclaration()
+    | keyframes() | variable() | controlDirective() | atRuleDeclaration()
 }
 
 void ifDirective() :
@@ -1621,13 +1621,10 @@ void elseDirective() :
 String booleanExpressionToken() :
 {
   Token n = null;
-  String s = null;
 }
 {
  (
-   LOOKAHEAD(containsDirective())
-   s = containsDirective()
-   |n = < VARIABLE >
+   n = < VARIABLE >
    |n = < IDENT >
    |n = < NUMBER >
    |n = < LPARAN >
@@ -1645,8 +1642,7 @@ String booleanExpressionToken() :
    |n = < S >
    |n = < NOT_EQ > 
 ){
-   if(n!=null){return n.image;}  
-   else{return s;}
+   return n.image;
  }
 }
   
@@ -1856,225 +1852,6 @@ String interpolation() :
   {
     return n.image;
   }
-}
-
-void listModifyDirective() :
-{
-    SassListItem list = null;
-    SassListItem remove = null;
-    String separator = null;
-    String variable = null;
-    Token n = null;
-    Token type = null;
-}
-{
-  //refactor, remove those 3 LOOKAHEAD(5).
-  n = < VARIABLE >{ variable = n.image; }(< S >)* ":" (< S >)*
-  (type = < APPEND> | type = <REMOVE> | type=<CONTAINS> )(< S >)*
-  (list = listModifyDirectiveArgs(0))
-  (< RPARAN >)? < COMMA >(< S >)*
-  (remove = listModifyDirectiveArgs(1))
-  ( < COMMA >(< S >)* n = < IDENT >{ separator = n.image; } (< S >)*)?
-  < RPARAN >
-  {
-      switch (type.kind) {
-      case APPEND:
-          documentHandler.appendDirective(variable,list,remove,separator);
-          break;
-      case REMOVE:
-          documentHandler.removeDirective(variable,list,remove,separator);
-          break;
-      case CONTAINS:
-          if(variable == null){
-              variable = "$var_"+UUID.randomUUID();
-          }
-          documentHandler.containsDirective(variable,list,remove,separator);
-          break;
-      default:
-          break;
-      }
-      }
-      (< S >)*< SEMICOLON >(<S>)*
-}
-
-
-/**
- * @exception ParseException exception during the parse
- */
-void appendDirective() :
-{
-    SassListItem list = null;
-    SassListItem remove = null;
-    String separator = null;
-    String variable = null;
-    Token n = null;
-}
-{
-  n = < VARIABLE >{ variable = n.image; }(< S >)* ":" (< S >)*
-  < APPEND >(< S >)*
-  (list = listModifyDirectiveArgs(0))
-  (< RPARAN >)? < COMMA >(< S >)*
-  (remove = listModifyDirectiveArgs(1))
-  ( < COMMA >(< S >)* n = < IDENT >{ separator = n.image; } (< S >)*)?
-  < RPARAN >
-
-  { documentHandler.appendDirective(variable,list,remove,separator); }
-}
-
-/**
- * @exception ParseException exception during the parse
- */
-void removeDirective() :
-{
-    SassListItem list = null;
-    SassListItem remove = null;
-    String separator = null;
-    String variable = null;
-    Token n = null;
-}
-{
-  n = < VARIABLE >{ variable = n.image; }(< S >)* ":" (< S >)*
-  < REMOVE >(< S >)*
-  (list = listModifyDirectiveArgs(0))
-  (< RPARAN >)? < COMMA >(< S >)*
-  (remove = listModifyDirectiveArgs(1))
-  ( < COMMA >(< S >)* n = < IDENT >{ separator = n.image; } (< S >)*)?
-  < RPARAN >
-
-  { documentHandler.removeDirective(variable,list,remove,separator); }
-}
-
-/**
- * @exception ParseException exception during the parse
- */
-String containsDirective() :
-{
-	SassListItem list = null;
-	SassListItem remove = null;
-	String separator = null;
-	String variable = null;
-	Token n = null;
-}
-{
-  (n = < VARIABLE >{ variable = n.image; }(< S >)* ":" (< S >)*)?
-  < CONTAINS >(< S >)*
-  (list = listModifyDirectiveArgs(0))
-  (< RPARAN >)? < COMMA >(< S >)*
-  (remove = listModifyDirectiveArgs(1))
-  ( < COMMA >(< S >)* n = < IDENT >{ separator = n.image; } (< S >)*)?
-  < RPARAN >
-
-  {   /*
-       *if it is not in the form like "$contains : contains($items, .v-button);"
-       *for example in @if, like "@if (contains(a b c, b))", then create a temp
-       *variable for contains(a b c, b);
-       */
-      if(variable == null){
-          variable = "$var_"+UUID.randomUUID();
-      }
-      documentHandler.containsDirective(variable,list,remove,separator); 
-      return variable;
-  }
-}
-
-JAVACODE
-SassListItem listModifyDirectiveArgs(int nest)
-{
-    String listString = listModifyDirectiveArgsAsString(nest);
-    List<SassListItem> result = new ArrayList<SassListItem>();
-    String[] subListStrings = listString.split(",");
-    for(String subListString : subListStrings){
-        subListString = subListString.trim();
-        String[] parts = subListString.split(" ");
-        List<SassListItem> subList = new ArrayList<SassListItem>();
-        for(String part : parts){
-            part = part.trim();
-            LexicalUnitImpl unit;
-            if(part.startsWith("$")){
-                unit = LexicalUnitImpl.createVariable(token.beginLine, token.beginColumn, null, part.substring(1));
-            }
-            else{
-                unit = LexicalUnitImpl.createIdent(token.beginLine, token.beginColumn, null, part);
-            }
-            subList.add(unit);
-        }
-        result.add(new SassList(SassList.Separator.SPACE, subList));
-    }
-    return new SassList(SassList.Separator.COMMA, result).flatten();
-}
-
-JAVACODE
-String listModifyDirectiveArgsAsString(int nest)
-{
-  	String list = "";
-	int nesting = nest;
-	Token t = null;
-	
-	while(true)
-	{
-	    t = getToken(1);
-		String s = t.image;
-		if(t.kind == VARIABLE||t.kind == IDENT)
-		{
-		  list += s;
-		}else if(s.toLowerCase().equals("auto")||s.toLowerCase().equals("space")||s.toLowerCase().equals("comma"))
-		{
-			int i = 2;
-			Token temp = getToken(i);
-			boolean isLast = true;
-			while(temp.kind != SEMICOLON)
-			{
-				if(temp.kind != RPARAN || temp.kind != S)
-				{
-				  isLast = false;
-				}
-				i++;
-				temp = getToken(i);
-			}
-
-		  	if(isLast)
-		  	{
-			return list;
-			}
-		}
-		else if(t.kind == STRING)
-		{
-			list += s.substring(1,s.length()).substring(0,s.length()-2);
-			
-		}else if(t.kind == LPARAN)
-		{
-			nesting++;
-			if(nesting > nest+1)
-			{
-				throw new CSSParseException("Only one ( ) pair per parameter allowed", getLocator());
-			}
-		}else if(t.kind == RPARAN)
-		{
-			nesting--;
-			if(nesting == 0)
-			{
-				return list;
-			}
-		} else if(t.kind == COMMA)
-		{
-			if(nesting == nest)
-			{
-			  return list;
-			}else
-			{
-			  list += ",";
-			}
-			  
-		}else if(t.kind == S)
-		{
-		  list += " ";
-		} else if(t.kind == LBRACE)
-		{
-		  throw new CSSParseException("Invalid token,'{' found", getLocator());
-		}
-		
-		getNextToken();
-	}
 }
 
 Node returnDirective() :

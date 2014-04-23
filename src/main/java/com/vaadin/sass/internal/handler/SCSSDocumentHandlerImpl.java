@@ -41,9 +41,6 @@ import com.vaadin.sass.internal.tree.ForNode;
 import com.vaadin.sass.internal.tree.ImportNode;
 import com.vaadin.sass.internal.tree.KeyframeSelectorNode;
 import com.vaadin.sass.internal.tree.KeyframesNode;
-import com.vaadin.sass.internal.tree.ListAppendNode;
-import com.vaadin.sass.internal.tree.ListContainsNode;
-import com.vaadin.sass.internal.tree.ListRemoveNode;
 import com.vaadin.sass.internal.tree.MediaNode;
 import com.vaadin.sass.internal.tree.MicrosoftRuleNode;
 import com.vaadin.sass.internal.tree.MixinDefNode;
@@ -312,30 +309,6 @@ public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
     public void startSelector(SelectorList arg0) throws CSSException {
         // TODO Auto-generated method stub
 
-    }
-
-    @Override
-    public void removeDirective(String variable, SassListItem list,
-            SassListItem remove, String separator) {
-        ListRemoveNode node = new ListRemoveNode(variable, list, remove,
-                separator);
-        nodeStack.peek().appendChild(node);
-    }
-
-    @Override
-    public void appendDirective(String variable, SassListItem list,
-            SassListItem append, String separator) {
-        ListAppendNode node = new ListAppendNode(variable, list, append,
-                separator);
-        nodeStack.peek().appendChild(node);
-    }
-
-    @Override
-    public void containsDirective(String variable, SassListItem list,
-            SassListItem contains, String separator) {
-        ListContainsNode node = new ListContainsNode(variable, list, contains,
-                separator);
-        nodeStack.peek().appendChild(node);
     }
 
     @Override
