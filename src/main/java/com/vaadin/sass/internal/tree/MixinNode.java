@@ -160,8 +160,7 @@ public class MixinNode extends Node implements IVariableNode {
             arglist.remove(arglist.size() - 1);
 
             for (SassListItem item : expr) {
-                SassListItem newArg = (SassListItem) DeepCopy.copy(item);
-                VariableNode newArgNode = new VariableNode(null, newArg, false);
+                VariableNode newArgNode = new VariableNode(null, item, false);
                 arglist.add(newArgNode);
             }
             // Append any remaining variable name-value pairs to the argument

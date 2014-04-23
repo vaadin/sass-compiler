@@ -26,9 +26,7 @@ public class RoundFunctionGenerator extends
 
     @Override
     protected LexicalUnitImpl computeForParam(LexicalUnitImpl param) {
-        param = param.copy();
-        param.setFloatValue(Math.round(param.getFloatValue()));
-        return param;
+        return param.copyWithValue(Math.round(param.getFloatValue()));
     }
 
 }

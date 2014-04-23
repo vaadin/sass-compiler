@@ -228,8 +228,8 @@ public class ColorUtil {
                     newValue = lightness.getFloatValue() + amountByPercent;
                     newValue = newValue > 100 ? 100 : newValue;
                 }
-                LexicalUnitImpl newLightness = lightness.copy();
-                newLightness.setFloatValue(newValue);
+                LexicalUnitImpl newLightness = lightness
+                        .copyWithValue(newValue);
 
                 SassList newParams = new SassList(funcParam.getSeparator(),
                         funcParam.get(0), funcParam.get(1), newLightness);

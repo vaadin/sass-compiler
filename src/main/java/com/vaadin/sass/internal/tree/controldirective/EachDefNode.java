@@ -23,7 +23,6 @@ import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.tree.IVariableNode;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.VariableNode;
-import com.vaadin.sass.internal.util.DeepCopy;
 import com.vaadin.sass.internal.visitor.EachNodeHandler;
 
 public class EachDefNode extends Node implements IVariableNode {
@@ -73,7 +72,7 @@ public class EachDefNode extends Node implements IVariableNode {
         if (listVariable != null) {
             for (final VariableNode var : variables) {
                 if (listVariable.equals(var.getName())) {
-                    list = (SassList) DeepCopy.copy((Object) var.getExpr());
+                    list = (SassList) var.getExpr();
                     listVariable = null;
                     break;
                 }

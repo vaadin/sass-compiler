@@ -26,7 +26,6 @@ import java.util.List;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
 import com.vaadin.sass.internal.tree.VariableNode;
-import com.vaadin.sass.internal.util.DeepCopy;
 
 /**
  * SassList is a list that has a specified separator character (comma or space)
@@ -180,12 +179,10 @@ public class SassList implements SassListItem, Serializable {
 
     @Override
     public SassList replaceVariables(Collection<VariableNode> variables) {
-        // TODO this can be removed once LUI is immutable
-        SassList copy = (SassList) DeepCopy.copy(this);
         // The actual replacing happens in LexicalUnitImpl, which also
         // implements SassListItem.
         List<SassListItem> list = new ArrayList<SassListItem>();
-        for (SassListItem item : copy) {
+        for (SassListItem item : this) {
             list.add(item.replaceVariables(variables));
         }
         return new SassList(getSeparator(), list);

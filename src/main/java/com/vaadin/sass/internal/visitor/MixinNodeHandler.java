@@ -99,8 +99,7 @@ public class MixinNodeHandler {
                     for (final VariableNode node : def.getArglist()) {
                         if (!node.getName().equals(varArgName)
                                 && node.getName().equals(unit.getName())) {
-                            node.setExpr((SassListItem) DeepCopy.copy(unit
-                                    .getExpr()));
+                            node.setExpr(unit.getExpr());
                             remainingDefArguments.remove(node);
                             remainingActualArguments.remove(unit);
                             break;
@@ -115,8 +114,7 @@ public class MixinNodeHandler {
             for (int i = 0; i < remainingDefArguments.size()
                     && i < remainingActualArguments.size(); i++) {
                 VariableNode unit = remainingActualArguments.get(i);
-                remainingDefArguments.get(i).setExpr(
-                        (SassListItem) DeepCopy.copy(unit.getExpr()));
+                remainingDefArguments.get(i).setExpr(unit.getExpr());
             }
             checkForUnsetParameters(mixinNode, def);
 

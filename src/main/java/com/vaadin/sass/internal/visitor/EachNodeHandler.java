@@ -35,9 +35,8 @@ public class EachNodeHandler {
         Node last = defNode;
 
         for (final SassListItem var : defNode.getVariables()) {
-            SassListItem varCopy = (SassListItem) DeepCopy.copy(var);
             VariableNode varNode = new VariableNode(defNode.getVariableName()
-                    .substring(1), varCopy, false);
+                    .substring(1), var, false);
             ArrayList<VariableNode> variables = new ArrayList<VariableNode>(
                     ScssStylesheet.getVariables());
             variables.add(varNode);

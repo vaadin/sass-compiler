@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 
 import com.vaadin.sass.internal.tree.VariableNode;
-import com.vaadin.sass.internal.util.DeepCopy;
 
 /**
  * A VariableArgumentList is used for packing arguments into a list. There can
@@ -49,12 +48,10 @@ public class VariableArgumentList extends SassList implements Serializable {
     @Override
     public VariableArgumentList replaceVariables(
             Collection<VariableNode> variables) {
-        // TODO this can be removed once LUI is immutable
-        SassList copy = (SassList) DeepCopy.copy(this);
         // The actual replacing happens in LexicalUnitImpl, which also
         // implements SassListItem.
         List<SassListItem> list = new ArrayList<SassListItem>();
-        for (SassListItem item : copy) {
+        for (SassListItem item : this) {
             list.add(item.replaceVariables(variables));
         }
         List<VariableNode> named = new ArrayList<VariableNode>();

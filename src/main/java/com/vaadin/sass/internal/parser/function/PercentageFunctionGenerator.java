@@ -26,8 +26,7 @@ import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 public class PercentageFunctionGenerator extends
         AbstractSingleParameterFunctionGenerator {
 
-    private static int PRECISION = 100000;
-    private static int PERC_PRECISION_FACTOR = 100 * PRECISION;
+    private static long PERC_PRECISION_FACTOR = 100 * LexicalUnitImpl.PRECISION;
 
     public PercentageFunctionGenerator() {
         super("percentage");
@@ -35,28 +34,12 @@ public class PercentageFunctionGenerator extends
 
     @Override
     protected LexicalUnitImpl computeForParam(LexicalUnitImpl firstParam) {
-        StringBuilder builder = new StringBuilder();
         float value = firstParam.getFloatValue();
         value *= PERC_PRECISION_FACTOR;
         int intValue = Math.round(value);
-        value = ((float) intValue) / PRECISION;
+        value = ((float) intValue) / LexicalUnitImpl.PRECISION;
 
-        int resultIntValue = (int) value;
-
-        LexicalUnitImpl result = LexicalUnitImpl.createPercentage(
-                firstParam.getLineNumber(), firstParam.getColumnNumber(), null,
-                value);
-
-        if (intValue == resultIntValue * PRECISION) {
-            builder.append(resultIntValue);
-            result.setIntegerValue(resultIntValue);
-        } else {
-            builder.append(value);
-            result.setFloatValue(value);
-        }
-
-        result.setStringValue(builder.append('%').toString());
-
-        return result;
+        return LexicalUnitImpl.createPercentage(firstParam.getLineNumber(),
+                firstParam.getColumnNumber(), null, value);
     }
 }
