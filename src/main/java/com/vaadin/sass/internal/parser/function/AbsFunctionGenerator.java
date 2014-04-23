@@ -16,7 +16,6 @@
 package com.vaadin.sass.internal.parser.function;
 
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
-import com.vaadin.sass.internal.util.DeepCopy;
 
 public class AbsFunctionGenerator extends
         AbstractSingleParameterFunctionGenerator {
@@ -27,7 +26,7 @@ public class AbsFunctionGenerator extends
 
     @Override
     protected LexicalUnitImpl computeForParam(LexicalUnitImpl param) {
-        param = (LexicalUnitImpl) DeepCopy.copy(param);
+        param = param.copy();
         param.setFloatValue(Math.abs(param.getFloatValue()));
         return param;
     }

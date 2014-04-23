@@ -45,8 +45,7 @@ public class ColorUtil {
                 hexColor.getLineNumber(), hexColor.getColumnNumber());
 
         return LexicalUnitImpl.createFunction(hexColor.getLineNumber(),
-                hexColor.getColumnNumber(), hexColor.getPreviousLexicalUnit(),
-                "hsl", hslParams);
+                hexColor.getColumnNumber(), null, "hsl", hslParams);
     }
 
     public static LexicalUnitImpl hslToHexColor(LexicalUnitImpl hsl, int lengh) {
@@ -65,8 +64,7 @@ public class ColorUtil {
             builder.append(color);
         }
         return LexicalUnitImpl.createIdent(hsl.getLineNumber(),
-                hsl.getColumnNumber(), hsl.getPreviousLexicalUnit(),
-                builder.toString());
+                hsl.getColumnNumber(), null, builder.toString());
     }
 
     private static int[] calculateRgb(LexicalUnitImpl hsl) {
@@ -111,8 +109,7 @@ public class ColorUtil {
                 rgbParam.getLineNumber(), rgbParam.getColumnNumber());
 
         return LexicalUnitImpl.createFunction(rgb.getLineNumber(),
-                rgb.getColumnNumber(), rgb.getPreviousLexicalUnit(), "hsl",
-                hslParams);
+                rgb.getColumnNumber(), null, "hsl", hslParams);
     }
 
     private static int[] calculateHsl(int red, int green, int blue) {
@@ -162,8 +159,7 @@ public class ColorUtil {
                 hsl.getLineNumber(), hsl.getColumnNumber());
 
         return LexicalUnitImpl.createFunction(hsl.getLineNumber(),
-                hsl.getColumnNumber(), hsl.getPreviousLexicalUnit(), "rgb",
-                rgbParams);
+                hsl.getColumnNumber(), null, "rgb", rgbParams);
     }
 
     private static float hueToRgb(float m1, float m2, float h) {
@@ -212,18 +208,18 @@ public class ColorUtil {
         SassList params = darkenFunc.getParameterList();
         LexicalUnitImpl color = params.get(0).getContainedValue();
         float amount = getAmountValue(params);
-        LexicalUnitImpl pre = darkenFunc.getPreviousLexicalUnit();
 
-        return adjust(color, amount, ColorOperation.Darken, pre);
+        return adjust(color, amount, ColorOperation.Darken);
     }
 
     private static LexicalUnitImpl adjust(LexicalUnitImpl color,
-            float amountByPercent, ColorOperation op, LexicalUnitImpl pre) {
+            float amountByPercent, ColorOperation op) {
 
         if (color.getLexicalUnitType() == LexicalUnit.SAC_FUNCTION) {
             SassList funcParam = color.getParameterList();
             if ("hsl".equals(color.getFunctionName())) {
-                LexicalUnit lightness = funcParam.get(2).getContainedValue();
+                LexicalUnitImpl lightness = funcParam.get(2)
+                        .getContainedValue();
                 float newValue = 0f;
                 if (op == ColorOperation.Darken) {
                     newValue = lightness.getFloatValue() - amountByPercent;
@@ -232,28 +228,26 @@ public class ColorUtil {
                     newValue = lightness.getFloatValue() + amountByPercent;
                     newValue = newValue > 100 ? 100 : newValue;
                 }
-                LexicalUnitImpl newLightness = (LexicalUnitImpl) DeepCopy
-                        .copy(lightness);
+                LexicalUnitImpl newLightness = lightness.copy();
                 newLightness.setFloatValue(newValue);
 
                 SassList newParams = new SassList(funcParam.getSeparator(),
                         funcParam.get(0), funcParam.get(1), newLightness);
 
                 return LexicalUnitImpl.createFunction(color.getLineNumber(),
-                        color.getColumnNumber(), pre, color.getFunctionName(),
+                        color.getColumnNumber(), null, color.getFunctionName(),
                         newParams);
             }
 
         } else if (color.getLexicalUnitType() == LexicalUnit.SAC_IDENT) {
             if (color.getStringValue().startsWith("#")) {
                 return hslToHexColor(
-                        adjust(hexColorToHsl(color), amountByPercent, op, pre),
+                        adjust(hexColorToHsl(color), amountByPercent, op),
                         color.getStringValue().substring(1).length());
             }
         } else if (color.getLexicalUnitType() == LexicalUnit.SAC_RGBCOLOR) {
             LexicalUnitImpl hsl = rgbToHsl(color);
-            LexicalUnitImpl hslAfterDarken = adjust(hsl, amountByPercent, op,
-                    pre);
+            LexicalUnitImpl hslAfterDarken = adjust(hsl, amountByPercent, op);
             return hslToRgb(hslAfterDarken);
         }
         return color;
@@ -263,9 +257,8 @@ public class ColorUtil {
         SassList params = lightenFunc.getParameterList();
         LexicalUnitImpl color = params.get(0).getContainedValue();
         float amount = getAmountValue(params);
-        LexicalUnitImpl pre = lightenFunc.getPreviousLexicalUnit();
 
-        return adjust(color, amount, ColorOperation.Lighten, pre);
+        return adjust(color, amount, ColorOperation.Lighten);
     }
 
     private static float getAmountValue(SassList params) {

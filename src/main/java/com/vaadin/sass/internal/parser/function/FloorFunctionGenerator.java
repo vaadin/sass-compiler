@@ -16,7 +16,6 @@
 package com.vaadin.sass.internal.parser.function;
 
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
-import com.vaadin.sass.internal.util.DeepCopy;
 
 public class FloorFunctionGenerator extends
         AbstractSingleParameterFunctionGenerator {
@@ -27,7 +26,7 @@ public class FloorFunctionGenerator extends
 
     @Override
     protected LexicalUnitImpl computeForParam(LexicalUnitImpl param) {
-        param = (LexicalUnitImpl) DeepCopy.copy(param);
+        param = param.copy();
         param.setFloatValue((float) Math.floor(param.getFloatValue()));
         return param;
     }

@@ -24,6 +24,7 @@
 package com.vaadin.sass.internal.parser;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -63,7 +64,6 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         SassListItem, Serializable {
     private static final long serialVersionUID = -6649833716809789399L;
 
-    LexicalUnitImpl prev;
     LexicalUnitImpl next;
 
     short type;
@@ -80,7 +80,6 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
 
     LexicalUnitImpl(short type, int line, int column, LexicalUnitImpl p) {
         if (p != null) {
-            prev = p;
             p.next = this;
         }
         this.line = line;
@@ -147,13 +146,9 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     }
 
     @Override
-    public LexicalUnitImpl getPreviousLexicalUnit() {
-        return prev;
-    }
-
     @Deprecated
-    public void setPrevLexicalUnit(LexicalUnitImpl n) {
-        prev = n;
+    public LexicalUnitImpl getPreviousLexicalUnit() {
+        return null;
     }
 
     @Override
@@ -366,27 +361,24 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         return this;
     }
 
-    public void replaceValue(LexicalUnitImpl another) {
-        // shouldn't modify 'another' directly, should only modify its copy.
-        LexicalUnitImpl deepCopyAnother = (LexicalUnitImpl) DeepCopy
-                .copy(another);
-        type = deepCopyAnother.getLexicalUnitType();
-        i = deepCopyAnother.getIntegerValue();
-        f = deepCopyAnother.getFloatValue();
-        s = deepCopyAnother.getStringValue();
-        fname = deepCopyAnother.getFunctionName();
-        prev = deepCopyAnother.getPreviousLexicalUnit();
-        dimension = deepCopyAnother.getDimension();
-        sdimension = deepCopyAnother.getSdimension();
-        params = deepCopyAnother.getParameterList();
-
-        LexicalUnitImpl finalNextInAnother = deepCopyAnother;
-        while (finalNextInAnother.getNextLexicalUnit() != null) {
-            finalNextInAnother = finalNextInAnother.getNextLexicalUnit();
-        }
-
-        finalNextInAnother.setNextLexicalUnit(next);
-        next = deepCopyAnother.next;
+    /**
+     * Returns a shallow copy of the {@link LexicalUnitImpl} with null as next
+     * lexical unit pointer. Parameters are not copied but a reference to the
+     * same parameter list is used.
+     * 
+     * @return copy of this without next
+     */
+    public LexicalUnitImpl copy() {
+        LexicalUnitImpl copy = new LexicalUnitImpl(type, line, column, null);
+        copy.i = i;
+        copy.f = f;
+        copy.s = s;
+        copy.fname = fname;
+        copy.dimension = dimension;
+        copy.sdimension = sdimension;
+        copy.params = params;
+        copy.next = null;
+        return copy;
     }
 
     public void setParameterList(SassList params) {
@@ -553,6 +545,10 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
 
     public static LexicalUnitImpl createIdent(int line, int column,
             LexicalUnitImpl previous, String s) {
+        if ("null".equals(s)) {
+            return createNull(line, column, previous);
+        }
+
         return new LexicalUnitImpl(line, column, previous, SAC_IDENT, s);
     }
 
@@ -852,8 +848,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
             SassListItem expr = node.getExpr();
             if (!(expr instanceof LexicalUnitImpl)) {
                 // Check that the replacement does not break any links
-                if (lexUnit.getPreviousLexicalUnit() != null
-                        || lexUnit.getNextLexicalUnit() != null
+                if (lexUnit.getNextLexicalUnit() != null
                         || lexUnit.getParameters() != null) {
                     throw new ParseException(
                             "Expected a single value for a variable, actual value was a list. "
@@ -890,13 +885,33 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
 
     @Override
     public SassListItem replaceFunctions() {
-        if (params != null) {
-            LexicalUnitImpl copy = createFunction(line, column, prev, fname,
-                    params.replaceFunctions());
-            SCSSFunctionGenerator generator = getGenerator(getFunctionName());
-            return generator.compute(copy);
+        List<LexicalUnitImpl> list = new ArrayList<LexicalUnitImpl>();
+        LexicalUnitImpl current = this;
+        while (current != null) {
+            if (current.params != null) {
+                LexicalUnitImpl copy = createFunction(current.line,
+                        current.column, null, current.fname,
+                        current.params.replaceFunctions());
+                SCSSFunctionGenerator generator = getGenerator(current
+                        .getFunctionName());
+                // TODO breaks if functions return lists
+                list.add((LexicalUnitImpl) generator.compute(copy));
+            } else {
+                list.add(current);
+            }
+            current = current.getNextLexicalUnit();
         }
-        return this;
+        return asChain(list);
+    }
+
+    private LexicalUnitImpl asChain(List<LexicalUnitImpl> list) {
+        LexicalUnitImpl first = list.get(0).copy();
+        LexicalUnitImpl previous = first;
+        for (int i = 1; i < list.size(); ++i) {
+            previous.next = list.get(i).copy();
+            previous = previous.next;
+        }
+        return first;
     }
 
     private static SCSSFunctionGenerator getGenerator(String funcName) {
@@ -1060,6 +1075,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     @Override
     public boolean containsArithmeticalOperator() {
         LexicalUnitImpl current = this;
+        LexicalUnitImpl previous = null;
         while (current != null) {
             for (BinaryOperator operator : BinaryOperator.values()) {
                 /*
@@ -1071,8 +1087,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
                     if (current.getLexicalUnitType() != BinaryOperator.DIV.type) {
                         return true;
                     } else {
-                        if (current.getPreviousLexicalUnit()
-                                .getLexicalUnitType() == SCSS_VARIABLE
+                        if ((previous != null && previous.getLexicalUnitType() == SCSS_VARIABLE)
                                 || current.getNextLexicalUnit()
                                         .getLexicalUnitType() == SCSS_VARIABLE) {
                             return true;
@@ -1080,6 +1095,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
                     }
                 }
             }
+            previous = current;
             current = current.getNextLexicalUnit();
         }
         return false;

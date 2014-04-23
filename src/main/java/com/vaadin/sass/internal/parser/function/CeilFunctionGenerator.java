@@ -16,7 +16,6 @@
 package com.vaadin.sass.internal.parser.function;
 
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
-import com.vaadin.sass.internal.util.DeepCopy;
 
 public class CeilFunctionGenerator extends
         AbstractSingleParameterFunctionGenerator {
@@ -27,7 +26,7 @@ public class CeilFunctionGenerator extends
 
     @Override
     protected LexicalUnitImpl computeForParam(LexicalUnitImpl param) {
-        param = (LexicalUnitImpl) DeepCopy.copy(param);
+        param = param.copy();
         param.setFloatValue((float) Math.ceil(param.getFloatValue()));
         return param;
     }
