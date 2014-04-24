@@ -16,7 +16,6 @@
 package com.vaadin.sass.internal.parser;
 
 import java.util.Collection;
-import java.util.Iterator;
 
 import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
 import com.vaadin.sass.internal.tree.VariableNode;
@@ -37,7 +36,7 @@ import com.vaadin.sass.internal.tree.VariableNode;
  * single value.
  * 
  */
-public interface SassListItem extends Iterable<SassListItem> {
+public interface SassListItem {
 
     public int getLineNumber();
 
@@ -124,71 +123,8 @@ public interface SassListItem extends Iterable<SassListItem> {
      */
     public String unquotedString();
 
-    // The following methods are used to make all values behave like a list.
-    // The modification methods return the modified list so that it is possible
-    // to add a value to a LexicalUnitImpl object and get a list as a result.
-    public int size();
-
-    public SassListItem get(int index);
-
-    public Iterator<SassListItem> iterator();
-
-    public SassList.Separator getSeparator();
-
+    // TODO this should be replaced with a more appropriate API for performing
+    // the operations that we actually want to perform
+    @Deprecated
     public LexicalUnitImpl getContainedValue();
-
-    /**
-     * Returns a list that contains all items of this list except those given in
-     * the parameter items. If items or this is a single value instead of a
-     * list, it is treated as if it were a list with one item.
-     * 
-     * @param items
-     *            The items to be removed from this list.
-     * @return A SassList containing the elements of this list except for those
-     *         appearing in items.
-     */
-    public SassList removeAllItems(SassListItem items);
-
-    /**
-     * Returns a list that is obtained from this list by adding all given items
-     * to the end of this list. If items or this is a single value instead of a
-     * list, it is treated as if it were a list with one item.
-     * 
-     * @param items
-     *            The items to be added to this list.
-     * @return A SassList containing the elements of this list and those
-     *         appearing in items.
-     */
-    public SassList addAllItems(SassListItem items);
-
-    /**
-     * Checks whether all given items appear in this list. If items or this is a
-     * single value instead of a list, it is treated as if it were a list with
-     * one item.
-     * 
-     * @param items
-     *            A set of items or a single item.
-     * @return true, if this contains all elements of items. false, otherwise.
-     */
-    public boolean containsAllItems(SassListItem items);
-
-    /**
-     * Returns a flattened representation of this item. The flattened
-     * representation of a single value or an empty list is the item itself.
-     * 
-     * For a non-empty list the definition of flatten is recursive. The
-     * flattened representation of a list containing a single value is the
-     * flattened representation of the value. For a list containing multiple
-     * values, the flattened representation is obtained by replacing all
-     * elements of the list by their flattened representations.
-     * 
-     * Examples of flattened representations: a) (1) -> 1 b) (1 (2) ((3)) ) ->
-     * (1 2 3) c) (1, (2, 3), 4) -> (1, (2, 3), 4) (i.e., no change).
-     * 
-     * Note that the flattened representation of a list can be a single value
-     * instead of a list, as in the example (a) above.
-     * 
-     * @return A flattened representation of this item.
-     */
-    public SassListItem flatten();
 }

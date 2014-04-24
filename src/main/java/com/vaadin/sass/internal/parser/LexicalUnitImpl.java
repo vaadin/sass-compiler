@@ -1171,54 +1171,8 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         return printState().hashCode();
     }
 
-    // The following methods are used to make a LexicalUnitImpl behave like a
-    // list.
-    @Override
-    public SassList.Separator getSeparator() {
-        return SassList.Separator.SPACE;
-    }
-
-    @Override
-    public int size() {
-        return 1;
-    }
-
-    @Override
-    public LexicalUnitImpl get(int index) {
-        if (index < 0 || index >= size()) {
-            throw new IndexOutOfBoundsException("Illegal index: " + index
-                    + ". Number of elements: " + size() + ".");
-        }
-        return this;
-    }
-
-    @Override
-    public Iterator<SassListItem> iterator() {
-        SassList wrapped = new SassList(this);
-        return wrapped.iterator();
-    }
-
     @Override
     public LexicalUnitImpl getContainedValue() {
-        return this;
-    }
-
-    public SassList addAllItems(SassListItem items) {
-        return new SassList(items.getSeparator(), this).addAllItems(items);
-    }
-
-    @Override
-    public SassList removeAllItems(SassListItem items) {
-        return new SassList(getSeparator(), this).removeAllItems(items);
-    }
-
-    @Override
-    public boolean containsAllItems(SassListItem items) {
-        return new SassList(getSeparator(), this).containsAllItems(items);
-    }
-
-    @Override
-    public SassListItem flatten() {
         return this;
     }
 

@@ -31,7 +31,8 @@ import com.vaadin.sass.internal.tree.VariableNode;
  * SassList is a list that has a specified separator character (comma or space)
  * and data items. The data items can be lists.
  */
-public class SassList implements SassListItem, Serializable {
+public class SassList implements SassListItem, Iterable<SassListItem>,
+        Serializable {
 
     public enum Separator {
         COMMA(", "), SPACE(" ");
@@ -88,7 +89,6 @@ public class SassList implements SassListItem, Serializable {
         this.column = column;
     }
 
-    @Override
     public Separator getSeparator() {
         return separator;
     }
@@ -142,20 +142,44 @@ public class SassList implements SassListItem, Serializable {
      * Returns a SassListItem whose textual (CSS) representation is the same as
      * that of this list. Any extra nesting is recursively removed. Nesting is
      * extra if a list contains only one element. A list with extra nesting is
-     * replaced by its contents (a SassList or a SassListItem).
+     * replaced by its contents (a SassList or a SassListItem). The flattened
+     * representation of a single value or an empty list is the item itself.
+     * 
+     * For a non-empty list the definition of flatten is recursive. The
+     * flattened representation of a list containing a single value is the
+     * flattened representation of the value. For a list containing multiple
+     * values, the flattened representation is obtained by replacing all
+     * elements of the list by their flattened representations.
+     * 
+     * Examples of flattened representations: a) (1) -> 1 b) (1 (2) ((3)) ) ->
+     * (1 2 3) c) (1, (2, 3), 4) -> (1, (2, 3), 4) (i.e., no change).
+     * 
+     * Note that the flattened representation of a list can be a single value
+     * instead of a list, as in the example (a) above.
+     * 
+     * This method should only be called by the parser.
+     * 
+     * @return A flattened representation of this item.
      */
-    @Override
     public SassListItem flatten() {
-        // Flatten this list (i.e., return its contents) if possible.
-        if (size() == 1) {
-            return get(0).flatten();
+        return flatten(this);
+    }
+
+    private static SassListItem flatten(SassListItem item) {
+        if (item instanceof SassList) {
+            SassList sassList = (SassList) item;
+            if (sassList.size() == 1) {
+                return flatten(sassList.get(0));
+            } else {
+                List<SassListItem> list = new ArrayList<SassListItem>();
+                for (SassListItem inner : sassList) {
+                    list.add(flatten(inner));
+                }
+                return new SassList(sassList.getSeparator(), list);
+            }
+        } else {
+            return item;
         }
-        // Recursively flatten the elements of this list.
-        List<SassListItem> list = new ArrayList<SassListItem>();
-        for (SassListItem item : this) {
-            list.add(item.flatten());
-        }
-        return new SassList(getSeparator(), list);
     }
 
     @Override
@@ -276,45 +300,10 @@ public class SassList implements SassListItem, Serializable {
         return result;
     }
 
-    // The list modification methods return the modified list to allow treating
-    // single LexicalUnitImpl objects similarly to lists.
-
-    @Override
-    public SassList addAllItems(SassListItem items) {
-        ArrayList<SassListItem> values = new ArrayList<SassListItem>(this.items);
-        SassList otherItems = getItemsAsList(items);
-        values.addAll(otherItems.items);
-        return new SassList(getSeparator(), values);
-    }
-
-    @Override
-    public SassList removeAllItems(SassListItem items) {
-        ArrayList<SassListItem> values = new ArrayList<SassListItem>(this.items);
-        SassList otherItems = getItemsAsList(items);
-        values.removeAll(otherItems.items);
-        return new SassList(getSeparator(), values);
-    }
-
-    @Override
-    public boolean containsAllItems(SassListItem items) {
-        SassList otherItems = getItemsAsList(items);
-        return this.items.containsAll(otherItems.items);
-    }
-
-    private SassList getItemsAsList(SassListItem items) {
-        if (items instanceof SassList) {
-            return (SassList) items;
-        } else {
-            return new SassList(items);
-        }
-    }
-
-    @Override
     public int size() {
         return items.size();
     }
 
-    @Override
     public SassListItem get(int index) {
         return items.get(index);
     }

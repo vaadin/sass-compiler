@@ -1486,7 +1486,7 @@ String hash(String pred) :
 void variable() :
 {
     String name;
-    SassListItem l = null;
+    SassList l = null;
     boolean guarded = false;
     String raw;
 }
@@ -1496,8 +1496,7 @@ void variable() :
         ":" ( <S> )* l=expressionList() ( guarded=guarded() )? semicolonTerminator()
         //raw=skipStatementUntilSemiColon()
         {
-            l = l.flatten();
-            documentHandler.variable(name, l, guarded);
+            documentHandler.variable(name, l.flatten(), guarded);
         }
     } catch (JumpException e) {
         skipAfterExpression();
@@ -1732,7 +1731,8 @@ JAVACODE
 // arguments should come after an optional argument. An argument is optional if it has a
 // default value.
 boolean checkMixinForOptionalArguments(VariableNode arg, boolean hasOptionalArguments){
-    boolean argumentHasDefaultValue = arg.getExpr() != null && arg.getExpr().size() > 0;
+    // here, arg.getExpr() is always either null or a SassList
+    boolean argumentHasDefaultValue = arg.getExpr() instanceof SassList && ((SassList) arg.getExpr()).size() > 0;
     if(argumentHasDefaultValue){
         return true;
     }
@@ -2038,7 +2038,7 @@ void declarationOrNestedProperties() :
      ":" ( <S> )* 
      (exp=expressionList() ( important=prio() )?
      {
-         exp = exp.flatten();
+         exp = ((SassList) exp).flatten();
          Token next = getToken(1);
          if(next.kind == SEMICOLON || next.kind == RBRACE){
              while(next.kind == SEMICOLON){
@@ -2112,7 +2112,7 @@ void declaration() :
      { save = token; }
      ":" ( <S> )* exp=expressionList() ( important=prio() )?
      {
-        exp = exp.flatten();
+        exp = ((SassList) exp).flatten();
         documentHandler.property(name, exp, important);
      }
  } catch (JumpException e) {

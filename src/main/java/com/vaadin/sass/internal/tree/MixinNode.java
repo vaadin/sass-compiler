@@ -153,15 +153,18 @@ public class MixinNode extends Node implements IVariableNode {
          */
         if (hasVariableArguments) {
             VariableNode last = arglist.get(arglist.size() - 1);
-            SassListItem expr = last.getExpr();
-            if (expr.size() > 1) {
-                sep = expr.getSeparator();
-            }
             arglist.remove(arglist.size() - 1);
-
-            for (SassListItem item : expr) {
-                VariableNode newArgNode = new VariableNode(null, item, false);
-                arglist.add(newArgNode);
+            SassListItem expr = last.getExpr();
+            if (expr instanceof SassList) {
+                SassList lastList = (SassList) expr;
+                if (lastList.size() > 1) {
+                    sep = lastList.getSeparator();
+                }
+                for (SassListItem item : lastList) {
+                    arglist.add(new VariableNode(null, item, false));
+                }
+            } else {
+                arglist.add(new VariableNode(null, expr, false));
             }
             // Append any remaining variable name-value pairs to the argument
             // list
