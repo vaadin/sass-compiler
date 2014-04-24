@@ -26,14 +26,4 @@ public interface SCSSLexicalUnit extends LexicalUnit {
     static final short SAC_LEM = 200;
     static final short SAC_REM = 201;
 
-    LexicalUnitImpl divide(LexicalUnitImpl denominator);
-
-    LexicalUnitImpl add(LexicalUnitImpl another);
-
-    LexicalUnitImpl minus(LexicalUnitImpl another);
-
-    LexicalUnitImpl multiply(LexicalUnitImpl another);
-
-    LexicalUnitImpl modulo(LexicalUnitImpl another);
-
 }

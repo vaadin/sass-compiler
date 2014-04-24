@@ -133,10 +133,6 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         this.type = type;
     }
 
-    public void getLexicalUnitType(short type) {
-        this.type = type;
-    }
-
     @Override
     public LexicalUnitImpl getNextLexicalUnit() {
         return next;
@@ -297,7 +293,6 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         return result;
     }
 
-    @Override
     public LexicalUnitImpl divide(LexicalUnitImpl denominator) {
         if (denominator.getLexicalUnitType() != SAC_INTEGER
                 && denominator.getLexicalUnitType() != SAC_REAL
@@ -312,7 +307,6 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         return copy;
     }
 
-    @Override
     public LexicalUnitImpl add(LexicalUnitImpl another) {
         LexicalUnitImpl copy = copyWithValue(getFloatValue()
                 + another.getFloatValue());
@@ -320,7 +314,6 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         return copy;
     }
 
-    @Override
     public LexicalUnitImpl minus(LexicalUnitImpl another) {
         LexicalUnitImpl copy = copyWithValue(getFloatValue()
                 - another.getFloatValue());
@@ -328,7 +321,6 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         return copy;
     }
 
-    @Override
     public LexicalUnitImpl multiply(LexicalUnitImpl another) {
         LexicalUnitImpl copy = copyWithValue(getFloatValue()
                 * another.getFloatValue());
@@ -351,7 +343,6 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         return getLexicalUnitType();
     }
 
-    @Override
     public LexicalUnitImpl modulo(LexicalUnitImpl another) {
         if (getLexicalUnitType() != another.getLexicalUnitType()) {
             throw new IncompatibleUnitsException(printState());

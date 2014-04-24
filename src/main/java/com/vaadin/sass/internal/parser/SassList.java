@@ -143,7 +143,7 @@ public class SassList implements SassListItem, Iterable<SassListItem>,
      * that of this list. Any extra nesting is recursively removed. Nesting is
      * extra if a list contains only one element. A list with extra nesting is
      * replaced by its contents (a SassList or a SassListItem). The flattened
-     * representation of a single value or an empty list is the item itself.
+     * representation of an empty list is the item itself.
      * 
      * For a non-empty list the definition of flatten is recursive. The
      * flattened representation of a list containing a single value is the

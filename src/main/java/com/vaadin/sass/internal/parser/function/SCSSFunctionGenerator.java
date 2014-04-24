@@ -43,6 +43,9 @@ public interface SCSSFunctionGenerator {
      * Computes the value of the function. The parameters should be evaluated
      * before this method is called.
      * 
+     * Both the input and the output of the method should be separate from any
+     * chain of lexical units.
+     * 
      * @param function
      *            Function lexical unit to print its state
      * @return SassListItem the value of the function

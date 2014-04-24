@@ -70,7 +70,7 @@ public class ParseException extends CSSException {
         specialConstructor = false;
     }
 
-    public ParseException(String message, LexicalUnitImpl unit) {
+    public ParseException(String message, SassListItem unit) {
         this(message);
         currentUnit = unit;
     }
@@ -95,7 +95,7 @@ public class ParseException extends CSSException {
      * When not using a special constructor, if the current unit is not null, it
      * is used to determine the location of the exception in the parsed file.
      */
-    private LexicalUnitImpl currentUnit;
+    private SassListItem currentUnit;
 
     /**
      * When not using a special constructor, if the current node is not null, it

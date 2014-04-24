@@ -28,7 +28,6 @@ public class MixinDefNode extends Node implements IVariableNode {
     private String name;
     private ArrayList<VariableNode> arglist;
     private boolean hasVariableArguments = false;
-    private String body;
 
     public MixinDefNode(String name, Collection<VariableNode> args,
             boolean hasVariableArgs) {
@@ -44,7 +43,7 @@ public class MixinDefNode extends Node implements IVariableNode {
     @Override
     public String toString() {
         return "Mixin Definition Node: {name: " + name + ", args: "
-                + arglist.size() + ", body: " + body + "}";
+                + arglist.size() + "}";
     }
 
     public String getName() {
