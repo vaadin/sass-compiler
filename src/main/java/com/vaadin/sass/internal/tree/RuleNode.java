@@ -20,21 +20,20 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import com.vaadin.sass.internal.ScssStylesheet;
-import com.vaadin.sass.internal.expression.ArithmeticExpressionEvaluator;
 import com.vaadin.sass.internal.parser.SassListItem;
 
 public class RuleNode extends Node implements IVariableNode {
     private static final long serialVersionUID = 6653493127869037022L;
 
     String variable;
-    SassListItem value;
+    SassListItem value = null;
     String comment;
     private boolean important;
 
     public RuleNode(String variable, SassListItem value, boolean important,
             String comment) {
         this.variable = variable;
-        this.value = value;
+        setValue(value);
         this.important = important;
         this.comment = comment;
     }
@@ -51,8 +50,12 @@ public class RuleNode extends Node implements IVariableNode {
         return value;
     }
 
-    public void setValue(SassListItem value) {
-        this.value = value;
+    private void setValue(SassListItem value) {
+        if (value != null) {
+            this.value = value.replaceChains();
+        } else {
+            this.value = null;
+        }
     }
 
     @Override
@@ -106,8 +109,7 @@ public class RuleNode extends Node implements IVariableNode {
          * successor is a Variable or not, to determine it is an arithmetic
          * operator.
          */
-        if (ArithmeticExpressionEvaluator.get().containsArithmeticalOperator(
-                value)) {
+        if (value.containsArithmeticalOperator()) {
             replaceVariables(ScssStylesheet.getVariables());
             value = value.evaluateArithmeticExpressions();
         } else {

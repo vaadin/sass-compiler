@@ -78,7 +78,13 @@ public class VariableArgumentList extends SassList implements Serializable {
     }
 
     @Override
-    public SassListItem flatten() {
-        throw new UnsupportedOperationException();
+    public SassListItem replaceChains() {
+        List<SassListItem> unnamed = new ArrayList<SassListItem>();
+        for (SassListItem item : this) {
+            unnamed.add(item.replaceChains());
+        }
+        return new VariableArgumentList(getSeparator(), unnamed,
+                getNamedVariables());
     }
+
 }

@@ -27,6 +27,10 @@ public class ArithmeticException extends RuntimeException {
     }
 
     private static String buildMessage(String message, LexicalUnitImpl term) {
+        if (term == null) {
+            return message;
+        }
+
         StringBuilder builder = new StringBuilder(message);
 
         builder.append(": \"");

@@ -24,7 +24,6 @@
 package com.vaadin.sass.internal.parser;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,8 +35,6 @@ import java.util.regex.Pattern;
 
 import org.w3c.css.sac.LexicalUnit;
 
-import com.vaadin.sass.internal.expression.ArithmeticExpressionEvaluator;
-import com.vaadin.sass.internal.expression.BinaryOperator;
 import com.vaadin.sass.internal.expression.exception.IncompatibleUnitsException;
 import com.vaadin.sass.internal.parser.function.AbsFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.CeilFunctionGenerator;
@@ -46,6 +43,8 @@ import com.vaadin.sass.internal.parser.function.DefaultFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.FloorFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.LightenFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.PercentageFunctionGenerator;
+import com.vaadin.sass.internal.parser.function.RGBFunctionGenerator;
+import com.vaadin.sass.internal.parser.function.RectFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.RoundFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.SCSSFunctionGenerator;
 import com.vaadin.sass.internal.tree.Node;
@@ -368,7 +367,6 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         copy.dimension = dimension;
         copy.sdimension = sdimension;
         copy.params = params;
-        copy.next = null;
         return copy;
     }
 
@@ -569,21 +567,9 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         return new LexicalUnitImpl(line, column, previous, SAC_URI, s);
     }
 
-    static LexicalUnitImpl createAttr(int line, int column,
+    public static LexicalUnitImpl createAttr(int line, int column,
             LexicalUnitImpl previous, String s) {
         return new LexicalUnitImpl(line, column, previous, SAC_ATTR, s);
-    }
-
-    static LexicalUnitImpl createCounter(int line, int column,
-            LexicalUnitImpl previous, SassList params) {
-        return new LexicalUnitImpl(SAC_COUNTER_FUNCTION, line, column,
-                previous, "counter", params);
-    }
-
-    public static LexicalUnitImpl createCounters(int line, int column,
-            LexicalUnitImpl previous, SassList params) {
-        return new LexicalUnitImpl(SAC_COUNTERS_FUNCTION, line, column,
-                previous, "counters", params);
     }
 
     public static LexicalUnitImpl createRGBColor(int line, int column,
@@ -600,115 +586,11 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
 
     public static LexicalUnitImpl createFunction(int line, int column,
             LexicalUnitImpl previous, String fname, SassList params) {
-        if ("rgb".equals(fname)) {
-            // this is a RGB declaration (e.g. rgb(255, 50%, 0) )
-            if (params.size() != 3) {
-                throw new ParseException(
-                        "The function rgb() requires exactly 3 parameters",
-                        line, column);
-            }
-            for (int i = 0; i < 3; ++i) {
-                SassListItem item = params.get(i);
-                if (checkLexicalUnitType(item, SCSS_VARIABLE)) {
-                    return new LexicalUnitImpl(SAC_FUNCTION, line, column,
-                            previous, fname, params);
-                }
-
-                if (!checkLexicalUnitType(item, SAC_INTEGER, SAC_PERCENTAGE)) {
-                    throw new ParseException(
-                            "Invalid parameter to the function rgb(): "
-                                    + item.toString(), line, column);
-                }
-            }
-            return LexicalUnitImpl.createRGBColor(line, column, previous,
-                    params);
-        } else if ("counter".equals(fname)) {
-            if (params.size() == 1 || params.size() == 2) {
-                boolean ok = true;
-                if (!checkLexicalUnitType(params.get(0), LexicalUnit.SAC_IDENT)) {
-                    ok = false;
-                }
-                if (params.size() >= 2) {
-                    if (!checkLexicalUnitType(params.get(1),
-                            LexicalUnit.SAC_IDENT)) {
-                        ok = false;
-                    }
-                }
-                if (ok) {
-                    return LexicalUnitImpl.createCounter(line, column,
-                            previous, params);
-                }
-            }
-        } else if ("counters".equals(fname)) {
-            if (params.size() == 2 || params.size() == 3) {
-                boolean ok = true;
-                if (!checkLexicalUnitType(params.get(0), LexicalUnit.SAC_IDENT)) {
-                    ok = false;
-                }
-                if (params.size() >= 2) {
-                    if (!checkLexicalUnitType(params.get(1),
-                            LexicalUnit.SAC_STRING_VALUE)) {
-                        ok = false;
-                    }
-                }
-                if (params.size() >= 3) {
-                    if (!checkLexicalUnitType(params.get(2),
-                            LexicalUnit.SAC_IDENT)) {
-                        ok = false;
-                    }
-                }
-                if (ok) {
-                    return LexicalUnitImpl.createCounters(line, column,
-                            previous, params);
-                }
-            }
-        } else if ("attr".equals(fname)) {
-            if (params.size() == 1
-                    && checkLexicalUnitType(params.get(0),
-                            LexicalUnit.SAC_IDENT)) {
-                return LexicalUnitImpl.createAttr(line, column, previous,
-                        ((LexicalUnitImpl) params.get(0)).getStringValue());
-            }
-        } else if ("rect".equals(fname)) {
-            int i = 0;
-            boolean ok = true;
-            while (ok && i < 4 && i < params.size()) {
-                SassListItem item = params.get(i);
-                if (!(item instanceof LexicalUnitImpl)) {
-                    throw new ParseException(
-                            "Only simple values are allowed as rect() parameters: "
-                                    + params);
-                }
-                LexicalUnitImpl lui = (LexicalUnitImpl) item;
-                short luiType = lui.getLexicalUnitType();
-                if (luiType == SCSSLexicalUnit.SAC_INTEGER
-                        && lui.getIntegerValue() != 0) {
-                    ok = false;
-                } else if (luiType == SCSSLexicalUnit.SAC_IDENT
-                        && !"auto".equals(lui.getStringValue())) {
-                    ok = false;
-                } else if ((luiType != LexicalUnit.SAC_EM)
-                        && (luiType != LexicalUnit.SAC_EX)
-                        && (luiType != LexicalUnit.SAC_PIXEL)
-                        && (luiType != LexicalUnit.SAC_CENTIMETER)
-                        && (luiType != LexicalUnit.SAC_MILLIMETER)
-                        && (luiType != LexicalUnit.SAC_INCH)
-                        && (luiType != LexicalUnit.SAC_POINT)
-                        && (luiType != LexicalUnit.SAC_PICA)) {
-                    ok = false;
-                }
-                i++;
-            }
-            if (params.size() == 4 && ok) {
-                return LexicalUnitImpl.createRect(line, column, previous,
-                        params);
-            }
-        }
         return new LexicalUnitImpl(SAC_FUNCTION, line, column, previous, fname,
                 params);
     }
 
-    private static boolean checkLexicalUnitType(SassListItem item,
+    public static boolean checkLexicalUnitType(SassListItem item,
             short... lexicalUnitTypes) {
         if (!(item instanceof LexicalUnitImpl)) {
             return false;
@@ -771,39 +653,13 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
                 previous);
     }
 
-    /**
-     * Tries to return the value for this {@link LexicalUnitImpl} without
-     * considering any related units.
-     * 
-     * @return
-     */
-    public Object getValue() {
-        if (s != null) {
-            return s;
-        } else if (i != -1) {
-            return i;
-        } else if (f != -1) {
-            return f;
-        } else {
-            return null;
-        }
-    }
-
-    public String getValueAsString() {
-        Object value = getValue();
-        if (value == null) {
-            return null;
-        } else {
-            return value.toString();
-        }
-    }
-
     public static LexicalUnitImpl createIdent(String s) {
         return new LexicalUnitImpl(0, 0, null, SAC_IDENT, s);
     }
 
     @Override
     public SassListItem replaceVariables(Collection<VariableNode> variables) {
+        // TODO simplify
         SassListItem result = this;
         Iterator<VariableNode> it = variables.iterator();
         while (it.hasNext() && result instanceof LexicalUnitImpl) {
@@ -817,74 +673,35 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     }
 
     private SassListItem replaceVariable(VariableNode node) {
-        SassListItem replacement = this;
-        replacement = replaceParams(replacement, node);
-        replacement = replaceVariable(replacement, node);
+        LexicalUnitImpl replacementUnit = this;
+        replacementUnit = replaceParams(replacementUnit, node);
+        SassListItem replacement = replaceVariable(replacementUnit, node);
         replacement = replaceInterpolation(replacement, node);
-        if (next != null && !(replacement instanceof LexicalUnitImpl)) {
-            throw new ParseException(
-                    "Replacing variables failed, simple value is required within an expression",
-                    this);
-        }
-        replacement = replaceNext(replacement, node);
         return replacement;
     }
 
-    private static SassListItem replaceNext(SassListItem item, VariableNode node) {
-        if (item instanceof LexicalUnitImpl) {
-            LexicalUnitImpl unit = (LexicalUnitImpl) item;
-            LexicalUnitImpl next = unit.next;
-            if (next != null) {
-                unit = unit.copy();
-                SassListItem replacement = next.replaceVariable(node);
-                if (!(replacement instanceof LexicalUnitImpl)) {
-                    throw new ParseException(
-                            "Replacing variables failed, simple value is required within an expression",
-                            unit);
-                }
-                unit.next = (LexicalUnitImpl) replacement;
-                item = unit;
-            }
+    private static SassListItem replaceVariable(LexicalUnitImpl unit,
+            VariableNode node) {
+        if (unit.getLexicalUnitType() == LexicalUnitImpl.SCSS_VARIABLE
+                && node.getName().equals(unit.getStringValue())) {
+            return node.getExpr();
+        } else {
+            return unit;
         }
-        return item;
     }
 
-    private static SassListItem replaceVariable(SassListItem item,
+    private static LexicalUnitImpl replaceParams(LexicalUnitImpl item,
             VariableNode node) {
-        if (item instanceof LexicalUnitImpl) {
-            LexicalUnitImpl unit = (LexicalUnitImpl) item;
-            if (unit.getLexicalUnitType() == LexicalUnitImpl.SCSS_VARIABLE
-                    && node.getName().equals(unit.getStringValue())) {
-                item = node.getExpr();
-                if (unit.next != null) {
-                    if (!(item instanceof LexicalUnitImpl)) {
-                        throw new ParseException(
-                                "Variable used in an expression must have a single value",
-                                unit);
-                    }
-                    item = ((LexicalUnitImpl) item).copy();
-                    ((LexicalUnitImpl) item).next = unit.next;
-                }
-            }
+        SassList params = item.getParameterList();
+        if (params != null) {
+            SassList newParams = params.replaceVariables(Collections
+                    .singletonList(node));
+            LexicalUnitImpl copy = item.copy();
+            copy.setParameterList(newParams);
+            return copy;
+        } else {
+            return item;
         }
-        return item;
-    }
-
-    private static SassListItem replaceParams(SassListItem item,
-            VariableNode node) {
-        if (item instanceof LexicalUnitImpl) {
-            LexicalUnitImpl unit = (LexicalUnitImpl) item;
-            SassList params = unit.getParameterList();
-            if (params != null) {
-                SassList newParams = params.replaceVariables(Collections
-                        .singletonList(node));
-                LexicalUnitImpl copy = unit.copy();
-                copy.setParameterList(newParams);
-                copy.next = unit.next;
-                item = copy;
-            }
-        }
-        return item;
     }
 
     private static SassListItem replaceInterpolation(SassListItem item,
@@ -892,12 +709,11 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         if (item instanceof LexicalUnitImpl) {
             LexicalUnitImpl unit = (LexicalUnitImpl) item;
             String interpolation = "#{$" + node.getName() + "}";
-            if (unit.getValueAsString().contains(interpolation)) {
+            String stringValue = unit.getStringValue();
+            if (stringValue != null && stringValue.contains(interpolation)) {
                 LexicalUnitImpl copy = unit.copy();
-                copy.setStringValue(copy.getValueAsString().replaceAll(
-                        Pattern.quote(interpolation),
-                        node.getExpr().unquotedString()));
-                copy.next = unit.next;
+                copy.setStringValue(stringValue.replaceAll(Pattern
+                        .quote(interpolation), node.getExpr().unquotedString()));
                 item = copy;
             }
         }
@@ -906,33 +722,13 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
 
     @Override
     public SassListItem replaceFunctions() {
-        List<LexicalUnitImpl> list = new ArrayList<LexicalUnitImpl>();
-        LexicalUnitImpl current = this;
-        while (current != null) {
-            if (current.params != null) {
-                LexicalUnitImpl copy = createFunction(current.line,
-                        current.column, null, current.fname,
-                        current.params.replaceFunctions());
-                SCSSFunctionGenerator generator = getGenerator(current
-                        .getFunctionName());
-                // TODO breaks if functions return lists
-                list.add((LexicalUnitImpl) generator.compute(copy));
-            } else {
-                list.add(current);
-            }
-            current = current.getNextLexicalUnit();
+        if (params != null) {
+            LexicalUnitImpl copy = createFunction(line, column, null, fname,
+                    params.replaceFunctions());
+            return getGenerator(getFunctionName()).compute(copy);
+        } else {
+            return this;
         }
-        return asChain(list);
-    }
-
-    private LexicalUnitImpl asChain(List<LexicalUnitImpl> list) {
-        LexicalUnitImpl first = list.get(0).copy();
-        LexicalUnitImpl previous = first;
-        for (int i = 1; i < list.size(); ++i) {
-            previous.next = list.get(i).copy();
-            previous = previous.next;
-        }
-        return first;
     }
 
     private static SCSSFunctionGenerator getGenerator(String funcName) {
@@ -951,8 +747,10 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         list.add(new DarkenFunctionGenerator());
         list.add(new FloorFunctionGenerator());
         list.add(new LightenFunctionGenerator());
-        list.add(new RoundFunctionGenerator());
         list.add(new PercentageFunctionGenerator());
+        list.add(new RectFunctionGenerator());
+        list.add(new RGBFunctionGenerator());
+        list.add(new RoundFunctionGenerator());
         return list;
     }
 
@@ -1095,36 +893,12 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
 
     @Override
     public boolean containsArithmeticalOperator() {
-        LexicalUnitImpl current = this;
-        LexicalUnitImpl previous = null;
-        while (current != null) {
-            for (BinaryOperator operator : BinaryOperator.values()) {
-                /*
-                 * '/' is treated as an arithmetical operator when one of its
-                 * operands is Variable, or there is another binary operator.
-                 * Otherwise, '/' is treated as a CSS operator.
-                 */
-                if (current.getLexicalUnitType() == operator.type) {
-                    if (current.getLexicalUnitType() != BinaryOperator.DIV.type) {
-                        return true;
-                    } else {
-                        if ((previous != null && previous.getLexicalUnitType() == SCSS_VARIABLE)
-                                || current.getNextLexicalUnit()
-                                        .getLexicalUnitType() == SCSS_VARIABLE) {
-                            return true;
-                        }
-                    }
-                }
-            }
-            previous = current;
-            current = current.getNextLexicalUnit();
-        }
         return false;
     }
 
     @Override
     public LexicalUnitImpl evaluateArithmeticExpressions() {
-        return ArithmeticExpressionEvaluator.get().evaluate(this);
+        return this;
     }
 
     // TODO mutates this
@@ -1138,9 +912,6 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
                 path = StringUtil.cleanPath(path);
                 setStringValue(path);
             }
-        }
-        if (getNextLexicalUnit() != null) {
-            getNextLexicalUnit().updateUrl(prefix);
         }
     }
 
@@ -1165,6 +936,11 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     @Override
     public LexicalUnitImpl getContainedValue() {
         return this;
+    }
+
+    @Override
+    public SassListItem replaceChains() {
+        return next == null ? this : new SassExpression(this);
     }
 
 }

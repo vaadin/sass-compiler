@@ -19,7 +19,6 @@ package com.vaadin.sass.internal.tree;
 import java.util.ArrayList;
 
 import com.vaadin.sass.internal.ScssStylesheet;
-import com.vaadin.sass.internal.expression.ArithmeticExpressionEvaluator;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.visitor.VariableNodeHandler;
 
@@ -27,13 +26,13 @@ public class VariableNode extends Node implements IVariableNode {
     private static final long serialVersionUID = 7003372557547748734L;
 
     private String name;
-    private SassListItem expr;
+    private SassListItem expr = null;
     private boolean guarded;
 
     public VariableNode(String name, SassListItem expr, boolean guarded) {
         super();
         this.name = name;
-        this.expr = expr;
+        setExpr(expr);
         this.guarded = guarded;
     }
 
@@ -42,7 +41,11 @@ public class VariableNode extends Node implements IVariableNode {
     }
 
     public void setExpr(SassListItem expr) {
-        this.expr = expr;
+        if (expr != null) {
+            this.expr = expr.replaceChains();
+        } else {
+            this.expr = null;
+        }
     }
 
     public void setName(String name) {
@@ -87,8 +90,7 @@ public class VariableNode extends Node implements IVariableNode {
          * successor is a Variable or not, to determine it is an arithmetic
          * operator.
          */
-        if (ArithmeticExpressionEvaluator.get().containsArithmeticalOperator(
-                expr)) {
+        if (expr.containsArithmeticalOperator()) {
             replaceVariables(ScssStylesheet.getVariables());
             expr = expr.evaluateArithmeticExpressions();
         } else {

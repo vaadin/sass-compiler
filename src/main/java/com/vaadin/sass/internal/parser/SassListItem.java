@@ -127,4 +127,14 @@ public interface SassListItem {
     // the operations that we actually want to perform
     @Deprecated
     public LexicalUnitImpl getContainedValue();
+
+    /**
+     * Returns an object that is otherwise similar to this but chains of
+     * LexicalUnitImpl objects have been replaced with SassExpressions
+     * representing the same expressions.
+     * 
+     * @return An object equivalent to this but with chains of LexicalUnitImpl
+     *         objects replaced with corresponding SassExpressions.
+     */
+    public SassListItem replaceChains();
 }

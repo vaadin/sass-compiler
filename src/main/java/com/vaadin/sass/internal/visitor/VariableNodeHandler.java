@@ -32,8 +32,7 @@ public class VariableNodeHandler {
             SassListItem value = variable.getExpr();
             if (value instanceof LexicalUnitImpl) {
                 LexicalUnitImpl unit = (LexicalUnitImpl) value;
-                if (unit.getLexicalUnitType() == SCSSLexicalUnit.SCSS_NULL
-                        && unit.getNextLexicalUnit() == null) {
+                if (unit.getLexicalUnitType() == SCSSLexicalUnit.SCSS_NULL) {
                     ScssStylesheet.addVariable(node);
                 }
             }
