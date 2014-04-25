@@ -171,9 +171,7 @@ public class MixinNode extends Node implements IVariableNode {
             if (expr instanceof VariableArgumentList) {
                 for (VariableNode namedNode : ((VariableArgumentList) expr)
                         .getNamedVariables()) {
-                    VariableNode newArgNode = (VariableNode) DeepCopy
-                            .copy(namedNode);
-                    arglist.add(newArgNode);
+                    arglist.add(namedNode.copy());
                 }
             }
         }

@@ -28,7 +28,6 @@ import com.vaadin.sass.internal.tree.MixinDefNode;
 import com.vaadin.sass.internal.tree.MixinNode;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.VariableNode;
-import com.vaadin.sass.internal.util.DeepCopy;
 
 public class MixinNodeHandler {
 
@@ -48,7 +47,7 @@ public class MixinNodeHandler {
 
     private static void replaceMixinNode(MixinNode mixinNode,
             MixinDefNode mixinDef) {
-        MixinDefNode defClone = (MixinDefNode) DeepCopy.copy(mixinDef);
+        MixinDefNode defClone = mixinDef.copy();
         defClone.traverse();
 
         defClone.replaceContentDirective(mixinNode);
@@ -132,8 +131,7 @@ public class MixinNodeHandler {
 
                 for (int i = remainingDefArguments.size(); i < remainingActualArguments
                         .size(); i++) {
-                    VariableNode unit = (VariableNode) DeepCopy
-                            .copy(remainingActualArguments.get(i));
+                    VariableNode unit = remainingActualArguments.get(i).copy();
                     if (unit.getName() == null) {
                         unnamed.add(unit.getExpr());
                     } else {

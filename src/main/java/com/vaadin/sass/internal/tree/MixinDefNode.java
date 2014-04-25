@@ -72,8 +72,7 @@ public class MixinDefNode extends Node implements IVariableNode {
             for (final VariableNode arg : new ArrayList<VariableNode>(arglist)) {
                 if (arg.getName().equals(var.getName())
                         && arg.getExpr() == null) {
-                    arglist.add(arglist.indexOf(arg),
-                            (VariableNode) DeepCopy.copy(var));
+                    arglist.add(arglist.indexOf(arg), var.copy());
                     arglist.remove(arg);
                 }
             }
@@ -124,5 +123,10 @@ public class MixinDefNode extends Node implements IVariableNode {
             contentNode.getParentNode().removeChild(contentNode);
         }
         return this;
+    }
+
+    @Override
+    public MixinDefNode copy() {
+        return (MixinDefNode) super.copy();
     }
 }

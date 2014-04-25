@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import com.vaadin.sass.internal.parser.SassListItem;
+import com.vaadin.sass.internal.util.DeepCopy;
 
 public abstract class Node implements Serializable {
 
@@ -143,6 +144,15 @@ public abstract class Node implements Serializable {
 
     private void setParentNode(Node parentNode) {
         this.parentNode = parentNode;
+    }
+
+    public Node copy() {
+        Node oldParent = parentNode;
+        parentNode = null;
+        Node copy = (Node) DeepCopy.copy(this);
+        copy.parentNode = oldParent;
+        parentNode = oldParent;
+        return copy;
     }
 
     public static interface BuildStringStrategy {

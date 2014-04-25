@@ -23,7 +23,6 @@ import com.vaadin.sass.internal.tree.IVariableNode;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.VariableNode;
 import com.vaadin.sass.internal.tree.controldirective.EachDefNode;
-import com.vaadin.sass.internal.util.DeepCopy;
 
 public class EachNodeHandler {
 
@@ -43,7 +42,7 @@ public class EachNodeHandler {
 
             for (final Node child : defNode.getChildren()) {
 
-                Node copy = (Node) DeepCopy.copy(child);
+                Node copy = child.copy();
 
                 replaceInterpolation(copy, variables);
 

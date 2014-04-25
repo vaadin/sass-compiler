@@ -104,4 +104,9 @@ public class VariableNode extends Node implements IVariableNode {
         builder.append(name).append(": ").append(strategy.build(expr));
         return builder.toString();
     }
+
+    @Override
+    public VariableNode copy() {
+        return (VariableNode) super.copy();
+    }
 }

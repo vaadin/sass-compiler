@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.vaadin.sass.internal.tree.Node;
+
 /**
  * Utility for making deep copies (vs. clone()'s shallow copies) of objects.
  * Objects are first serialized and then deserialized. Error checking is fairly
@@ -75,10 +77,10 @@ public class DeepCopy {
         }
     }
 
-    public static <T> Collection<T> copy(Collection<T> objects) {
+    public static <T extends Node> Collection<T> copy(Collection<T> objects) {
         List<T> copies = new LinkedList<T>();
         for (T object : objects) {
-            copies.add((T) copy(object));
+            copies.add((T) object.copy());
         }
         return copies;
     }
