@@ -50,6 +50,7 @@ import com.vaadin.sass.internal.parser.function.SCSSFunctionGenerator;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
 import com.vaadin.sass.internal.tree.VariableNode;
+import com.vaadin.sass.internal.util.ColorUtil;
 import com.vaadin.sass.internal.util.StringUtil;
 
 /**
@@ -848,6 +849,12 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
                 text = "url(" + getStringValue() + ")";
                 break;
             case LexicalUnit.SAC_RGBCOLOR:
+                int[] rgb = getRgb();
+                if (rgb != null) {
+                    text = ColorUtil.rgbToHexColor(rgb, 6);
+                    break;
+                }
+                // else fall through to the function branch
             case LexicalUnit.SAC_COUNTER_FUNCTION:
             case LexicalUnit.SAC_COUNTERS_FUNCTION:
             case LexicalUnit.SAC_RECT_FUNCTION:
@@ -883,6 +890,19 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         } else {
             return text;
         }
+    }
+
+    private int[] getRgb() {
+        if (params.size() != 3
+                || !checkLexicalUnitType(params.get(0), SAC_INTEGER)
+                || !checkLexicalUnitType(params.get(1), SAC_INTEGER)
+                || !checkLexicalUnitType(params.get(2), SAC_INTEGER)) {
+            return null;
+        }
+        int red = ((LexicalUnit) params.get(0)).getIntegerValue();
+        int green = ((LexicalUnit) params.get(1)).getIntegerValue();
+        int blue = ((LexicalUnit) params.get(2)).getIntegerValue();
+        return new int[] { red, green, blue };
     }
 
     static {

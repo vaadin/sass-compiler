@@ -48,23 +48,27 @@ public class ColorUtil {
                 hexColor.getColumnNumber(), null, "hsl", hslParams);
     }
 
-    public static LexicalUnitImpl hslToHexColor(LexicalUnitImpl hsl, int lengh) {
-        int[] rgb = calculateRgb(hsl);
+    public static String rgbToHexColor(int[] rgb, int length) {
         StringBuilder builder = new StringBuilder("#");
         for (int i = 0; i < 3; i++) {
             String color = Integer.toHexString(rgb[i]);
-            if (lengh == 6) {
+            if (length == 6) {
                 if (color.length() == 1) {
                     color = "0" + color;
                 }
             }
-            if (lengh == 3) {
+            if (length == 3) {
                 color = color.substring(0, 1);
             }
             builder.append(color);
         }
+        return builder.toString();
+    }
+
+    public static LexicalUnitImpl hslToHexColor(LexicalUnitImpl hsl, int length) {
+        int[] rgb = calculateRgb(hsl);
         return LexicalUnitImpl.createIdent(hsl.getLineNumber(),
-                hsl.getColumnNumber(), null, builder.toString());
+                hsl.getColumnNumber(), null, rgbToHexColor(rgb, length));
     }
 
     private static int[] calculateRgb(LexicalUnitImpl hsl) {
