@@ -706,14 +706,6 @@ TOKEN :
                         | "U+" <UNI> "-" <UNI> >
 }
 
-< DEFAULT >
-TOKEN :
-{
-  	< REMOVE : "remove" (< S >)? "(" >
-    | < APPEND : "append" (< S >)? "(" >
-  	| < CONTAINS : "contains" (< S >)? "(" >
-}
-
 <DEFAULT>
 TOKEN :
 {
