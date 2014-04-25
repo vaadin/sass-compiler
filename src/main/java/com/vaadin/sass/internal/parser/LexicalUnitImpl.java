@@ -729,8 +729,10 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     public SassListItem replaceFunctions() {
         if (params != null) {
             SCSSFunctionGenerator generator = getGenerator(getFunctionName());
+            LexicalUnitImpl copy = createFunction(line, column, null, fname,
+                    params.replaceFunctions());
             if (generator == null) {
-                SassListItem result = replaceCustomFunctions();
+                SassListItem result = copy.replaceCustomFunctions();
                 if (result != null) {
                     return result;
                 }
@@ -738,8 +740,6 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
             if (generator == null) {
                 generator = DEFAULT_SERIALIZER;
             }
-            LexicalUnitImpl copy = createFunction(line, column, null, fname,
-                    params.replaceFunctions());
             return generator.compute(copy);
         } else {
             return this;
