@@ -15,6 +15,7 @@
  */
 package com.vaadin.sass.internal.parser;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -33,7 +34,7 @@ import com.vaadin.sass.internal.tree.VariableNode;
  * @author Vaadin
  * 
  */
-public class SassExpression implements SassListItem {
+public class SassExpression implements SassListItem, Serializable {
 
     private List<SassListItem> items;
     private int line = 0;

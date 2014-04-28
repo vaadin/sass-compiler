@@ -1,0 +1,15 @@
+@function foo($a, $b) {
+  @if ($a > $b) {
+    @return $a;
+  } @else if $a == $b {
+    @return "equal";
+  } @else {
+    @return $b;
+  }
+}
+
+.foo {
+  a: foo(1, 2);
+  b: foo(4, 3);
+  c: foo(5, 5);
+}

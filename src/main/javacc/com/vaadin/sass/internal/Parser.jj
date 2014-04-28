@@ -1710,9 +1710,76 @@ void functionDirective() :
     ( name = functionName() args = arglist() (<ELLIPSIS> {hasVariableArgs = true;} (<S>)*)? <RPARAN> (<S>)*)
     <LBRACE> (<S>)*
     {documentHandler.startFunctionDirective(name, args, hasVariableArgs);} 
-    returnDirective()   
+    ( functionBlockStatement() )* 
     <RBRACE>(<S>)*
     {documentHandler.endFunctionDirective();}
+}
+
+void functionBlockStatement() :
+{}
+{
+    variable() | functionControlDirective() | returnDirective()
+}
+
+void functionControlDirective() :
+{}
+{
+  functionIfDirective() | functionEachDirective()
+}
+
+void functionIfDirective() :
+{
+  String s = null;
+  String condition = "";
+}
+{
+  < IF_SYM >
+  ( s = booleanExpressionToken() { condition += s;} )+
+  < LBRACE >(< S >)*    
+  { documentHandler.startIfElseDirective();
+    documentHandler.ifDirective(condition);
+   }
+  ( functionBlockStatement() )*
+  < RBRACE >(< S >)*
+  (functionElseDirective())*
+  { documentHandler.endIfElseDirective(); }
+}
+
+void functionElseDirective() :
+{
+  String condition = "";
+  String s = null;
+}
+{
+  < ELSE_SYM >(< S >)* 
+  ( < IF > ( s = booleanExpressionToken() { condition += s; } )+ )?
+  < LBRACE >(< S >)*
+  { if(!condition.trim().equals("")){ documentHandler.ifDirective(condition); }
+    else{ documentHandler.elseDirective(); }  
+  }
+  ( functionBlockStatement() )*
+  < RBRACE >(< S >)*
+}
+
+void functionEachDirective() :
+{
+    Token var;
+    SassList list = null;
+    String listVariable = null;
+}
+{
+    < EACH_SYM >
+    (< S >)*
+    var = < VARIABLE > (< S >)* < EACH_IN > (< S >)*
+    (   list = stringList() 
+        {documentHandler.startEachDirective(var.image, list);}
+       |listVariable = variableName()
+        {documentHandler.startEachDirective(var.image, listVariable);}
+    )
+    < LBRACE >(< S >)*
+    ( functionBlockStatement() )*
+    < RBRACE >(< S >)*
+    { documentHandler.endEachDirective();}
 }
 
 ArrayList<VariableNode> arglist() :

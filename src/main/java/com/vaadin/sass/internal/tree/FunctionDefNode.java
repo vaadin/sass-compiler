@@ -25,4 +25,9 @@ public class FunctionDefNode extends DefNode {
 
     // TODO: The functionality specific to a function definition node.
 
+    @Override
+    public FunctionDefNode copy() {
+        return (FunctionDefNode) super.copy();
+    }
+
 }

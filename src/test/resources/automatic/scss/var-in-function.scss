@@ -1,0 +1,10 @@
+$global: 3;
+
+@function foo ($a, $b) {
+  $d: $a + $b;
+  @return $d + $global;
+}
+
+.foo {
+  a: foo(1, 2);
+}
