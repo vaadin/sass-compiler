@@ -31,6 +31,10 @@ import com.vaadin.sass.internal.tree.VariableNode;
 public class VariableArgumentList extends SassList implements Serializable {
     private List<VariableNode> namedVariables = new ArrayList<VariableNode>();
 
+    public VariableArgumentList(SassList list) {
+        super(list.getSeparator(), list.getItems());
+    }
+
     public VariableArgumentList(SassList.Separator sep) {
         super(sep);
     }
