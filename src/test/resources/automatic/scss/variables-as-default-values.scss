@@ -1,0 +1,39 @@
+$default: 1;
+@mixin test-defaults($arg: $default){
+    argument-value: $arg;
+}
+.simple-default{
+    @include test-defaults();
+}
+$default: 2; 
+.simple-changed-default{
+    @include test-defaults();
+}
+.simple-change-default-in-block{
+    $default: 3;
+    @include test-defaults();
+}
+
+$seventy: 70;
+$seven: 7;
+@mixin test-expressions-as-defaults($first: 1 + 3, $second: $seventy / 7 + $seven){
+    first-value: $first;
+    second-value: $second;
+}
+.expressions-in-default{
+    @include test-expressions-as-defaults();
+}
+
+$first-list: 2 3 4, 5;
+$second-list: 8, 9 10 11 12, 13;
+
+@mixin test-list-default($value: 1 $first-list 6 7 $second-list 14 15 16){
+    list-value: $value;
+}
+
+.list-default{
+    @include test-list-default();
+}
+.list-nondefault{
+    @include test-list-default(1);
+}
