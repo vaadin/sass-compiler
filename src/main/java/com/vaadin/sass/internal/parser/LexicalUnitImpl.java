@@ -913,7 +913,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
             case LexicalUnit.SAC_RGBCOLOR:
                 int[] rgb = getRgb();
                 if (rgb != null) {
-                    text = ColorUtil.rgbToHexColor(rgb, 6);
+                    text = ColorUtil.rgbToColorString(rgb);
                     break;
                 }
                 // else fall through to the function branch
@@ -921,7 +921,12 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
             case LexicalUnit.SAC_COUNTERS_FUNCTION:
             case LexicalUnit.SAC_RECT_FUNCTION:
             case LexicalUnit.SAC_FUNCTION:
-                text = fname + "(" + params.buildString(strategy) + ")";
+                if (ColorUtil.isColor(this)) {
+                    text = ColorUtil.rgbToColorString(ColorUtil
+                            .colorToRgb(this));
+                } else {
+                    text = fname + "(" + params.buildString(strategy) + ")";
+                }
                 break;
             case LexicalUnit.SAC_IDENT:
                 text = getStringValue();

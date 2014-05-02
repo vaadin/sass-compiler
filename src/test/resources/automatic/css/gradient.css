@@ -2,16 +2,16 @@
 		background: -moz-linear-gradient(
 				top, 
 				#d8dce1 0, 
-				#ffffff 1em, 
-				#ffffff 100%);
+				white 1em, 
+				white 100%);
 		background: -webkit-linear-gradient(
 				top,  
 				#d8dce1 0,
-				#ffffff 1em,
-				#ffffff 100%);
+				white 1em,
+				white 100%);
 		background: linear-gradient(
 				to bottom,  
 				#d8dce1 0%,
-				#ffffff 5%,
-				#ffffff 100%);
+				white 5%,
+				white 100%);
 	}

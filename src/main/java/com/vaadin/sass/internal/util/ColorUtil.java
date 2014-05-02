@@ -16,6 +16,10 @@
 
 package com.vaadin.sass.internal.util;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.w3c.css.sac.LexicalUnit;
 
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
@@ -24,8 +28,226 @@ import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassList.Separator;
 
 public class ColorUtil {
-    public static LexicalUnitImpl hexColorToHsl(LexicalUnitImpl hexColor) {
-        String s = hexColor.getStringValue().substring(1);
+
+    private static Map<String, String> colorNameToHex = new HashMap<String, String>();
+    private static Map<String, String> hexToColorName = new HashMap<String, String>();
+
+    static {
+        colorNameToHex.put("aqua", "#00ffff");
+        colorNameToHex.put("black", "#000000");
+        colorNameToHex.put("blue", "#0000ff");
+        colorNameToHex.put("fuchsia", "#ff00ff");
+        colorNameToHex.put("gray", "#808080");
+        colorNameToHex.put("green", "#008000");
+        colorNameToHex.put("lime", "#00ff00");
+        colorNameToHex.put("maroon", "#800000");
+        colorNameToHex.put("navy", "#000080");
+        colorNameToHex.put("olive", "#808000");
+        colorNameToHex.put("orange", "#ffa500");
+        colorNameToHex.put("purple", "#800080");
+        colorNameToHex.put("red", "#ff0000");
+        colorNameToHex.put("silver", "#c0c0c0");
+        colorNameToHex.put("teal", "#008080");
+        colorNameToHex.put("white", "#ffffff");
+        colorNameToHex.put("yellow", "#ffff00");
+
+        for (Entry<String, String> entry : colorNameToHex.entrySet()) {
+            hexToColorName.put(entry.getValue(), entry.getKey());
+        }
+    }
+
+    /**
+     * Returns true if the lexical unit represents a valid color (hexadecimal,
+     * rgb(), color name etc.), false otherwise.
+     * 
+     * Note that rgba() is not considered to be a normal color. To detect it,
+     * call isRgba().
+     * 
+     * @param unit
+     *            lexical unit
+     * @return true if unit represents a color
+     */
+    public static boolean isColor(LexicalUnitImpl unit) {
+        return isHexColor(unit) || isHslColor(unit) || isRgbFunction(unit)
+                || isColorName(unit);
+    }
+
+    /**
+     * Returns true if the lexical unit represents a valid rgb() method call ,
+     * false otherwise.
+     * 
+     * @param unit
+     *            lexical unit
+     * @return true if unit represents an RGB method call
+     */
+    public static boolean isRgbFunction(LexicalUnitImpl unit) {
+        if (!LexicalUnitImpl.checkLexicalUnitType(unit,
+                LexicalUnit.SAC_FUNCTION, LexicalUnit.SAC_RGBCOLOR)) {
+            return false;
+        }
+        if (unit.getParameterList().size() != 3
+                || !"rgb".equals(unit.getFunctionName())) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Returns true if the lexical unit represents a valid RGBA value, false
+     * otherwise.
+     * 
+     * @param unit
+     *            lexical unit
+     * @return true if unit represents an RGBA value
+     */
+    public static boolean isRgba(LexicalUnitImpl unit) {
+        return unit.getLexicalUnitType() == LexicalUnit.SAC_FUNCTION
+                && "rgba".equals(unit.getFunctionName())
+                && (unit.getParameterList().size() == 2 || unit
+                        .getParameterList().size() == 4);
+    }
+
+    /**
+     * Returns true if the lexical unit represents a valid color in the
+     * hexadecimal form (three or six digits), false otherwise.
+     * 
+     * @param unit
+     *            lexical unit
+     * @return true if unit represents a hexadecimal color
+     */
+    public static boolean isHexColor(LexicalUnitImpl unit) {
+        return unit.getLexicalUnitType() == LexicalUnit.SAC_IDENT
+                && isHexColor(unit.getStringValue());
+    }
+
+    /**
+     * Returns true if the lexical unit represents a valid color name, false
+     * otherwise.
+     * 
+     * Currently, the 17 standard color names from the HTML and CSS color
+     * specification are supported.
+     * 
+     * @param unit
+     *            lexical unit
+     * @return true if unit represents a color name
+     */
+    public static boolean isColorName(LexicalUnitImpl unit) {
+        return unit.getLexicalUnitType() == LexicalUnit.SAC_IDENT
+                && colorNameToHex.containsKey(unit.getStringValue());
+    }
+
+    /**
+     * Returns true if the lexical unit represents a valid hsl() color function
+     * call, false otherwise.
+     * 
+     * @param unit
+     *            lexical unit
+     * @return true if unit represents as HSL color
+     */
+    public static boolean isHslColor(LexicalUnitImpl unit) {
+        return unit.getLexicalUnitType() == LexicalUnit.SAC_FUNCTION
+                && "hsl".equals(unit.getFunctionName())
+                && unit.getParameterList().size() == 3;
+    }
+
+    /**
+     * Converts a color into an array of its RGB components.
+     * 
+     * @param color
+     *            a lexical unit that represents a color
+     * @return RGB components or null if not a color
+     */
+    public static int[] colorToRgb(LexicalUnitImpl color) {
+        if (isHexColor(color)) {
+            return hexColorToRgb(color);
+        } else if (isHslColor(color)) {
+            return hslToRgb(color);
+        } else if (isRgbFunction(color)) {
+            return rgbFunctionToRgb(color);
+        } else if (isColorName(color)) {
+            return colorNameToRgb(color);
+        }
+        return null;
+    }
+
+    /**
+     * Converts an array of RGB components to a string representing the color.
+     * 
+     * @param rgb
+     *            the RGB components of a color
+     * @return a valid string representation of the color
+     */
+    public static String rgbToColorString(int[] rgb) {
+        String colorString = rgbToHexColor(rgb, 6);
+        if (hexToColorName.containsKey(colorString)) {
+            colorString = hexToColorName.get(colorString);
+        }
+        return colorString;
+    }
+
+    /**
+     * Converts a color into an array of its HSL (hue, saturation, lightness)
+     * components.
+     * 
+     * @param color
+     *            a lexical unit that represents a color
+     * @return HSL components or null if not a color
+     */
+    private static int[] colorToHsl(LexicalUnitImpl color) {
+        // TODO shortcut path for hsl()? need to take percent vs. integer vs.
+        // real into account
+        // TODO int[] loses precision
+        int[] rgb = colorToRgb(color);
+        if (rgb == null) {
+            return null;
+        }
+        int hsl[] = calculateHsl(rgb[0], rgb[1], rgb[2]);
+        return hsl;
+    }
+
+    /**
+     * Returns true if the string represents a valid color in the hexadecimal
+     * form (three or six digits), false otherwise.
+     * 
+     * @param string
+     *            string that might represent a hex color
+     * @return true if string represents a hexadecimal color
+     */
+    public static boolean isHexColor(String string) {
+        return string.matches("#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})");
+    }
+
+    /**
+     * Converts an rgb() function call into an array of its RGB components. The
+     * caller must ensure that isRgbFunction(color) returns true for the
+     * parameter.
+     * 
+     * @param color
+     *            a lexical unit that represents a function call for rgb()
+     * @return RGB components
+     */
+    private static int[] rgbFunctionToRgb(LexicalUnitImpl color) {
+        int red = color.getParameterList().get(0).getContainedValue()
+                .getIntegerValue();
+        int green = color.getParameterList().get(1).getContainedValue()
+                .getIntegerValue();
+        int blue = color.getParameterList().get(2).getContainedValue()
+                .getIntegerValue();
+        return new int[] { red, green, blue };
+    }
+
+    /**
+     * Converts a hex color (with three or six hex characters) into an array of
+     * its RGB components. The caller must ensure that isHexColor(hexColor)
+     * returns true for the parameter.
+     * 
+     * @param hexColor
+     *            a hexadecimal representation for a color (in CSS and HTML
+     *            color specification format)
+     * @return RGB components
+     */
+    private static int[] hexColorToRgb(String hexColor) {
+        String s = hexColor.substring(1);
         int r = 0, g = 0, b = 0;
         if (s.length() == 3) {
             String sh = s.substring(0, 1);
@@ -39,16 +261,38 @@ public class ColorUtil {
             g = Integer.parseInt(s.substring(2, 4), 16);
             b = Integer.parseInt(s.substring(4, 6), 16);
         }
-        int hsl[] = calculateHsl(r, g, b);
+        return new int[] { r, g, b };
 
-        SassList hslParams = createHslParameters(hsl[0], hsl[1], hsl[2],
-                hexColor.getLineNumber(), hexColor.getColumnNumber());
-
-        return LexicalUnitImpl.createFunction(hexColor.getLineNumber(),
-                hexColor.getColumnNumber(), null, "hsl", hslParams);
     }
 
-    public static String rgbToHexColor(int[] rgb, int length) {
+    /**
+     * Converts a hex color (with three or six hex characters) into an array of
+     * its RGB components. The caller must ensure that isHexColor(hexColor)
+     * returns true for the parameter.
+     * 
+     * @param hexColor
+     *            a lexical unit containing an identifier that represents a
+     *            hexadecimal representation for a color (in CSS and HTML color
+     *            specification format)
+     * @return RGB components
+     */
+    private static int[] hexColorToRgb(LexicalUnitImpl hexColor) {
+        return hexColorToRgb(hexColor.getStringValue());
+    }
+
+    /**
+     * Converts a color name into an array of its RGB components. The caller
+     * must ensure that isColorName(color) returns true for the parameter.
+     * 
+     * @param color
+     *            a lexical unit that represents a color
+     * @return RGB components
+     */
+    private static int[] colorNameToRgb(LexicalUnitImpl color) {
+        return hexColorToRgb(colorNameToHex.get(color.getStringValue()));
+    }
+
+    private static String rgbToHexColor(int[] rgb, int length) {
         StringBuilder builder = new StringBuilder("#");
         for (int i = 0; i < 3; i++) {
             String color = Integer.toHexString(rgb[i]);
@@ -65,13 +309,19 @@ public class ColorUtil {
         return builder.toString();
     }
 
-    public static LexicalUnitImpl hslToHexColor(LexicalUnitImpl hsl, int length) {
-        int[] rgb = calculateRgb(hsl);
-        return LexicalUnitImpl.createIdent(hsl.getLineNumber(),
-                hsl.getColumnNumber(), null, rgbToHexColor(rgb, length));
+    private static LexicalUnitImpl hslToColor(LexicalUnitImpl hsl) {
+        String colorString = rgbToColorString(hslToRgb(hsl));
+        return LexicalUnitImpl.createIdent(colorString);
     }
 
-    private static int[] calculateRgb(LexicalUnitImpl hsl) {
+    private static LexicalUnitImpl colorToHslUnit(LexicalUnitImpl color) {
+        int[] hsl = colorToHsl(color);
+
+        return createHslFunction(hsl[0], hsl[1], hsl[2],
+                color.getLineNumber(), color.getColumnNumber());
+    }
+
+    private static int[] hslToRgb(LexicalUnitImpl hsl) {
         SassList hslParam = hsl.getParameterList();
         if (hslParam.size() != 3) {
             throw new ParseException(
@@ -93,27 +343,6 @@ public class ColorUtil {
         rgb[1] = Math.round(hueToRgb(m1, m2, h) * 255);
         rgb[2] = Math.round(hueToRgb(m1, m2, h - 1f / 3) * 255);
         return rgb;
-    }
-
-    public static LexicalUnitImpl rgbToHsl(LexicalUnitImpl rgb) {
-        SassList rgbParam = rgb.getParameterList();
-        if (rgbParam.size() != 3) {
-            throw new ParseException(
-                    "The function rgb() requires exactly three parameters", rgb);
-        }
-
-        LexicalUnitImpl red = rgbParam.get(0).getContainedValue();
-        LexicalUnitImpl green = rgbParam.get(1).getContainedValue();
-        LexicalUnitImpl blue = rgbParam.get(2).getContainedValue();
-
-        int hsl[] = calculateHsl(red.getIntegerValue(),
-                green.getIntegerValue(), blue.getIntegerValue());
-
-        SassList hslParams = createHslParameters(hsl[0], hsl[1], hsl[2],
-                rgbParam.getLineNumber(), rgbParam.getColumnNumber());
-
-        return LexicalUnitImpl.createFunction(rgb.getLineNumber(),
-                rgb.getColumnNumber(), null, "hsl", hslParams);
     }
 
     private static int[] calculateHsl(int red, int green, int blue) {
@@ -157,15 +386,6 @@ public class ColorUtil {
         return hsl;
     }
 
-    public static LexicalUnitImpl hslToRgb(LexicalUnitImpl hsl) {
-        int[] rgb = calculateRgb(hsl);
-        SassList rgbParams = createRgbParameters(rgb[0], rgb[1], rgb[2],
-                hsl.getLineNumber(), hsl.getColumnNumber());
-
-        return LexicalUnitImpl.createFunction(hsl.getLineNumber(),
-                hsl.getColumnNumber(), null, "rgb", rgbParams);
-    }
-
     private static float hueToRgb(float m1, float m2, float h) {
         if (h < 0) {
             h = h + 1;
@@ -185,18 +405,7 @@ public class ColorUtil {
         return m1;
     }
 
-    private static SassList createRgbParameters(int red, int green, int blue,
-            int line, int column) {
-        LexicalUnitImpl redUnit = LexicalUnitImpl.createInteger(line, column,
-                null, red);
-        LexicalUnitImpl greenUnit = LexicalUnitImpl.createInteger(line, column,
-                null, green);
-        LexicalUnitImpl blueUnit = LexicalUnitImpl.createInteger(line, column,
-                null, blue);
-        return new SassList(Separator.COMMA, redUnit, greenUnit, blueUnit);
-    }
-
-    private static SassList createHslParameters(int hue, int saturation,
+    private static LexicalUnitImpl createHslFunction(int hue, int saturation,
             int lightness, int ln, int cn) {
         LexicalUnitImpl hueUnit = LexicalUnitImpl.createInteger(ln, cn, null,
                 hue);
@@ -204,8 +413,44 @@ public class ColorUtil {
                 cn, null, saturation);
         LexicalUnitImpl lightnessUnit = LexicalUnitImpl.createPercentage(ln,
                 cn, null, lightness);
-        return new SassList(Separator.COMMA, hueUnit, saturationUnit,
-                lightnessUnit);
+        SassList hslParams = new SassList(Separator.COMMA, hueUnit,
+                saturationUnit, lightnessUnit);
+        return LexicalUnitImpl.createFunction(ln, cn, null, "hsl", hslParams);
+    }
+
+    private static LexicalUnitImpl adjust(LexicalUnitImpl color,
+            float amountByPercent, ColorOperation op) {
+
+        if (isHslColor(color)) {
+            return adjustHsl(color, amountByPercent, op);
+        } else if (isColor(color)) {
+            LexicalUnitImpl hsl = colorToHslUnit(color);
+            LexicalUnitImpl adjustedHsl = adjustHsl(hsl, amountByPercent, op);
+            return hslToColor(adjustedHsl);
+        }
+        return color;
+    }
+
+    private static LexicalUnitImpl adjustHsl(LexicalUnitImpl color,
+            float amountByPercent, ColorOperation op) {
+        SassList funcParam = color.getParameterList();
+        LexicalUnitImpl lightness = funcParam.get(2).getContainedValue();
+        float newValue = 0f;
+        if (op == ColorOperation.Darken) {
+            newValue = lightness.getFloatValue() - amountByPercent;
+            newValue = newValue < 0 ? 0 : newValue;
+        } else if (op == ColorOperation.Lighten) {
+            newValue = lightness.getFloatValue() + amountByPercent;
+            newValue = newValue > 100 ? 100 : newValue;
+        }
+        LexicalUnitImpl newLightness = lightness.copyWithValue(newValue);
+
+        SassList newParams = new SassList(funcParam.getSeparator(),
+                funcParam.get(0), funcParam.get(1), newLightness);
+
+        return LexicalUnitImpl.createFunction(color.getLineNumber(),
+                color.getColumnNumber(), null, color.getFunctionName(),
+                newParams);
     }
 
     public static LexicalUnitImpl darken(LexicalUnitImpl darkenFunc) {
@@ -214,47 +459,6 @@ public class ColorUtil {
         float amount = getAmountValue(params);
 
         return adjust(color, amount, ColorOperation.Darken);
-    }
-
-    private static LexicalUnitImpl adjust(LexicalUnitImpl color,
-            float amountByPercent, ColorOperation op) {
-
-        if (color.getLexicalUnitType() == LexicalUnit.SAC_FUNCTION) {
-            SassList funcParam = color.getParameterList();
-            if ("hsl".equals(color.getFunctionName())) {
-                LexicalUnitImpl lightness = funcParam.get(2)
-                        .getContainedValue();
-                float newValue = 0f;
-                if (op == ColorOperation.Darken) {
-                    newValue = lightness.getFloatValue() - amountByPercent;
-                    newValue = newValue < 0 ? 0 : newValue;
-                } else if (op == ColorOperation.Lighten) {
-                    newValue = lightness.getFloatValue() + amountByPercent;
-                    newValue = newValue > 100 ? 100 : newValue;
-                }
-                LexicalUnitImpl newLightness = lightness
-                        .copyWithValue(newValue);
-
-                SassList newParams = new SassList(funcParam.getSeparator(),
-                        funcParam.get(0), funcParam.get(1), newLightness);
-
-                return LexicalUnitImpl.createFunction(color.getLineNumber(),
-                        color.getColumnNumber(), null, color.getFunctionName(),
-                        newParams);
-            }
-
-        } else if (color.getLexicalUnitType() == LexicalUnit.SAC_IDENT) {
-            if (color.getStringValue().startsWith("#")) {
-                return hslToHexColor(
-                        adjust(hexColorToHsl(color), amountByPercent, op),
-                        color.getStringValue().substring(1).length());
-            }
-        } else if (color.getLexicalUnitType() == LexicalUnit.SAC_RGBCOLOR) {
-            LexicalUnitImpl hsl = rgbToHsl(color);
-            LexicalUnitImpl hslAfterDarken = adjust(hsl, amountByPercent, op);
-            return hslToRgb(hslAfterDarken);
-        }
-        return color;
     }
 
     public static LexicalUnitImpl lighten(LexicalUnitImpl lightenFunc) {
@@ -273,7 +477,7 @@ public class ColorUtil {
         return amount;
     }
 
-    enum ColorOperation {
+    private enum ColorOperation {
         Darken, Lighten
     }
 }
