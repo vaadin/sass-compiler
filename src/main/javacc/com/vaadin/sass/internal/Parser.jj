@@ -2498,12 +2498,15 @@ LexicalUnitImpl function(char operator, LexicalUnitImpl prev) :
         }
     }
     ( params=expressionList() {
-        SassListItem item = params.flatten();
-        if (item instanceof SassList) {
-            params = (SassList) item;
-        } else {
-            params = new SassList(SassList.Separator.COMMA, item);
+        List<SassListItem> items = new ArrayList<SassListItem>();
+        for (SassListItem item : params) {
+            if (item instanceof SassList) {
+                items.add(((SassList) item).flatten());
+            } else {
+                items.add(item);
+            }
         }
+        params = new SassList(SassList.Separator.COMMA, items);
     } ((<ELLIPSIS>){ params = new VariableArgumentList(params); } (<S>)*)? )? ")"
     {
         if (operator != ' ') {

@@ -1,0 +1,19 @@
+.foo {
+  null1: type-of(null);
+  n1: type-of(100);
+  n2: type-of(100.1);
+  n3: type-of(100px);
+  s1: type-of(asdf);
+  s2: type-of("asdf");
+  s3: type-of('asdf');
+  b1: type-of(true);
+  b2: type-of(false);
+  c1: type-of(#fff);
+  c2: type-of(#ffffff);
+  c3: type-of(rgb(1,2,3));
+  c4: type-of(rgba(1,2,3,0.5));
+  // TODO c5: type-of(blue);
+  l1: type-of(1 2);
+  $list: 1,2;
+  l2: type-of($list);
+}

@@ -1,0 +1,17 @@
+.foo {
+  null1: null;
+  n1: number;
+  n2: number;
+  n3: number;
+  s1: string;
+  s2: string;
+  s3: string;
+  b1: bool;
+  b2: bool;
+  c1: color;
+  c2: color;
+  c3: color;
+  c4: color;
+  l1: list;
+  l2: list;
+}

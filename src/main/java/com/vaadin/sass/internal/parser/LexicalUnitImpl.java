@@ -52,6 +52,7 @@ import com.vaadin.sass.internal.parser.function.RGBFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.RectFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.RoundFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.SCSSFunctionGenerator;
+import com.vaadin.sass.internal.parser.function.TypeOfFunctionGenerator;
 import com.vaadin.sass.internal.tree.FunctionDefNode;
 import com.vaadin.sass.internal.tree.FunctionNode;
 import com.vaadin.sass.internal.tree.Node;
@@ -149,6 +150,36 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     @Deprecated
     public LexicalUnitImpl getPreviousLexicalUnit() {
         return null;
+    }
+
+    public boolean isNumber() {
+        short type = getLexicalUnitType();
+        switch (type) {
+        case LexicalUnit.SAC_INTEGER:
+        case LexicalUnit.SAC_REAL:
+        case LexicalUnit.SAC_EM:
+        case SCSSLexicalUnit.SAC_LEM:
+        case SCSSLexicalUnit.SAC_REM:
+        case LexicalUnit.SAC_EX:
+        case LexicalUnit.SAC_PIXEL:
+        case LexicalUnit.SAC_INCH:
+        case LexicalUnit.SAC_CENTIMETER:
+        case LexicalUnit.SAC_MILLIMETER:
+        case LexicalUnit.SAC_POINT:
+        case LexicalUnit.SAC_PICA:
+        case LexicalUnit.SAC_PERCENTAGE:
+        case LexicalUnit.SAC_DEGREE:
+        case LexicalUnit.SAC_GRADIAN:
+        case LexicalUnit.SAC_RADIAN:
+        case LexicalUnit.SAC_MILLISECOND:
+        case LexicalUnit.SAC_SECOND:
+        case LexicalUnit.SAC_HERTZ:
+        case LexicalUnit.SAC_KILOHERTZ:
+        case LexicalUnit.SAC_DIMENSION:
+            return true;
+        default:
+            return false;
+        }
     }
 
     @Override
@@ -552,6 +583,10 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
                 "inherit");
     }
 
+    public static LexicalUnitImpl createRawIdent(int line, int column, String s) {
+        return new LexicalUnitImpl(line, column, null, SAC_IDENT, s);
+    }
+
     public static LexicalUnitImpl createIdent(int line, int column,
             LexicalUnitImpl previous, String s) {
         if ("null".equals(s)) {
@@ -778,6 +813,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         list.add(new RectFunctionGenerator());
         list.add(new RGBFunctionGenerator());
         list.add(new RoundFunctionGenerator());
+        list.add(new TypeOfFunctionGenerator());
         return list;
     }
 
