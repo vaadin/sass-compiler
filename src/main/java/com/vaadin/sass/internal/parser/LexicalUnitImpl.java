@@ -38,6 +38,7 @@ import org.w3c.css.sac.LexicalUnit;
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.expression.exception.IncompatibleUnitsException;
 import com.vaadin.sass.internal.parser.function.AbsFunctionGenerator;
+import com.vaadin.sass.internal.parser.function.AlphaFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.CeilFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.DarkenFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.DefaultFunctionGenerator;
@@ -48,10 +49,12 @@ import com.vaadin.sass.internal.parser.function.ListJoinFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.ListLengthFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.ListNthFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.PercentageFunctionGenerator;
+import com.vaadin.sass.internal.parser.function.RGBComponentFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.RGBFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.RectFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.RoundFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.SCSSFunctionGenerator;
+import com.vaadin.sass.internal.parser.function.TransparencyModificationFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.TypeOfFunctionGenerator;
 import com.vaadin.sass.internal.tree.FunctionDefNode;
 import com.vaadin.sass.internal.tree.FunctionNode;
@@ -814,6 +817,9 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         list.add(new RGBFunctionGenerator());
         list.add(new RoundFunctionGenerator());
         list.add(new TypeOfFunctionGenerator());
+        list.add(new AlphaFunctionGenerator());
+        list.add(new TransparencyModificationFunctionGenerator());
+        list.add(new RGBComponentFunctionGenerator());
         return list;
     }
 
@@ -974,7 +980,9 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
 
     static {
         for (SCSSFunctionGenerator serializer : initSerializers()) {
-            SERIALIZERS.put(serializer.getFunctionName(), serializer);
+            for (String functionName : serializer.getFunctionNames()) {
+                SERIALIZERS.put(functionName, serializer);
+            }
         }
     }
 

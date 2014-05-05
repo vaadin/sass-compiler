@@ -24,9 +24,8 @@ import com.vaadin.sass.internal.parser.SassListItem;
 
 public class ListAppendFunctionGenerator extends ListFunctionGenerator {
 
-    @Override
-    public String getFunctionName() {
-        return "append";
+    public ListAppendFunctionGenerator() {
+        super("append");
     }
 
     @Override

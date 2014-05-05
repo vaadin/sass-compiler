@@ -23,11 +23,10 @@ import com.vaadin.sass.internal.util.ColorUtil;
  * 
  * @author Vaadin Ltd
  */
-public class LightenFunctionGenerator implements SCSSFunctionGenerator {
+public class LightenFunctionGenerator extends AbstractFunctionGenerator {
 
-    @Override
-    public String getFunctionName() {
-        return "lighten";
+    public LightenFunctionGenerator() {
+        super("lighten");
     }
 
     @Override

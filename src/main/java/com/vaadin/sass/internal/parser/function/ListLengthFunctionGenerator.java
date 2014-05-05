@@ -20,11 +20,10 @@ import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassListItem;
 
-public class ListLengthFunctionGenerator implements SCSSFunctionGenerator {
+public class ListLengthFunctionGenerator extends AbstractFunctionGenerator {
 
-    @Override
-    public String getFunctionName() {
-        return "length";
+    public ListLengthFunctionGenerator() {
+        super("length");
     }
 
     @Override

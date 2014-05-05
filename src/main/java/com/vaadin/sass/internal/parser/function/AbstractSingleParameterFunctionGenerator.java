@@ -28,29 +28,22 @@ import com.vaadin.sass.internal.parser.SassListItem;
  * @author Vaadin
  * 
  */
-public abstract class AbstractSingleParameterFunctionGenerator implements
-        SCSSFunctionGenerator {
+public abstract class AbstractSingleParameterFunctionGenerator extends
+        AbstractFunctionGenerator {
 
-    private final String functionName;
-
-    public AbstractSingleParameterFunctionGenerator(String functionName) {
-        this.functionName = functionName;
-    }
-
-    @Override
-    public String getFunctionName() {
-        return functionName;
+    public AbstractSingleParameterFunctionGenerator(String... functionNames) {
+        super(functionNames);
     }
 
     @Override
     public SassListItem compute(LexicalUnitImpl function) {
         SassList params = function.getParameterList();
         if (params.size() != 1 || !(params.get(0) instanceof LexicalUnitImpl)) {
-            throw new ParseException("Function " + getFunctionName()
+            throw new ParseException("Function " + function.getFunctionName()
                     + " must have exactly one single value parameter", function);
         }
         LexicalUnitImpl firstParam = (LexicalUnitImpl) params.get(0);
-        return computeForParam(firstParam);
+        return computeForParam(function.getFunctionName(), firstParam);
     }
 
     /**
@@ -59,9 +52,13 @@ public abstract class AbstractSingleParameterFunctionGenerator implements
      * This method must not modify firstParam. If necessary, the implementation
      * should copy the parameter before making modifications.
      * 
+     * @param functionName
+     *            The name of the function whose value is to be computed.
      * @param firstParam
+     *            The only parameter of the function.
      * @return
      */
-    protected abstract LexicalUnitImpl computeForParam(LexicalUnitImpl firstParam);
+    protected abstract LexicalUnitImpl computeForParam(String functionName,
+            LexicalUnitImpl firstParam);
 
 }

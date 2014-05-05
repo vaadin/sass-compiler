@@ -20,16 +20,16 @@ import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassListItem;
 
-public class TypeOfFunctionGenerator implements SCSSFunctionGenerator {
+public class TypeOfFunctionGenerator extends AbstractFunctionGenerator {
 
-    public String getFunctionName() {
-        return "type-of";
+    public TypeOfFunctionGenerator() {
+        super("type-of");
     }
 
     public SassListItem compute(LexicalUnitImpl function) {
         SassList params = function.getParameterList();
         if (params.size() != 1) {
-            throw new ParseException("Function " + getFunctionName()
+            throw new ParseException("Function " + function.getFunctionName()
                     + " must have exactly one parameter", function);
         }
 

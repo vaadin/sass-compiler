@@ -1,0 +1,43 @@
+.rgb{
+    red: 1;
+    green: 2;
+    blue: 3;
+    alpha: 1;
+    opacity: 1;
+}
+.rgba{
+    red1: 1;
+    green1: 2;
+    blue1: 3;
+    alpha1: 1;
+    opacity1: 1;
+    red2: 1;
+    green2: 2;
+    blue2: 3;
+    alpha2: 0.1;
+    opacity2: 0.1;
+    red3: 16;
+    green3: 86;
+    blue3: 255;
+    alpha3: 0.25;
+    opacity3: 0.25;
+}
+.hexcolor{
+    red1: 102;
+    green1: 255;
+    blue1: 34;
+    alpha1: 1;
+    opacity1: 1;
+    red2: 156;
+    green2: 255;
+    blue2: 82;
+    alpha2: 1;
+    opacity2: 1;
+}
+.hslcolor{
+    red: 222;
+    green: 237;
+    blue: 222;
+    alpha: 1;
+    opacity: 1;
+}

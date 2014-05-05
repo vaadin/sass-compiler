@@ -25,7 +25,8 @@ public class AbsFunctionGenerator extends
     }
 
     @Override
-    protected LexicalUnitImpl computeForParam(LexicalUnitImpl param) {
+    protected LexicalUnitImpl computeForParam(String functionName,
+            LexicalUnitImpl param) {
         return param.copyWithValue(Math.abs(param.getFloatValue()));
     }
 

@@ -30,11 +30,10 @@ import com.vaadin.sass.internal.parser.SCSSLexicalUnit;
 import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassListItem;
 
-public class RectFunctionGenerator implements SCSSFunctionGenerator {
+public class RectFunctionGenerator extends AbstractFunctionGenerator {
 
-    @Override
-    public String getFunctionName() {
-        return "rect";
+    public RectFunctionGenerator() {
+        super("rect");
     }
 
     @Override

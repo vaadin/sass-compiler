@@ -21,7 +21,7 @@ import com.vaadin.sass.internal.parser.SassListItem;
 public class DefaultFunctionGenerator implements SCSSFunctionGenerator {
 
     @Override
-    public String getFunctionName() {
+    public String[] getFunctionNames() {
         return null;
     }
 

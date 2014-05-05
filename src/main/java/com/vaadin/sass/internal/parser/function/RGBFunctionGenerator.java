@@ -21,11 +21,10 @@ import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassListItem;
 
-public class RGBFunctionGenerator implements SCSSFunctionGenerator {
+public class RGBFunctionGenerator extends AbstractFunctionGenerator {
 
-    @Override
-    public String getFunctionName() {
-        return "rgb";
+    public RGBFunctionGenerator() {
+        super("rgb");
     }
 
     @Override

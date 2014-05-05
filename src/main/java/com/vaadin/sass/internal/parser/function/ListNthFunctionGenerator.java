@@ -20,11 +20,10 @@ import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassListItem;
 
-public class ListNthFunctionGenerator implements SCSSFunctionGenerator {
+public class ListNthFunctionGenerator extends AbstractFunctionGenerator {
 
-    @Override
-    public String getFunctionName() {
-        return "nth";
+    public ListNthFunctionGenerator() {
+        super("nth");
     }
 
     @Override

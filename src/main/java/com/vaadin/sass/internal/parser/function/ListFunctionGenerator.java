@@ -21,7 +21,11 @@ import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassList.Separator;
 import com.vaadin.sass.internal.parser.SassListItem;
 
-public abstract class ListFunctionGenerator implements SCSSFunctionGenerator {
+public abstract class ListFunctionGenerator extends AbstractFunctionGenerator {
+
+    public ListFunctionGenerator(String... functionNames) {
+        super(functionNames);
+    }
 
     protected SassList.Separator getAutoSeparator(SassList firstList,
             SassList secondList) {
@@ -46,7 +50,7 @@ public abstract class ListFunctionGenerator implements SCSSFunctionGenerator {
         if (!(separatorItem instanceof LexicalUnitImpl)) {
             throw new ParseException(
                     "The separator of "
-                            + getFunctionName()
+                            + getFunctionNames()[0]
                             + "() must be one of 'auto', 'comma', 'space'. Actual value: "
                             + separatorItem);
         }
@@ -58,7 +62,7 @@ public abstract class ListFunctionGenerator implements SCSSFunctionGenerator {
         } else if (!("auto".equals(sepString))) {
             throw new ParseException(
                     "The separator of "
-                            + getFunctionName()
+                            + getFunctionNames()[0]
                             + "() must be one of 'auto', 'comma', 'space'. Actual value: "
                             + sepString);
         }

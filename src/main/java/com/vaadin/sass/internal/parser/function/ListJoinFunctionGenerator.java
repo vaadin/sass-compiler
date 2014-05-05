@@ -24,9 +24,8 @@ import com.vaadin.sass.internal.parser.SassListItem;
 
 public class ListJoinFunctionGenerator extends ListFunctionGenerator {
 
-    @Override
-    public String getFunctionName() {
-        return "join";
+    public ListJoinFunctionGenerator() {
+        super("join");
     }
 
     @Override

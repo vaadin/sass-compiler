@@ -1827,7 +1827,7 @@ VariableNode mixinArg() :
     LexicalUnitImpl unit = null;
 }
 {
-    name=variableName() (< COLON > (< S >)* {l = expressionSubList();} (< S >)* )?
+    name=variableName() (< COLON > (< S >)* {l = expressionSubList();} )?
     {
         SassListItem argItem = (l == null ? null : l.flatten());
         VariableNode arg = new VariableNode(name, argItem, false);
@@ -2491,7 +2491,7 @@ LexicalUnitImpl function(char operator, LexicalUnitImpl prev) :
     n=<FUNCTION> ( <S> )*  
     {
         String fname = convertIdent(n.image);
-        if("alpha(".equals(fname) || "expression(".equals(fname)){
+        if("expression(".equals(fname)){
             String body = skipStatementUntilSemiColon();
             return LexicalUnitImpl.createIdent(n.beginLine, n.beginColumn,
                  null, fname+body);

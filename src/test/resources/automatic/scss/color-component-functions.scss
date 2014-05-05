@@ -1,0 +1,53 @@
+$red:1;
+$green:2;
+$blue:3;
+
+.rgb{
+    red: red(rgb($red,$green,$blue));
+    green: green(rgb($red,$green,$blue));
+    blue: blue(rgb($red,$green,$blue));
+    alpha: alpha(rgb($red,$green,$blue));
+    opacity: opacity(rgb($red,$green,$blue));
+}
+
+.rgba{
+    red1: red(rgba($red,$green,$blue,1));
+    green1: green(rgba($red,$green,$blue,1));
+    blue1: blue(rgba($red,$green,$blue,1));
+    alpha1: alpha(rgba($red,$green,$blue,1));
+    opacity1: opacity(rgba($red,$green,$blue,1));
+    red2: red(rgba($red,$green,$blue,0.1));
+    green2: green(rgba($red,$green,$blue,0.1));
+    blue2: blue(rgba($red,$green,$blue,0.1));
+    alpha2: alpha(rgba($red,$green,$blue,0.1));
+    opacity2: opacity(rgba($red,$green,$blue,0.1));
+    red3: red(rgba(#1056ff, 0.25));
+    green3: green(rgba(#1056ff, 0.25));
+    blue3: blue(rgba(#1056ff, 0.25));
+    alpha3: alpha(rgba(#1056ff, 0.25));
+    opacity3: opacity(rgba(#1056ff, 0.25));
+}
+
+.hexcolor{
+    $hexColor1: #6f2;
+    red1: red($hexColor1);
+    green1: green($hexColor1);
+    blue1: blue($hexColor1);
+    alpha1: alpha($hexColor1);
+    opacity1: opacity($hexColor1);
+    $hexColor2: #9cff52;
+    red2: red($hexColor2);
+    green2: green($hexColor2);
+    blue2: blue($hexColor2);
+    alpha2: alpha($hexColor2);
+    opacity2: opacity($hexColor2);
+}
+
+.hslcolor{
+    $hslcolor: hsl(120, 30%, 90%);
+    red: red($hslcolor);
+    green: green($hslcolor);
+    blue: blue($hslcolor);
+    alpha: alpha($hslcolor);
+    opacity: opacity($hslcolor);
+}

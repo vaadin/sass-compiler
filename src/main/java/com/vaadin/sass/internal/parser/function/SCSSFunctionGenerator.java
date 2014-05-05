@@ -31,13 +31,13 @@ import com.vaadin.sass.internal.parser.SassListItem;
 public interface SCSSFunctionGenerator {
 
     /**
-     * Returns function name handled by this generator. Default generator
+     * Returns function names handled by this generator. Default generator
      * returns <code>null</code> and is used if there is no dedicated generator
      * for given function.
      * 
      * @return
      */
-    String getFunctionName();
+    String[] getFunctionNames();
 
     /**
      * Computes the value of the function. The parameters should be evaluated

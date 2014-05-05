@@ -15,19 +15,18 @@
  */
 package com.vaadin.sass.internal.parser.function;
 
-import com.vaadin.sass.internal.parser.LexicalUnitImpl;
+public abstract class AbstractFunctionGenerator implements
+        SCSSFunctionGenerator {
 
-public class RoundFunctionGenerator extends
-        AbstractSingleParameterFunctionGenerator {
+    private String[] functionNames;
 
-    public RoundFunctionGenerator() {
-        super("round");
+    public AbstractFunctionGenerator(String... functionNames) {
+        this.functionNames = functionNames;
     }
 
     @Override
-    protected LexicalUnitImpl computeForParam(String functionName,
-            LexicalUnitImpl param) {
-        return param.copyWithValue(Math.round(param.getFloatValue()));
+    public String[] getFunctionNames() {
+        return functionNames;
     }
 
 }

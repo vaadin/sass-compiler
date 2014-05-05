@@ -1,0 +1,35 @@
+$color1: #0a141e;
+.hexcolor {
+    c1: opacify($color1, 0.4);
+    c1b: fade-in($color1, 0.4);
+    c2: transparentize($color1, 0.4);
+    c2b: fade-out($color1, 0.4);
+}
+
+$color2: rgba(90, 183, 40, 0.5);
+$rgba_hex: rgba(#5ab728, 0.5);
+.rgba{
+    c1: opacify($color2, 0.25);
+    c1b: fade-in($color2, 0.25);
+    c1c: opacify($rgba_hex, 0.25);
+    c1d: fade-in($rgba_hex, 0.25);
+    c2: transparentize($color2, 0.25);
+    c2b: fade-out($color2, 0.25);
+    c2c: transparentize($rgba_hex, 0.25);
+    c2d: fade-out($rgba_hex, 0.25);
+}
+
+$color3: rgb(90, 183, 40);
+.rgb{
+    c1: opacify($color3, 0.25);
+    c1b: fade-in($color3, 0.25);
+    c2: transparentize($color3, 0.25);
+    c2b: fade-out($color3, 0.25);
+}
+
+.clamp{
+    c1: opacify($color2, 0.75);
+    c1b: fade-in($color2, 0.75);
+    c2: transparentize($color2, 0.75);
+    c2b: fade-out($color2, 0.75);
+}

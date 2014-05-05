@@ -25,7 +25,8 @@ public class FloorFunctionGenerator extends
     }
 
     @Override
-    protected LexicalUnitImpl computeForParam(LexicalUnitImpl param) {
+    protected LexicalUnitImpl computeForParam(String functionName,
+            LexicalUnitImpl param) {
         return param.copyWithValue((float) Math.floor(param.getFloatValue()));
     }
 
