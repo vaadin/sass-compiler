@@ -3,7 +3,7 @@
 	background: #fdd;
 }
 
-.error.intrusion, .badError.intrusion {
+.error.intrusion, .intrusion.badError {
 	font-size: 1.3em;
 	font-weight: bold;
 }

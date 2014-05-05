@@ -16,24 +16,27 @@
 
 package com.vaadin.sass.internal.tree;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.vaadin.sass.internal.selector.Selector;
 import com.vaadin.sass.internal.visitor.ExtendNodeHandler;
 
 public class ExtendNode extends Node implements IVariableNode {
     private static final long serialVersionUID = 3301805078983796878L;
 
-    ArrayList<String> list;
+    private List<Selector> list;
+    private boolean optional;
 
-    public ExtendNode(ArrayList<String> list) {
+    public ExtendNode(List<Selector> list, boolean optional) {
         super();
         this.list = list;
+        this.optional = optional;
     }
 
-    public ArrayList<String> getList() {
+    public List<Selector> getList() {
         return list;
     }
 
@@ -49,8 +52,8 @@ public class ExtendNode extends Node implements IVariableNode {
 
     public String getListAsString() {
         StringBuilder b = new StringBuilder();
-        for (final String s : list) {
-            b.append(s);
+        for (final Selector s : list) {
+            b.append(s.toString());
         }
 
         return b.toString();

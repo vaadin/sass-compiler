@@ -13,31 +13,35 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.sass.internal.selector;
 
-import org.w3c.css.sac.Selector;
+import com.vaadin.sass.internal.tree.VariableNode;
 
-public class CompositeSelector implements Selector {
-    public static final short SCSS_COMPOSITE_SELECTOR = 100;
-    private Selector first;
-    private Selector second;
+/**
+ * Single CSS3 class selector such as ".abc".
+ * 
+ * See also {@link SimpleSelectorSequence} and {@link Selector}.
+ */
+public class ClassSelector extends SimpleSelector {
 
-    public CompositeSelector(Selector first, Selector second) {
-        this.first = first;
-        this.second = second;
+    private String classValue;
+
+    public ClassSelector(String classValue) {
+        this.classValue = classValue;
     }
 
-    public Selector getFirst() {
-        return first;
-    }
-
-    public Selector getSecond() {
-        return second;
+    public String getClassValue() {
+        return classValue;
     }
 
     @Override
-    public short getSelectorType() {
-        return SCSS_COMPOSITE_SELECTOR;
+    public String toString() {
+        return "." + getClassValue();
+    }
+
+    @Override
+    public ClassSelector replaceVariable(VariableNode var) {
+        return new ClassSelector(var.replaceInterpolation(classValue));
+
     }
 }

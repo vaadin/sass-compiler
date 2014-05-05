@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.selector.Selector;
 import com.vaadin.sass.internal.tree.BlockNode;
 import com.vaadin.sass.internal.tree.Node;
 
@@ -71,32 +72,28 @@ public class BlockNodeHandler {
      * @param node
      */
     private static void removeParentReference(BlockNode node) {
-        ArrayList<String> newList = new ArrayList<String>();
-        for (String childSelector : node.getSelectorList()) {
-            // remove parent selector
-            if (childSelector.contains("&")) {
-                newList.add(childSelector.replace("&", ""));
-            } else {
-                newList.add(childSelector);
-            }
+        ArrayList<Selector> newSelectors = new ArrayList<Selector>();
+
+        for (Selector sel : node.getSelectorList()) {
+            newSelectors.add(sel.replaceParentReference(null));
         }
-        node.setSelectorList(newList);
+
+        node.setSelectorList(newSelectors);
     }
 
     private static void combineParentSelectorListToChild(BlockNode node) {
-        ArrayList<String> newList = new ArrayList<String>();
         BlockNode parentBlock = (BlockNode) node.getParentNode();
-        for (String parentSelector : parentBlock.getSelectorList()) {
-            for (String childSelector : node.getSelectorList()) {
-                // handle parent selector
-                if (childSelector.contains("&")) {
-                    newList.add(childSelector.replace("&", parentSelector));
-                } else {
-                    newList.add(parentSelector + " " + childSelector);
-                }
+
+        ArrayList<Selector> newSelectors = new ArrayList<Selector>();
+
+        for (Selector parentSel : parentBlock.getSelectorList()) {
+            for (Selector sel : node.getSelectorList()) {
+                newSelectors.add(sel.replaceParentReference(parentSel));
             }
         }
-        node.setSelectorList(newList);
+
+        node.setSelectorList(newSelectors);
+
         Node oldParent = node.getParentNode();
 
         HashMap<Node, Node> lastNodeAdded = ScssStylesheet.getLastNodeAdded();

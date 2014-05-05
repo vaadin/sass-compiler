@@ -17,7 +17,6 @@
 package com.vaadin.sass.internal.tree;
 
 import java.util.Collection;
-import java.util.regex.Pattern;
 
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.SassListItem;
@@ -87,12 +86,8 @@ public class RuleNode extends Node implements IVariableNode {
     @Override
     public void replaceVariables(Collection<VariableNode> variables) {
         for (final VariableNode node : variables) {
-
-            String interpolation = "#{$" + node.getName() + "}";
-
-            if (variable != null && variable.contains(interpolation)) {
-                variable = variable.replaceAll(Pattern.quote(interpolation),
-                        node.getExpr().unquotedString());
+            if (variable != null) {
+                variable = node.replaceInterpolation(variable);
             }
         }
         value = value.replaceVariables(variables);

@@ -16,7 +16,6 @@
 
 package com.vaadin.sass.internal.handler;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -27,6 +26,7 @@ import org.w3c.css.sac.SACMediaList;
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassListItem;
+import com.vaadin.sass.internal.selector.Selector;
 import com.vaadin.sass.internal.tree.ForNode;
 import com.vaadin.sass.internal.tree.VariableNode;
 import com.vaadin.sass.internal.tree.WhileNode;
@@ -75,11 +75,11 @@ public interface SCSSDocumentHandler extends DocumentHandler {
 
     void elseDirective();
 
-    void startSelector(ArrayList<String> selectors) throws CSSException;
+    void startSelector(List<Selector> selectors) throws CSSException;
 
     void endSelector() throws CSSException;
 
-    void extendDirective(ArrayList<String> list);
+    void extendDirective(List<Selector> list, boolean optional);
 
     void microsoftDirective(String name, String value);
 

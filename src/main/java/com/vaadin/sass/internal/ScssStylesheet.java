@@ -250,6 +250,7 @@ public class ScssStylesheet extends Node {
         importOtherFiles(this);
         populateDefinitions(this);
         traverse(this);
+        ExtendNodeHandler.modifyTree(this);
         removeEmptyBlocks(this);
     }
 

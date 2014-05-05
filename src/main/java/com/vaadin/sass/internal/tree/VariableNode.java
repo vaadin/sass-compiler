@@ -80,6 +80,20 @@ public class VariableNode extends Node implements IVariableNode {
         expr = expr.replaceFunctions();
     }
 
+    /**
+     * Replaces each occurrence of ${name} in the parameter. Only evaluates the
+     * variable if at least one such occurrence, and then only evaluates it
+     * once.
+     */
+    public String replaceInterpolation(String s) {
+        final String interpolation = "#{$" + getName() + "}";
+        if (s.contains(interpolation)) {
+            return s.replace(interpolation, getExpr().unquotedString());
+        } else {
+            return s;
+        }
+    }
+
     @Override
     public void traverse() {
         /*

@@ -18,27 +18,29 @@ package com.vaadin.sass.internal.tree;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.selector.Selector;
 import com.vaadin.sass.internal.visitor.BlockNodeHandler;
 
 public class BlockNode extends Node implements IVariableNode {
 
     private static final long serialVersionUID = 5742962631468325048L;
 
-    ArrayList<String> selectorList;
+    List<Selector> selectorList;
 
-    public BlockNode(ArrayList<String> selectorList) {
+    public BlockNode(List<Selector> selectorList) {
         this.selectorList = selectorList;
     }
 
-    public ArrayList<String> getSelectorList() {
+    public List<Selector> getSelectorList() {
         return selectorList;
     }
 
-    public void setSelectorList(ArrayList<String> selectorList) {
+    public void setSelectorList(List<Selector> selectorList) {
         this.selectorList = selectorList;
     }
 
@@ -63,23 +65,16 @@ public class BlockNode extends Node implements IVariableNode {
             return;
         }
 
-        for (final VariableNode var : variables) {
-            for (final String selector : new ArrayList<String>(selectorList)) {
-                String interpolation = "#{$" + var.getName() + "}";
-                if (selector.contains(interpolation)) {
-                    String replace = selector.replace(interpolation, var
-                            .getExpr().unquotedString());
-
-                    selectorList.add(selectorList.indexOf(selector), replace);
-                    selectorList.remove(selector);
-                }
-            }
+        ArrayList<Selector> newSelectorList = new ArrayList<Selector>();
+        for (Selector s : selectorList) {
+            newSelectorList.add(s.replaceVariables(variables));
         }
+        selectorList = newSelectorList;
     }
 
     public String getSelectors() {
         StringBuilder b = new StringBuilder();
-        for (final String s : selectorList) {
+        for (final Selector s : selectorList) {
             b.append(s);
         }
 
@@ -105,7 +100,7 @@ public class BlockNode extends Node implements IVariableNode {
     private String buildString(boolean indent, BuildStringStrategy strategy) {
         StringBuilder string = new StringBuilder();
         int i = 0;
-        for (final String s : selectorList) {
+        for (final Selector s : selectorList) {
             string.append(s);
             if (i != selectorList.size() - 1) {
                 string.append(", ");

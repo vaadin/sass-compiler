@@ -43,10 +43,11 @@ public class ParentSelector extends AbstractTestBase {
         BlockNode blockNode = (BlockNode) root.getChildren().get(0);
         Assert.assertEquals(5, blockNode.getChildren().size());
         BlockNode nestedBlock1 = (BlockNode) blockNode.getChildren().get(3);
-        Assert.assertEquals("&:hover", nestedBlock1.getSelectorList().get(0));
+        Assert.assertEquals("&:hover", nestedBlock1.getSelectorList().get(0)
+                .toString());
         BlockNode nestedBlock2 = (BlockNode) blockNode.getChildren().get(4);
         Assert.assertEquals("body.firefox &", nestedBlock2.getSelectorList()
-                .get(0));
+                .get(0).toString());
     }
 
     @Test

@@ -16,7 +16,6 @@
 
 package com.vaadin.sass.internal.handler;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Stack;
@@ -32,6 +31,7 @@ import org.w3c.css.sac.SelectorList;
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassListItem;
+import com.vaadin.sass.internal.selector.Selector;
 import com.vaadin.sass.internal.tree.BlockNode;
 import com.vaadin.sass.internal.tree.CommentNode;
 import com.vaadin.sass.internal.tree.ContentNode;
@@ -192,7 +192,7 @@ public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
     }
 
     @Override
-    public void startSelector(ArrayList<String> selectors) throws CSSException {
+    public void startSelector(List<Selector> selectors) throws CSSException {
         BlockNode node = new BlockNode(selectors);
         nodeStack.peek().appendChild(node);
         nodeStack.push(node);
@@ -216,8 +216,8 @@ public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
     }
 
     @Override
-    public void extendDirective(ArrayList<String> list) {
-        ExtendNode node = new ExtendNode(list);
+    public void extendDirective(List<Selector> list, boolean optional) {
+        ExtendNode node = new ExtendNode(list, optional);
         nodeStack.peek().appendChild(node);
     }
 

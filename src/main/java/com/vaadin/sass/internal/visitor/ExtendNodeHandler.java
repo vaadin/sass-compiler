@@ -16,24 +16,61 @@
 
 package com.vaadin.sass.internal.visitor;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.parser.ParseException;
+import com.vaadin.sass.internal.selector.Selector;
+import com.vaadin.sass.internal.selector.SelectorSet;
+import com.vaadin.sass.internal.selector.SimpleSelectorSequence;
 import com.vaadin.sass.internal.tree.BlockNode;
 import com.vaadin.sass.internal.tree.ExtendNode;
 import com.vaadin.sass.internal.tree.Node;
-import com.vaadin.sass.internal.util.StringUtil;
 
 public class ExtendNodeHandler {
-    private static Map<String, List<ArrayList<String>>> extendsMap = new HashMap<String, List<ArrayList<String>>>();
+    /*
+     * TODOs:
+     * 
+     * - Print a warning when unification of an @extend-clause fails, unless
+     * !optional specified. This may require some rework of the way the extends
+     * map is built, as currently the connection to the @extend declaration is
+     * lost.
+     */
+
+    /**
+     * Maps each @extend-selector (its simple selector sequence) to a set of of
+     * its containing block's selectors. E.g. the following extensions:
+     * 
+     * a { @extend b; ... }; b { @extend b,c; ... }
+     * 
+     * corresponds to the following map:
+     * 
+     * { b={a,b}, c={b} }
+     * 
+     */
+    private static Map<SimpleSelectorSequence, SelectorSet> extendsMap = new HashMap<SimpleSelectorSequence, SelectorSet>();
 
     public static void traverse(ExtendNode node) throws Exception {
-        buildExtendsMap(node);
-        modifyTree(ScssStylesheet.get());
+        for (Selector s : node.getList()) {
+            if (!s.isSimple()) {
+                // @extend-selectors must not be nested
+                throw new ParseException(
+                        "Nested selector not allowed in @extend-clause");
+            }
+            if (node.getParentNode() instanceof BlockNode) {
+                SelectorSet containedBlockSelectors = new SelectorSet(
+                        ((BlockNode) node.getParentNode()).getSelectorList());
+                SimpleSelectorSequence extendSelector = s.firstSimple();
+                if (extendsMap.get(extendSelector) == null) {
+                    extendsMap.put(extendSelector, containedBlockSelectors);
+                } else {
+                    extendsMap.get(extendSelector).addAll(
+                            containedBlockSelectors);
+                }
+            }
+        }
     }
 
     public static void clear() {
@@ -42,89 +79,100 @@ public class ExtendNodeHandler {
         }
     }
 
-    private static void modifyTree(Node node) throws Exception {
-        for (Node child : node.getChildren()) {
+    public static void modifyTree(Node node) throws Exception {
+        Iterator<Node> nodeIt = node.getChildren().iterator();
+
+        while (nodeIt.hasNext()) {
+            final Node child = nodeIt.next();
+
             if (child instanceof BlockNode) {
                 BlockNode blockNode = (BlockNode) child;
-                String selectorString = blockNode.getSelectors();
-                if (extendsMap.get(selectorString) != null) {
-                    for (ArrayList<String> sList : extendsMap
-                            .get(selectorString)) {
-                        ArrayList<String> clone = (ArrayList<String>) sList
-                                .clone();
-                        addAdditionalSelectorListToBlockNode(blockNode, clone,
-                                null);
-                    }
+                List<Selector> selectorList = blockNode.getSelectorList();
+                SelectorSet newSelectors = new SelectorSet();
+                for (Selector selector : selectorList) {
+                    newSelectors.addAll(createSelectorsForExtensions(selector,
+                            extendsMap));
+                }
+
+                // remove any selector duplicated in the initial list of
+                // selectors
+                newSelectors.removeAll(selectorList);
+
+                selectorList.addAll(newSelectors);
+
+                // remove block if selector list is empty
+                if (selectorList.isEmpty()) {
+                    nodeIt.remove();
                 } else {
-                    for (Entry<String, List<ArrayList<String>>> entry : extendsMap
-                            .entrySet()) {
-                        if (StringUtil.containsSubString(selectorString,
-                                entry.getKey())) {
-                            for (ArrayList<String> sList : entry.getValue()) {
-                                ArrayList<String> clone = (ArrayList<String>) sList
-                                        .clone();
-                                addAdditionalSelectorListToBlockNode(blockNode,
-                                        clone, entry.getKey());
-                            }
-                        }
-                    }
+                    blockNode.setSelectorList(selectorList);
                 }
             }
         }
 
     }
 
-    private static void buildExtendsMap(ExtendNode node) {
-        String extendedString = node.getListAsString();
-        if (extendsMap.get(extendedString) == null) {
-            extendsMap.put(extendedString, new ArrayList<ArrayList<String>>());
-        }
-        // prevent a selector extends itself, e.g. .test{ @extend .test}
-        String parentSelectorString = ((BlockNode) node.getParentNode())
-                .getSelectors();
-        if (!parentSelectorString.equals(extendedString)) {
-            extendsMap.get(extendedString).add(
-                    ((BlockNode) node.getParentNode()).getSelectorList());
-        }
+    /**
+     * Try to unify argument selector with each selector specified in an
+     * extend-clause. For each match found, add the enclosing block's selectors
+     * with substitutions (see examples below). Finally eliminates redundant
+     * selectors (a selector is redundant in a set if subsumed by another
+     * selector in the set).
+     * 
+     * .a {...}; .b { @extend .a } ---> .b
+     * 
+     * .a.b {...}; .c { @extend .a } ---> .b.c
+     * 
+     * .a.b {...}; .c .c { @extend .a } ---> .c .b.c
+     * 
+     * @param target
+     *            the selector to match
+     * @param extendsMap
+     *            maps from the simple selector sequence of the extend-selector
+     *            to a set of extending selectors
+     * 
+     * @return the generated selectors (may contain duplicates)
+     */
+    public static SelectorSet createSelectorsForExtensions(Selector target,
+            Map<SimpleSelectorSequence, SelectorSet> extendsMap) {
+        SelectorSet newSelectors = new SelectorSet();
+        createSelectorsForExtensionsRecursively(target, newSelectors,
+                extendsMap);
+        return newSelectors.eliminateRedundantSelectors();
     }
 
-    private static void addAdditionalSelectorListToBlockNode(
-            BlockNode blockNode, ArrayList<String> extendingSelectors,
-            String extendedSelector) {
-        if (extendingSelectors != null) {
-            for (String extendingSelector : extendingSelectors) {
-                if (extendedSelector == null) {
-                    blockNode.getSelectorList().add(extendingSelector);
-                } else {
-                    ArrayList<String> newTags = new ArrayList<String>();
-                    for (final String selectorString : blockNode
-                            .getSelectorList()) {
-                        if (StringUtil.containsSubString(selectorString,
-                                extendedSelector)) {
-                            String newTag = generateExtendingSelectors(
-                                    selectorString, extendedSelector,
-                                    extendingSelector);
-                            // prevent adding duplicated selector list
-                            if (!blockNode.getSelectorList().contains(newTag)
-                                    && !newTags.contains(newTag)) {
-                                newTags.add(newTag);
-                            }
-                        }
-                    }
-                    blockNode.getSelectorList().addAll(newTags);
-                }
+    /**
+     * Create all selector extensions matching target. Mutable collection for
+     * efficiency. Recursively applied to generated selectors.
+     * 
+     * Optimization: May be inefficient since we may unify the same selector
+     * several times. It would be a good idea to cache unifications in a map as
+     * we go along.
+     */
+    private static void createSelectorsForExtensionsRecursively(
+            Selector target, SelectorSet current,
+            Map<SimpleSelectorSequence, SelectorSet> extendsMap) {
+
+        SelectorSet newSelectors = new SelectorSet();
+        for (SimpleSelectorSequence extendSelector : extendsMap.keySet()) {
+            for (Selector extendingBlockSelector : extendsMap
+                    .get(extendSelector)) {
+                newSelectors.add(target.replace(extendSelector,
+                        extendingBlockSelector));
+            }
+            current.addAll(newSelectors);
+        }
+
+        for (SimpleSelectorSequence extendSelector : extendsMap.keySet()) {
+            // invoke recursively for transitivity, removing the processed
+            // extends mapping to avoid looping (there may be be more efficient
+            // ways of achieving this...)
+            Map<SimpleSelectorSequence, SelectorSet> lesserExtendsMap = new HashMap<SimpleSelectorSequence, SelectorSet>(
+                    extendsMap);
+            lesserExtendsMap.remove(extendSelector);
+            for (Selector newSel : newSelectors) {
+                createSelectorsForExtensionsRecursively(newSel, current,
+                        lesserExtendsMap);
             }
         }
-    }
-
-    private static String generateExtendingSelectors(String selectorString,
-            String extendedSelector, String extendingSelector) {
-        String result = StringUtil.replaceSubString(selectorString,
-                extendedSelector, extendingSelector);
-        // remove duplicated class selectors.
-        if (result.startsWith(".")) {
-            result = StringUtil.removeDuplicatedSubString(result, ".");
-        }
-        return result;
     }
 }

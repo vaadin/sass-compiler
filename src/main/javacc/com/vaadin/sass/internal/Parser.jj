@@ -49,8 +49,6 @@ import org.w3c.css.sac.ConditionFactory;
 import org.w3c.css.sac.Condition;
 import org.w3c.css.sac.SelectorFactory;
 import org.w3c.css.sac.SelectorList;
-import org.w3c.css.sac.Selector;
-import org.w3c.css.sac.SimpleSelector;
 import org.w3c.css.sac.DocumentHandler;
 import org.w3c.css.sac.InputSource;
 import org.w3c.css.sac.ErrorHandler;
@@ -67,6 +65,8 @@ import org.w3c.flute.util.Encoding;
 import com.vaadin.sass.internal.handler.*;
 
 import com.vaadin.sass.internal.tree.*;
+
+import com.vaadin.sass.internal.selector.*;
 
 /**
  * A CSS2 parser
@@ -90,7 +90,7 @@ public class Parser implements org.w3c.css.sac.Parser {
     protected SelectorFactory selectorFactory;
 
     // temporary place holder for pseudo-element ...
-    private String pseudoElt;
+    private PseudoElementSelector pseudoElt;
     
     /**
      * Creates a new Parser
@@ -250,11 +250,19 @@ public class Parser implements org.w3c.css.sac.Parser {
     }
 
     public SelectorList parseSelectors(InputSource source) 
-	    throws CSSException, IOException {
-	this.source = source;
-	ReInit(getCharStreamWithLurk(source));
-
-	return null;
+        throws CSSException, IOException {
+        // We don't use the org.w3c.css.sac.Selector interface (not easily extended to
+        // SCSS syntax), so don't even try wrapping com.vaadin.sass.selector.Selectors 
+        // into org.w3c.css.sac.Selector. Why do we implement org.w3c.css.sac.Parser at
+        // all?
+        return null;
+    }
+    
+    public List<Selector> parseSCSSSelectors( InputSource source ) 
+        throws CSSException, IOException {
+        this.source = source;
+        ReInit(getCharStreamWithLurk(source));
+        return _parseSelectors();
     }
 
     public LexicalUnit parsePropertyValue(InputSource source) 
@@ -514,9 +522,9 @@ TOKEN :
   | < LBRACE : "{" >
   | < RBRACE : "}">
   | < DASHMATCH : "|=" >
-  | < CARETMATCH : "^=" >
-  | < DOLLARMATCH : "$=" >
-  | < STARMATCH : "*=" >
+  | < PREFIXMATCH : "^=" >
+  | < SUFFIXMATCH : "$=" >
+  | < SUBSTRINGMATCH : "*=" >
   | < INCLUDES  : "~=" >
   | < EQ        : "=" >
   | < PLUS      : "+" >
@@ -1097,9 +1105,9 @@ void skipUnknownRule() :
 /**
  * @exception ParseException exception during the parse
  */
-char combinator() :
+Combinator combinator() :
 {
-char connector = ' ';
+Combinator connector = Combinator.DESCENDANT;
 }
 {
     (connector = combinatorChar()
@@ -1107,13 +1115,12 @@ char connector = ' ';
 }
 
 /**to refactor combinator and reuse in selector().*/
-char combinatorChar() :
+Combinator combinatorChar() :
 {Token t;}
 {
-    (t = <PLUS> | t = <PRECEDES> | t = <SIBLING>) (<S>)*
-    {
-        return t.image.charAt(0);
-    }
+    (t = <PLUS> (<S>)* { return Combinator.SIBLING; })
+    | (t = <PRECEDES> (<S>)* { return Combinator.CHILD; } )
+    | (t = <SIBLING> (<S>)* { return Combinator.GENERAL_SIBLING; } ) 
 }
 
 void microsoftExtension() :
@@ -1175,7 +1182,7 @@ String functionName() :
 void styleRule() :
 {
     boolean start = false;
-    ArrayList<String> l = null;
+    List<Selector> l = null;
     Token save;
     Locator loc;
 }
@@ -1209,10 +1216,10 @@ void styleRule() :
  }
 }
 
- ArrayList<String> selectorList() :
+List<Selector> selectorList() :
 {
-     ArrayList<String> selectors = new  ArrayList<String>();
-     String selector;
+    List<Selector> selectors = new  ArrayList<Selector>();
+    Selector selector;
 }
 {
  selector=selector() ( <COMMA> (<S>)* { selectors.add(selector); } 
@@ -1222,257 +1229,133 @@ void styleRule() :
   }
 }
 
-/**
- * @exception ParseException exception during the parse
- */
-String selector() :
-{   
-    String selector = null;
-    char    comb;
+Selector selector() :
+{
+  Selector selector;
+  SimpleSelectorSequence seq;
+  Combinator comb = null;
 }
 {
- try {
-     // the selector can begin either a simple_selector, or a combinatorChar(+, >, ~).
-     // when beginning with combinatorChar, the next one should be a simple_selector().
-   (selector=simple_selector(null, ' ') | (comb=combinatorChar() selector=simple_selector(selector, comb)))
-       ( LOOKAHEAD(2) comb=combinator() 
-	 selector=simple_selector(selector, comb) )* (<S>)*
-   {
-       return selector; 
-   }
- } catch (ParseException e) {
-     /*
-     Token t = getToken(1);
-     StringBuffer s = new StringBuffer();
-     s.append(getToken(0).image);
-     while ((t.kind != COMMA) && (t.kind != SEMICOLON) 
-	    && (t.kind != LBRACE) && (t.kind != EOF)) {
-	 s.append(t.image);
-	 getNextToken();
-	 t = getToken(1);
-     }
-     reportWarningSkipText(getLocator(), s.toString());
-     */
-     Token t = getToken(1);
-     while ((t.kind != COMMA) && (t.kind != SEMICOLON) 
-	    && (t.kind != LBRACE) && (t.kind != EOF)) {
-	 getNextToken();
-	 t = getToken(1);
-     }
-
-     throw new ThrowedParseException(e);
+  (comb=combinatorChar())? seq=simple_selector_sequence() { selector = (comb==null) ? new Selector(seq) : new Selector(comb,seq); } 
+  (LOOKAHEAD(2) comb=combinator() seq=simple_selector_sequence() { selector = selector.createNested(comb,seq); } )*
+  (<S>)*
+  {
+    return selector;
   }
 }
 
-/**
- * @exception ParseException exception during the parse
- */
-String simple_selector(String selector, char comb) :
-{
-    String simple_current = null;
-    String cond = null;
 
-    pseudoElt = null;
+SimpleSelectorSequence simple_selector_sequence() :
+{
+  SimpleSelector simple = null;
+  SimpleSelectorSequence seq = new SimpleSelectorSequence();
 }
 {
-    (  (simple_current=element_name() 
-	     ( cond=hash(cond) | cond=_class(cond) 
-	       | cond=attrib(cond) | cond=pseudo(cond) )* )
-     | ( cond = hash(cond) | cond=_class(cond) 
-	     | cond=attrib(cond) | cond=pseudo(cond) )+      
-     )
-	{
-	    if (simple_current == null) {
-		simple_current = "";
-	    }
-	    if (cond != null) {
-		simple_current = simple_current + cond;
-	    }
-	    StringBuilder builder = new StringBuilder();
-	    switch (comb) {
-		case ' ':
-		    if(selector!=null){
-		        builder.append(selector).append(" ");
-		    }
-		    break;
-		case '+':
-		case '>':
-		case '~':
-		    if(selector!=null){
-		        builder.append(selector).append(" ");
-		    }
-		    builder.append(comb).append(" ");
-		    break;
-		default:
-		    throw new ParseException("invalid state. send a bug report");
-	    }
-	    builder.append(simple_current);
-	    selector = builder.toString();
-	    
-	    if (pseudoElt != null) {
-		selector = selector + pseudoElt;
-	    }
-	    return selector;
-	}
+  ((simple=simple_nontype_selector() { seq.add(simple); })+
+   | simple=type_selector() { seq.add(simple); } (simple=simple_nontype_selector() { seq.add(simple); })*)
+  {
+    return seq;
+  }
 }
 
-/**
- * @exception ParseException exception during the parse
- */
-String _class(String pred) :
-{Token t;
-String s = ".";
+
+SimpleSelector simple_nontype_selector() :
+{
+  SimpleSelector s;
 }
 {
-  "." (t = <IDENT>{s += t.image; }|t =  < INTERPOLATION >{ s += t.image; })+
-      { 
-	  
-	  if (pred == null) {
-	      return s;
-	  } else {
-	      return pred + s;
-	  }
-      }
+  ( s=class_selector()
+  | s=id_selector()
+  | s=pseudo_selector()
+  | s=attribute_selector() )
+  { return s; }
 }
+
+
+String ident_interpolation_seq() :
+{
+  Token t;
+  String s = "";
+}
+{
+  (t=<IDENT> {s+=t.image;} | t=<INTERPOLATION> {s+=t.image;})+
+  { return convertIdent(s); }
+}
+
+
+SimpleSelector class_selector() :
+{
+  String s;
+}
+{
+  "." s=ident_interpolation_seq() { return new ClassSelector(s); }
+}
+
+
+TypeSelector type_selector() :
+{
+  String s;
+}
+{
+  s=ident_interpolation_seq() { return new TypeSelector(s); }
+  | "*" { return UniversalSelector.it; }
+  | "&" { return ParentSelector.it; }
+}
+
 
 /**
  * @exception ParseException exception during the parse
  */
-String element_name() :
-{Token t; String s = "";}
-{
-    (t = <IDENT>{s += t.image; }|t = < INTERPOLATION >{ s += t.image; })+
-    { 
-      return s; 
-    }
-      | "*"
-    { return "*"; }
-      | "&"
-    { return "&"; }
-}
-
-/**
- * @exception ParseException exception during the parse
- */
-String attrib(String pred) :
+AttributeSelector attribute_selector():
 {
     int cases = 0;
-    Token att = null;
+    String att = null;
     Token val = null;
     String attValue = null;
+    AttributeSelector.MatchRelation matchRelation = null;
 }
 {
-  "[" ( <S> )* att=<IDENT> ( <S> )*
-      ( ( "="           { cases = 1; }
-	  | <INCLUDES>  { cases = 2; }	  
-	  | <DASHMATCH> { cases = 3; }
-	  | <CARETMATCH> { cases = 4; }
-	  | <DOLLARMATCH> { cases = 5; }
-	  | <STARMATCH> { cases = 6; } ) ( <S> )* 
-	( val=<IDENT> { attValue = val.image; }
-	  | val=<STRING> { attValue = val.image; }
-	)
-	( <S> )* )?
+  "[" ( <S> )* att=ident_interpolation_seq() ( <S> )*
+      ( ( "="           { matchRelation = AttributeSelector.MatchRelation.EQUALS; }
+      | <INCLUDES>  { matchRelation = AttributeSelector.MatchRelation.INCLUDES; }
+      | <DASHMATCH> { matchRelation = AttributeSelector.MatchRelation.DASHMATCH; }
+      | <PREFIXMATCH> { matchRelation = AttributeSelector.MatchRelation.PREFIXMATCH; }
+      | <SUFFIXMATCH> { matchRelation = AttributeSelector.MatchRelation.SUFFIXMATCH; }
+      | <SUBSTRINGMATCH> { matchRelation = AttributeSelector.MatchRelation.SUBSTRINGMATCH; } ) ( <S> )*
+    ( attValue=ident_interpolation_seq()
+      | val=<STRING> { attValue = val.image; }
+    )
+    ( <S> )* )?
   "]"
   {
-      String name = convertIdent(att.image);
-      String c;
-      switch (cases) {
-	  case 0:
-	  c = name;
-	  break;
-	  case 1:
-	  c = name + "=" + attValue;
-	  break;
-	  case 2:
-	  c = name + "~=" + attValue;
-	  break;
-	  case 3:
-	  c = name + "|=" +attValue;
-	  break;
-	  case 4:
-	  c = name + "^=" +attValue;
-	  break;
-	  case 5:
-	  c = name + "$=" +attValue;
-	  break;
-	  case 6:
-	  c = name + "*=" +attValue;
-	  break;
-	  default:
-	  // never reached.
-	  c = null;
-      }
-      c = "[" + c + "]";
-      if (pred == null) {
-	  return c;
-      } else {
-	  return pred + c;
-      }
+      return new AttributeSelector(att,matchRelation,attValue);
   }
 }
 
-/**
- * @exception ParseException exception during the parse
- */
-String pseudo(String pred) :
-{Token n;
-Token param;
-String d;
-boolean isPseudoElement = false;
+
+SimpleSelector pseudo_selector():
+{
+    Token n;
+    String id;
+    String arg = null;
 }
 {
-    ":" (":"{isPseudoElement=true;})?( n=<IDENT>
-	{
-	    String s = ":" + convertIdent(n.image);
-	    if (isPseudoElement) {
-		if (pseudoElt != null) {
-		    throw new CSSParseException("duplicate pseudo element definition " 
-						+ s, getLocator());
-		} else {
-		    pseudoElt = ":"+s;
-		    return pred;
-		}
-	    } else {
-		String c = s;
-		if (pred == null) {
-		    return c;
-		} else {
-		    return pred + c;
-		}
-	    }
-	}
-	  | ( n=<FUNCTION> ( <S> )* d=skipStatementUntilMatchingRightParan() <RPARAN>
-	          {
-	          // accept anything between function and a right parenthesis
-	          String f = convertIdent(n.image);
-	          String colons = isPseudoElement ? "::" : ":";
-	          String pseudofn = colons + f + d + ")";
-		      if (pred == null) {
-			  return pseudofn;
-		      } else {
-			  return pred + pseudofn;
-	          }
-	          }
-	      )
-	  )
+    ":" (
+        (":" id=ident_interpolation_seq())
+            { return new PseudoElementSelector(id); }
+        | (id=ident_interpolation_seq())
+            { return new PseudoClassSelector(id); }
+        | ( id=functionName() arg=skipStatementUntilMatchingRightParan() <RPARAN> )
+            { return new PseudoClassSelector(id,arg); }
+    )
 }
 
-/**
- * @exception ParseException exception during the parse
- */
-String hash(String pred) :
-{Token n; }
+IdSelector id_selector() :
 {
-  n=<HASH>
-  {
-      String d = n.image;
-      if (pred == null) {
-	  return d;
-      } else {
-	  return pred + d;
-      }
-  }
+  Token t;
+}
+{
+  t=<HASH> { return new IdSelector(t.image.substring(1)); }
 }
 
 void variable() :
@@ -1995,12 +1878,16 @@ Node whileDirective() :
 }
 
 void extendDirective() : 
-{ArrayList<String> list;}
+{
+    boolean optional = false;
+    List<Selector> list;
+}
 {
     <EXTEND_SYM>
     (<S>)*
     list = selectorList()
-    {documentHandler.extendDirective(list);}
+    ("!optional" {optional=true;} )?
+    {documentHandler.extendDirective(list,optional);}
     semicolonTerminator()
 }
 
@@ -2912,8 +2799,8 @@ void _parseDeclarationBlock() :
 	( declaration() )? ( ";" ( <S> )* ( declaration() )? )* 
  }
 
-ArrayList<String> _parseSelectors() :
-{ ArrayList<String> p = null;
+List<Selector> _parseSelectors() :
+{ List<Selector> p = null;
 }
 {
     try {
