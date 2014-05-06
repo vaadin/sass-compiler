@@ -110,8 +110,10 @@ public class IfElseNodeHandler {
 
     private static void replaceDefNodeWithCorrectChild(IfElseDefNode defNode,
             Node parent, final Node child) {
+        Node previous = defNode;
         for (final Node n : new ArrayList<Node>(child.getChildren())) {
-            parent.appendChild(n, defNode);
+            parent.appendChild(n, previous);
+            previous = n;
         }
     }
 }
