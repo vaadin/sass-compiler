@@ -1,0 +1,8 @@
+.test-interpolation{
+    opacity: 0.4 !important;
+    var-opacity: 0.4 !important;
+    interpolation-in-beginning: constructed from several parts;
+    interpolation-in-beginning-var: constructed from several parts;
+    string-in-beginning: also constructed from several parts;
+    string-in-beginning-var: also constructed from several parts;
+}

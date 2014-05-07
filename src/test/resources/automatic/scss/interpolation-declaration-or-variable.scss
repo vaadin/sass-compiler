@@ -1,0 +1,16 @@
+.test-interpolation{
+    $important:'!important';
+    opacity: 0.4 #{$important};
+    $var-opacity: 0.4 #{$important};
+    var-opacity: $var-opacity;
+    $first: "constructed";
+    $second: om several;
+    $third: 'ar';
+    $fourth: ts;
+    interpolation-in-beginning: #{$first} fr#{$second} p#{$third}#{$fourth};
+    $var-interpolation: #{$first} fr#{$second} p#{$third}#{$fourth};
+    interpolation-in-beginning-var: $var-interpolation;
+    string-in-beginning: also #{$first} fr#{$second} p#{$third}#{$fourth};
+    $var-interpolation: also #{$first} fr#{$second} p#{$third}#{$fourth};
+    string-in-beginning-var: $var-interpolation;
+}

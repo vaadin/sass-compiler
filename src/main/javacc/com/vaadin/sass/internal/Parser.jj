@@ -1851,14 +1851,14 @@ VariableNode argValueListItem():
 {
     LexicalUnitImpl unit;
     String name = null;
-    List<SassListItem> value = new ArrayList<SassListItem>();
+    SassList value = null;
 }
 {
     (LOOKAHEAD(3) // the lookahead is needed because both variableName and term can match a variable
-    (name = variableName() (<COLON> (< S >)*) (unit = term(null){value.add(unit); } )*)
-    | (unit = term(null){ value.add(unit); } )+)
+    (name = variableName() (<COLON> (< S >)*) ( value = expressionSubList() ))
+    | ( value = expressionSubList() ) )
     {
-        SassListItem flattenedValue = new SassList(SassList.Separator.SPACE, value).flatten();
+        SassListItem flattenedValue = value.flatten();
         VariableNode var = new VariableNode(name, flattenedValue, false);
         return var;
     }
@@ -2333,7 +2333,7 @@ LexicalUnitImpl term(LexicalUnitImpl prev) :
   char op = ' ';
 }
 {
-  (result = nonVariableTerm(prev)| result = variableTerm(prev))
+  (result = nonVariableTerm(prev) | result = variableTerm(prev))
       {
 	  return result;
       }
@@ -2352,15 +2352,24 @@ LexicalUnitImpl variableTerm(LexicalUnitImpl prev) :
 
 LexicalUnitImpl nonVariableTerm(LexicalUnitImpl prev) :
 {
-LexicalUnitImpl result = null;
-  Token n = null;
-  char op = ' ';
-  String varName;
-  String s = "";
+    char op = ' ';
+    LexicalUnitImpl result = null;
 }
 {
-( ( ( 
-    op=unaryOperator() )?
+    ( (op = unaryOperator())?
+         ( result = numberTerm(op, prev) | result = function(op, prev) ( <S> )*)
+     | result = stringTerm(op, prev)
+    )
+    { return result; }
+}
+
+LexicalUnitImpl numberTerm(char op, LexicalUnitImpl prev) :
+{
+    Token n = null;
+    LexicalUnitImpl result = null;
+    String s = "";
+}
+{
     (n=<NUMBER>
 	{ result = LexicalUnitImpl.createNumber(n.beginLine, n.beginColumn,
 						prev, number(op, n, 0)); }
@@ -2430,21 +2439,42 @@ LexicalUnitImpl result = null;
 	    result = LexicalUnitImpl.createDimen(n.beginLine, n.beginColumn, prev, 
 						 number(op,n,s.length()-i),
 						 s.substring(i));
-	}
-    | result=function(op, prev) ) )
-  | ( n=<STRING>
+	}) ( <S> )*
+	{ return result;}
+}
+
+String identInterpolationString() :
+{
+    Token n;
+    String s = "";
+}
+{
+    (   (n = <FROM> | n= <THROUGH> | n= <TO> | n = <EACH_IN> | n = <MICROSOFT_RULE>) { s += convertIdent(n.image); }
+      | (LOOKAHEAD(1) ( n = <IDENT> | n = <INTERPOLATION>) {s += convertIdent(n.image); })+
+    ) 
+    { return s; }
+}
+
+LexicalUnitImpl stringTerm(char op, LexicalUnitImpl prev) : 
+{
+    int beginLine = getToken(1).beginLine, beginColumn = getToken(1).beginColumn;
+    Token n = null;
+    LexicalUnitImpl result = null;
+    String s = "";
+}
+{
+    ( n=<STRING>
 	{ result =
 	  LexicalUnitImpl.createString(n.beginLine, n.beginColumn, prev,
 				       convertStringIndex(n.image, 1, 
 							  n.image.length() -1));}
-  | (< DOT >{ s+="."; })?(n=<IDENT> | n=<TO> | n=<THROUGH> | n=<FROM>) 
-      { s += convertIdent(n.image);
+  | (< DOT >{ s+="."; })?(s = identInterpolationString()){
 	if ("inherit".equals(s)) {
-	    result = LexicalUnitImpl.createInherit(n.beginLine, n.beginColumn,
+	    result = LexicalUnitImpl.createInherit(beginLine, beginColumn,
 					       prev);
 	} else {
-	    result = LexicalUnitImpl.createIdent(n.beginLine, n.beginColumn,
-					       prev, convertIdent(n.image));
+	    result = LexicalUnitImpl.createIdent(beginLine, beginColumn,
+					       prev, s);
 	}
 
 	  /* /
@@ -2473,7 +2503,7 @@ LexicalUnitImpl result = null;
 	| result=hexcolor(prev)	
         | result=url(prev)
 	| result=unicode(prev)
-         ) ) ( <S> )*
+         ) ( <S> )*
   {
     return result;
   }
