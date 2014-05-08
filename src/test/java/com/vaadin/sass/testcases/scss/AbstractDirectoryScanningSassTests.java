@@ -118,17 +118,23 @@ public abstract class AbstractDirectoryScanningSassTests {
     }
 
     private String normalize(String css) {
-        // Insert whitespace at each point
-        css = css.replaceAll("[\n\r\t ]*", " ");
+        // one space after comma, no whitespace before comma
+        css = css.replaceAll("[\n\r\t ]*,[\n\r\t ]*", ", ");
+        // add whitespace before opening brace
+        css = css.replaceAll("[\n\r\t ]*\\{", " {");
+        // remove whitespace after opening parenthesis and before closing
+        // parenthesis
+        css = css.replaceAll("\\([\n\r\t ]*", "(");
+        css = css.replaceAll("[\n\r\t ]*\\)", ")");
         // Replace multiple whitespace characters with a single space to compact
         css = css.replaceAll("[\n\r\t ]+", " ");
-        // remove initial whitespace
-        css = css.replaceAll("^[\n\r\t ]*", "");
         // remove trailing whitespace
         css = css.replaceAll("[\n\r\t ]*$", "");
-        css = css.replaceAll(";", ";\n");
+        css = css.replaceAll("[\n\r\t ]*;", ";\n");
         css = css.replaceAll("\\{", "\\{\n");
-        css = css.replaceAll("}", "}\n");
+        css = css.replaceAll("[\n\r\t ]*}", "}\n");
+        // remove initial whitespace
+        css = css.replaceAll("^[\t ]*", "");
         return css;
     }
 
