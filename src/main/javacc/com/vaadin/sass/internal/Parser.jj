@@ -2121,50 +2121,46 @@ boolean guarded() :
  * @exception ParseException exception during the parse
  */
 LexicalUnitImpl operator(LexicalUnitImpl prev) :
-{Token n;}
 {
-/* (comments copied from basic_arithmetics.scss)
-*supports:
-* 1. standard arithmetic operations (+, -, *, /, %)
-* 2. / is treated as css operator, unless one of its operands is variable or there is another binary arithmetic operator
-*limits:
-* 1. cannot mix arithmetic and css operations, e.g. "margin: 1px + 3px 2px" will fail
-* 2. space between add and minus operator and their following operand is mandatory. e.g. "1 + 2" is valid, "1+2" is not
-* 3. parenthesis is not supported now.  
-*/
-n="," ( <S> )* { return LexicalUnitImpl.createComma(n.beginLine, 
-            n.beginColumn,
-            prev); }
-|n="/" ( <S> )* { return LexicalUnitImpl.createSlash(n.beginLine, 
-            n.beginColumn,
-            prev); }
-| n="*" ( <S> )* { return LexicalUnitImpl.createMultiply(n.beginLine,
-            n.beginColumn,
-            prev); }
-| n="%" ( <S> )* { return LexicalUnitImpl.createModulo(n.beginLine,
-            n.beginColumn,
-            prev); }
-/*
-* for '+', since it can be either a binary operator or an unary operator,
-* which is ambiguous. To avoid this, the binary operator '+' always has
-* a space before the following term. so '2+3' is not a valid binary expression,
-* but '2 + 3' is.  The same for '-' operator.
-*/
+    LexicalUnitImpl unit;
+    boolean spaceAfter = false;
+    Token n;
+}
+{
+    { prev = getLastUnit(prev); }
+    /* (comments copied from basic_arithmetics.scss)
+    *supports:
+    * 1. standard arithmetic operations (+, -, *, /, %)
+    * 2. / is treated as css operator, unless one of its operands is variable or there is another binary arithmetic operator
+    *limits:
+    * 1. cannot mix arithmetic and css operations, e.g. "margin: 1px + 3px 2px" will fail
+    * 2. space between add and minus operator and their following operand is mandatory. e.g. "1 + 2" is valid, "1+2" is not
+    * 3. parenthesis is not supported now.
+    */
 
-| n="+" ( <S> )+{ return LexicalUnitImpl.createAdd(n.beginLine,
-        n.beginColumn,
-        prev); }
-| n="-" ( <S> )+{ return LexicalUnitImpl.createMinus(n.beginLine,
-        n.beginColumn,
-        prev); }
+    unit = nonCommaOperator(prev){ return unit; }
+    | n="," 
+          {unit = LexicalUnitImpl.createComma(n.beginLine, n.beginColumn, prev); } 
+      ( <S> {spaceAfter = true;} )* 
+      {
+          if(spaceAfter){
+              LexicalUnitImpl.createSpace(token.beginLine, token.beginColumn, unit);
+          }
+          return unit;
+      }
 }
 
 /**
  * @exception ParseException exception during the parse
  */
 LexicalUnitImpl nonCommaOperator(LexicalUnitImpl prev) :
-{Token n;}
 {
+    Token n;
+    LexicalUnitImpl unit;
+    boolean spaceAfter = false;
+}
+{
+    { prev = getLastUnit(prev); }
     /* (comments copied from basic_arithmetics.scss)
      *supports:
      * 1. standard arithmetic operations (+, -, *, /, %)
@@ -2173,18 +2169,30 @@ LexicalUnitImpl nonCommaOperator(LexicalUnitImpl prev) :
      * 1. space between add and minus operator and their following operand is mandatory. e.g. "1 + 2" is valid, "1+2" is not
      * 2. parenthesis is not supported now.
      */
-    n="/" ( <S> )* { return LexicalUnitImpl.createSlash(n.beginLine, n.beginColumn, prev); }
-    | n="*" ( <S> )* { return LexicalUnitImpl.createMultiply(n.beginLine, n.beginColumn, prev); }
-    | n="%" ( <S> )* { return LexicalUnitImpl.createModulo(n.beginLine, n.beginColumn, prev); }
-    /*
-     * for '+', since it can be either a binary operator or an unary operator,
-     * which is ambiguous. To avoid this, the binary operator '+' always has
-     * a space before the following term. so '2+3' is not a valid binary expression,
-     * but '2 + 3' is.  The same for '-' operator.
-    */
+    ( n="/" ( <S> {spaceAfter = true;} )*
+         { unit = LexicalUnitImpl.createSlash(n.beginLine, n.beginColumn, prev); }
+     | n="*" ( <S> {spaceAfter = true;} )*
+         { unit =  LexicalUnitImpl.createMultiply(n.beginLine, n.beginColumn, prev); }
+     | n="%" ( <S> {spaceAfter = true;} )*
+         { unit = LexicalUnitImpl.createModulo(n.beginLine, n.beginColumn, prev); }
+     /*
+      * for '+', since it can be either a binary operator or an unary operator,
+      * which is ambiguous. To avoid this, the binary operator '+' always has
+      * a space before the following term. so '2+3' is not a valid binary expression,
+      * but '2 + 3' is. The same for '-' operator.
+     */
 
-    | n="+" ( <S> )+{ return LexicalUnitImpl.createAdd(n.beginLine, n.beginColumn, prev); }
-    | n="-" ( <S> )+{ return LexicalUnitImpl.createMinus(n.beginLine, n.beginColumn, prev); }
+     | n="+" ( <S> {spaceAfter = true;} )+
+         { unit = LexicalUnitImpl.createAdd(n.beginLine, n.beginColumn, prev); }
+     | n="-" ( <S> {spaceAfter = true;} )+
+         { unit = LexicalUnitImpl.createMinus(n.beginLine, n.beginColumn, prev); }
+    )
+    {
+        if(spaceAfter){
+            LexicalUnitImpl.createSpace(token.beginLine, token.beginColumn, unit);
+        }
+        return unit;
+    }
 }
 
 /**
@@ -2220,6 +2228,7 @@ LexicalUnitImpl term(LexicalUnitImpl prev) :
   char op = ' ';
 }
 {
+  { prev = getLastUnit(prev); }
   (result = nonVariableTerm(prev) | result = variableTerm(prev))
       {
 	  return result;
@@ -2228,13 +2237,24 @@ LexicalUnitImpl term(LexicalUnitImpl prev) :
 
 LexicalUnitImpl variableTerm(LexicalUnitImpl prev) :
 {
-  LexicalUnitImpl result = null;
-  String varName = "";
+    boolean spaceAfter = false;
+    Token n;
+    LexicalUnitImpl result = null;
+    String varName = "";
 }
 {
-  varName = variableName()
-         {result = LexicalUnitImpl.createVariable(token.beginLine, token.beginColumn,
-                 prev, varName); return result;}
+    {prev = getLastUnit(prev); }
+    // variableName() is not used here because we need to recognize whether there is whitespace after the name.
+    n = <VARIABLE> (<S> {spaceAfter = true;})*
+    {
+        varName = convertIdent(n.image.substring(1));
+        result = LexicalUnitImpl.createVariable(n.beginLine, n.beginColumn,
+                 prev, varName);
+        if(spaceAfter){
+            LexicalUnitImpl.createSpace(token.beginLine, token.beginColumn, result);
+        }
+        return result;
+    }
 }
 
 LexicalUnitImpl nonVariableTerm(LexicalUnitImpl prev) :
@@ -2243,6 +2263,7 @@ LexicalUnitImpl nonVariableTerm(LexicalUnitImpl prev) :
     LexicalUnitImpl result = null;
 }
 {
+    { prev = getLastUnit(prev); }
     ( (op = unaryOperator())?
          ( result = numberTerm(op, prev) | result = function(op, prev) ( <S> )*)
      | result = stringTerm(op, prev)
@@ -2252,11 +2273,13 @@ LexicalUnitImpl nonVariableTerm(LexicalUnitImpl prev) :
 
 LexicalUnitImpl numberTerm(char op, LexicalUnitImpl prev) :
 {
+    boolean spaceAfter = false;
     Token n = null;
     LexicalUnitImpl result = null;
     String s = "";
 }
 {
+    { prev = getLastUnit(prev); }
     (n=<NUMBER>
 	{ result = LexicalUnitImpl.createNumber(n.beginLine, n.beginColumn,
 						prev, number(op, n, 0)); }
@@ -2326,8 +2349,13 @@ LexicalUnitImpl numberTerm(char op, LexicalUnitImpl prev) :
 	    result = LexicalUnitImpl.createDimen(n.beginLine, n.beginColumn, prev, 
 						 number(op,n,s.length()-i),
 						 s.substring(i));
-	}) ( <S> )*
-	{ return result;}
+	}) ( <S> { spaceAfter = true; } )*
+	{
+	    if(spaceAfter){
+            LexicalUnitImpl.createSpace(token.beginLine, token.beginColumn, result);
+        }
+	    return result;
+	}
 }
 
 String identInterpolationString() :
@@ -2344,12 +2372,14 @@ String identInterpolationString() :
 
 LexicalUnitImpl stringTerm(char op, LexicalUnitImpl prev) : 
 {
+    boolean spaceAfter = false;
     int beginLine = getToken(1).beginLine, beginColumn = getToken(1).beginColumn;
     Token n = null;
     LexicalUnitImpl result = null;
     String s = "";
 }
 {
+    { prev = getLastUnit(prev); }
     ( n=<STRING>
 	{ result =
 	  LexicalUnitImpl.createString(n.beginLine, n.beginColumn, prev,
@@ -2390,10 +2420,13 @@ LexicalUnitImpl stringTerm(char op, LexicalUnitImpl prev) :
 	| result=hexcolor(prev)	
         | result=url(prev)
 	| result=unicode(prev)
-         ) ( <S> )*
-  {
-    return result;
-  }
+         ) ( <S> {spaceAfter = true; })*
+    {
+        if(spaceAfter){
+            LexicalUnitImpl.createSpace(token.beginLine, token.beginColumn, result);
+        }
+        return result;
+    }
 }
 
 /**
@@ -2405,6 +2438,7 @@ LexicalUnitImpl function(char operator, LexicalUnitImpl prev) :
  SassList params = new SassList(SassList.Separator.COMMA);
 }
 {
+    { prev = getLastUnit(prev); }
     n=<FUNCTION> ( <S> )*  
     {
         String fname = convertIdent(n.image);
@@ -2442,6 +2476,7 @@ LexicalUnitImpl unicode(LexicalUnitImpl prev) :
 {
   n=<UNICODERANGE>
  {
+     prev = getLastUnit(prev);
      LexicalUnitImpl params = null;
      String s = n.image.substring(2);
      int index = s.indexOf('-');
@@ -2469,6 +2504,7 @@ LexicalUnitImpl url(LexicalUnitImpl prev) :
 {
   n=<URL>
  {
+   prev = getLastUnit(prev);
    String urlname = n.image.substring(4, n.image.length()-1).trim();
    return LexicalUnitImpl.createURL(n.beginLine, n.beginColumn, prev, urlname); 
  }
@@ -2482,7 +2518,8 @@ LexicalUnitImpl hexcolor(LexicalUnitImpl prev) :
 }
 {
  n=<HASH>
- { 
+ {
+     prev = getLastUnit(prev);
      int r;
      LexicalUnitImpl first, params = null;
      String s = n.image.substring(1);
@@ -2701,6 +2738,20 @@ String convertStringIndex(String s, int start, int len) {
 JAVACODE
 String convertIdent(String s) {
     return convertStringIndex(s, 0, s.length());
+}
+
+// Returns the last lexical unit in a chain of LexicalUnitImpl objects.
+// This is needed because, for instance, numberTerm() can return a
+// LexicalUnitImpl that is followed by another LexicalUnitImpl
+// (whitespace).
+JAVACODE
+LexicalUnitImpl getLastUnit(LexicalUnitImpl unit) {
+    LexicalUnitImpl last = null;
+    while(unit != null){
+        last = unit;
+        unit = unit.getNextLexicalUnit();
+    }
+    return last;
 }
 
 JAVACODE

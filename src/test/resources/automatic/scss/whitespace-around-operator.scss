@@ -1,0 +1,42 @@
+$value1: left;
+$value2: right;
+
+.spaces-both-interpolation{
+    slash-no-spaces: #{$value1}/#{$value2};
+    slash-left-space: #{$value1} /#{$value2};
+    slash-right-space: #{$value1}/ #{$value2};
+    slash-both-spaces: #{$value1} / #{$value2};
+
+    asterisk-no-spaces: #{$value1}*#{$value2};
+    asterisk-left-space: #{$value1} *#{$value2};
+    asterisk-right-space: #{$value1}* #{$value2};
+    asterisk-both-spaces: #{$value1} * #{$value2};
+
+    plus-right-space: #{$value1}+ #{$value2};
+    plus-both-spaces: #{$value1} + #{$value2};
+
+    minus-right-space: #{$value1}- #{$value2};
+    minus-both-spaces: #{$value1} - #{$value2};
+}
+
+.spaces-left-interpolation{
+    slash-no-spaces: #{$value1}/$value2;
+    asterisk-left-space: #{$value1} *right;
+    plus-right-space: #{$value1}+ $value2;
+    minus-both-spaces: #{$value1} - right;
+}
+
+.spaces-right-interpolation{
+    slash-left-space: left /#{$value2};
+    asterisk-right-space: $value1* #{$value2};
+    plus-both-spaces: left + #{$value2};
+    minus-both-spaces: $value1 - #{$value2};
+    asterisk-no-spaces: left*#{$value2};
+}
+
+.spaces-no-interpolation{
+    no-spaces: a/b;
+    left-space: a /b;
+    right-space: a/ b;
+    both-spaces: a / b;
+}

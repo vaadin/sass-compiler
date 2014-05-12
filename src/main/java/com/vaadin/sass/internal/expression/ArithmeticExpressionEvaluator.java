@@ -23,6 +23,7 @@ import com.vaadin.sass.internal.expression.exception.ArithmeticException;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SCSSLexicalUnit;
+import com.vaadin.sass.internal.parser.SassExpression;
 import com.vaadin.sass.internal.parser.SassListItem;
 
 public class ArithmeticExpressionEvaluator {
@@ -47,14 +48,15 @@ public class ArithmeticExpressionEvaluator {
         boolean afterOperand = false;
         Stack<Object> operands = new Stack<Object>();
         Stack<Object> operators = new Stack<Object>();
-        int i = 0;
-        inputTermLoop: while (i < terms.size()) {
+        inputTermLoop: for (int i = 0; i < terms.size(); ++i) {
             if (!(terms.get(i) instanceof LexicalUnitImpl)) {
                 throw new ParseException("Illegal value in expression",
                         terms.get(i));
             }
             current = (LexicalUnitImpl) terms.get(i);
-            i++;
+            if (SassExpression.isWhitespace(current)) {
+                continue;
+            }
             if (afterOperand) {
                 if (current.getLexicalUnitType() == SCSSLexicalUnit.SCSS_OPERATOR_RIGHT_PAREN) {
                     Object operator = null;

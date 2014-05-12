@@ -76,13 +76,19 @@ public class SassExpression implements SassListItem, Serializable {
                 return true;
             }
         }
-        if (items.size() < 3) {
+        int previousIndex = getNextNonspaceIndex(items, 0);
+        int currentIndex = getNextNonspaceIndex(items, previousIndex + 1);
+        int nextIndex = getNextNonspaceIndex(items, currentIndex + 1);
+        if (nextIndex >= items.size()) {
             return false;
         }
-        for (int i = 0; i < items.size() - 2; ++i) {
-            SassListItem previous = items.get(i);
-            SassListItem current = items.get(i + 1);
-            SassListItem next = items.get(i + 2);
+        while (nextIndex < items.size()) {
+            SassListItem previous = items.get(previousIndex);
+            SassListItem current = items.get(currentIndex);
+            SassListItem next = items.get(nextIndex);
+            previousIndex = currentIndex;
+            currentIndex = nextIndex;
+            nextIndex = getNextNonspaceIndex(items, nextIndex + 1);
             if (!(current instanceof LexicalUnitImpl)) {
                 continue;
             }
@@ -92,12 +98,18 @@ public class SassExpression implements SassListItem, Serializable {
                 /*
                  * '/' is treated as an arithmetical operator when one of its
                  * operands is Variable, or there is another binary operator.
-                 * Otherwise, '/' is treated as a CSS operator.
+                 * Otherwise, '/' is treated as a CSS operator. If interpolation
+                 * occurs on either side of a symbol '/', '*', '+' or ´-', the
+                 * symbol is not treated as an arithmetical operator.
                  */
-                if (isVariable(previous) || isVariable(next)) {
+                if ((isVariable(previous) || isVariable(next))
+                        && !containsInterpolation(previous)
+                        && !containsInterpolation(next)) {
                     return true;
                 }
-            } else if (isOperator(currentType)) {
+            } else if (isOperator(currentType)
+                    && !containsInterpolation(previous)
+                    && !containsInterpolation(next)) {
                 return true;
             }
         }
@@ -116,6 +128,33 @@ public class SassExpression implements SassListItem, Serializable {
     private boolean isVariable(SassListItem item) {
         return item instanceof LexicalUnitImpl
                 && ((LexicalUnitImpl) item).getLexicalUnitType() == LexicalUnitImpl.SCSS_VARIABLE;
+    }
+
+    private boolean containsInterpolation(SassListItem item) {
+        return item.printState().matches(".*#[{][$][^\\s]+[}].*");
+    }
+
+    /**
+     * Returns the index of the next non-whitespace item in list, starting from
+     * startIndex (inclusive). If there are no non-whitespace items in
+     * list[startIndex...list.size() - 1], returns list.size().
+     * 
+     * @param list
+     *            A list.
+     * @param startIndex
+     *            The first index included in the search.
+     * @return The smallest index i such that i >= startIndex && list.get(i)
+     *         does not represent whitespace. If no such index exists, returns
+     *         list.size().
+     */
+    public static int getNextNonspaceIndex(List<SassListItem> list,
+            int startIndex) {
+        for (int i = startIndex; i < list.size(); ++i) {
+            if (!isWhitespace(list.get(i))) {
+                return i;
+            }
+        }
+        return list.size();
     }
 
     @Override
@@ -162,9 +201,8 @@ public class SassExpression implements SassListItem, Serializable {
         Iterator<SassListItem> it = items.iterator();
         while (it.hasNext()) {
             SassListItem item = it.next();
-            result += strategy.build(item);
-            if (it.hasNext()) {
-                result += " ";
+            if (it.hasNext() || !isWhitespace(item)) {
+                result += strategy.build(item);
             }
         }
         return result;
@@ -200,4 +238,7 @@ public class SassExpression implements SassListItem, Serializable {
         return this;
     }
 
+    public static boolean isWhitespace(SassListItem unit) {
+        return unit.printState().matches("\\s+");
+    }
 }

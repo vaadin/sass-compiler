@@ -1,0 +1,36 @@
+.spaces-both-interpolation{
+    slash-no-spaces: left/right;
+    slash-left-space: left /right;
+    slash-right-space: left/ right;
+    slash-both-spaces: left / right;
+    asterisk-no-spaces: left*right;
+    asterisk-left-space: left *right;
+    asterisk-right-space: left* right;
+    asterisk-both-spaces: left * right;
+    plus-right-space: left+ right;
+    plus-both-spaces: left + right;
+    minus-right-space: left- right;
+    minus-both-spaces: left - right;
+}
+
+.spaces-left-interpolation{
+    slash-no-spaces: left/right;
+    asterisk-left-space: left *right;
+    plus-right-space: left+ right;
+    minus-both-spaces: left - right;
+}
+
+.spaces-right-interpolation{
+    slash-left-space: left /right;
+    asterisk-right-space: left* right;
+    plus-both-spaces: left + right;
+    minus-both-spaces: left - right;
+    asterisk-no-spaces: left*right;
+}
+
+.spaces-no-interpolation{
+    no-spaces: a/b;
+    left-space: a /b;
+    right-space: a/ b;
+    both-spaces: a / b;
+}

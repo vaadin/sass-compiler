@@ -661,6 +661,11 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         return new LexicalUnitImpl(SAC_OPERATOR_COMMA, line, column, previous);
     }
 
+    public static LexicalUnitImpl createSpace(int line, int column,
+            LexicalUnitImpl previous) {
+        return new LexicalUnitImpl(line, column, previous, SAC_IDENT, " ");
+    }
+
     public static LexicalUnitImpl createSlash(int line, int column,
             LexicalUnitImpl previous) {
         return new LexicalUnitImpl(SAC_OPERATOR_SLASH, line, column, previous);
