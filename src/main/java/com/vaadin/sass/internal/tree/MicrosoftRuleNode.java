@@ -32,12 +32,22 @@ public class MicrosoftRuleNode extends Node implements IVariableNode {
 
     @Override
     public void replaceVariables(Collection<VariableNode> variables) {
+        replaceInterpolation(variables);
         for (final VariableNode var : variables) {
             if (StringUtil.containsVariable(value, var.getName())) {
                 value = StringUtil.replaceVariable(value, var.getName(), var
                         .getExpr().printState());
             }
         }
+    }
+
+    public String replaceInterpolation(Collection<VariableNode> variables) {
+        for (final VariableNode var : variables) {
+            String interpolation = "#{$" + var.getName() + "}";
+                value = value.replace(interpolation, var.getExpr()
+                        .unquotedString());
+        }
+        return value;
     }
 
     @Override

@@ -1,0 +1,7 @@
+@mixin apply_transparent($color) {
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#{$color}', endColorstr='#{$color}');
+}
+
+.v-test {
+    @include apply_transparent("#7FFFFFFF");
+}

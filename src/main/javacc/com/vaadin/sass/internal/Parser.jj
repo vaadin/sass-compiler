@@ -879,7 +879,7 @@ void keyframeSelector():
           start = true;
           documentHandler.startKeyframeSelector(selector);
          }
-        (ifContentStatement() | microsoftExtension() )*
+        ( ifContentStatement() )*
         <RBRACE> (<S>)*
     }
     catch (ThrowedParseException e) {
@@ -1194,7 +1194,7 @@ void styleRule() :
 	 documentHandler.startSelector(l);
      }
      // a CSS import here will not work
-     ( ifContentStatement() | microsoftExtension() | importDeclaration() )*
+     ( ifContentStatement() | importDeclaration() )*
      <RBRACE> (<S>)*
  } catch (ThrowedParseException e) {
      if (errorHandler != null) {
@@ -1453,7 +1453,7 @@ void ifContentStatement() :
 {}
 {
     contentDirective() | includeDirective() | media() | extendDirective() | styleRuleOrDeclarationOrNestedProperties()
-    | keyframes() | variable() | controlDirective() | atRuleDeclaration()
+    | keyframes() | variable() | controlDirective() | atRuleDeclaration() | microsoftExtension()
 }
 
 void ifDirective() :
