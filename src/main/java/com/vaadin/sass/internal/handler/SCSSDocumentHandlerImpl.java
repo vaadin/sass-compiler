@@ -274,7 +274,7 @@ public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
     }
 
     @Override
-    public void ifDirective(String evaluator) {
+    public void ifDirective(SassListItem evaluator) {
         if (nodeStack.peek() instanceof IfNode) {
             nodeStack.pop();
         }

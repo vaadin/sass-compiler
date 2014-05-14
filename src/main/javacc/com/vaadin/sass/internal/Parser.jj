@@ -545,9 +545,9 @@ TOKEN :
   | < LPARAN    : "(" >
   | < RPARAN    : ")">
   | < COMPARE   : "==" >
-  | < OR		: "||" >
-  | < AND		: "&&" >
   | < NOT_EQ : "!=" >
+  | < GTE : ">=" >
+  | < LTE: "<=" >
 }
 
 <DEFAULT>
@@ -1440,7 +1440,7 @@ LexicalUnitImpl variableListItem():
 {
     first = term(null){ res = first; }
     (LOOKAHEAD(2)(res = nonCommaOperator(res) res = term(res)))*
-    { return first; }
+    { return first.removeTrailingWhitespace(); }
 }
 
 void controlDirective() :
@@ -1458,13 +1458,11 @@ void ifContentStatement() :
 
 void ifDirective() :
 {
-  Token n = null;
-  String s = null;
-  String evaluator = "";
+  SassListItem evaluator;
 }
 {
-  < IF_SYM >
-  ( s = booleanExpressionToken() { evaluator += s;} )+
+  < IF_SYM >(< S >)*
+  ( evaluator = booleanExpression() )
   < LBRACE >(< S >)*    
   { documentHandler.startIfElseDirective();
     documentHandler.ifDirective(evaluator);
@@ -1477,46 +1475,56 @@ void ifDirective() :
 
 void elseDirective() :
 {
-  String evaluator = "";
-  Token n = null;
-  String s = null;
+  SassListItem evaluator = null;
 }
 {
-  < ELSE_SYM >(< S >)* 
-  ( < IF > ( s = booleanExpressionToken() { evaluator += s; } )+ )?
+  < ELSE_SYM >(< S >)*
+  ( < IF > (< S >)* ( evaluator = booleanExpression() ) )?
   < LBRACE >(< S >)*
-  { if(!evaluator.trim().equals("")){ documentHandler.ifDirective(evaluator); }
+  { if(evaluator != null){ documentHandler.ifDirective(evaluator); }
     else{ documentHandler.elseDirective(); }  
   }
   ( ifContentStatement() | fontFace() )*
   < RBRACE >(< S >)*
 }
 
-String booleanExpressionToken() :
+SassListItem booleanExpression():
+{
+    SassListItem res, next;
+    LexicalUnitImpl op;
+}
+{
+    ( "(" (<S>)* res=booleanExpression() ")" (<S>)* ) { return res; }
+    | (
+      res = variableListItem()
+      (
+        (op = booleanOperator() next = variableListItem()) { 
+          res = BinaryBooleanExpression.createExpression(res, op, next);
+        }
+      )*
+    )
+    {
+      // this also performs replaceChains()
+      return BinaryBooleanExpression.createExpression(res);
+    }
+}
+
+LexicalUnitImpl booleanOperator() :
 {
   Token n = null;
+  LexicalUnitImpl operator;
 }
 {
  (
-   n = < VARIABLE >
-   |n = < IDENT >
-   |n = < NUMBER >
-   |n = < LPARAN >
-   |n = < RPARAN >
-   |n = < PLUS >
-   |n = < MINUS >
-   |n = < DIV >
-   |n = < ANY >
-   |n = < COMPARE >
-   |n = < EQ >
-   |n = < PRECEDES >
-   |n = < SUCCEEDS >
-   |n = < OR >
-   |n = < AND >
-   |n = < S >
-   |n = < NOT_EQ > 
+   (n = < COMPARE > { operator = LexicalUnitImpl.createEquals(n.beginLine, n.beginColumn); }
+   |n = < SUCCEEDS > { operator = LexicalUnitImpl.createLessThan(n.beginLine, n.beginColumn); }
+   |n = < GTE > { operator = LexicalUnitImpl.createGreaterThanOrEqualTo(n.beginLine, n.beginColumn);  }
+   |n = < PRECEDES > { operator = LexicalUnitImpl.createGreaterThan(n.beginLine, n.beginColumn); }
+   |n = < LTE > { operator = LexicalUnitImpl.createLessThanOrEqualTo(n.beginLine, n.beginColumn); }
+   |n = < NOT_EQ > { operator = LexicalUnitImpl.createNotEqual(n.beginLine, n.beginColumn); } 
+   ) (<S>)* 
 ){
-   return n.image;
+   return operator;
  }
 }
   
@@ -1612,12 +1620,11 @@ void functionControlDirective() :
 
 void functionIfDirective() :
 {
-  String s = null;
-  String condition = "";
+  SassListItem condition;
 }
 {
-  < IF_SYM >
-  ( s = booleanExpressionToken() { condition += s;} )+
+  < IF_SYM >(< S >)*
+  ( condition = booleanExpression() )
   < LBRACE >(< S >)*    
   { documentHandler.startIfElseDirective();
     documentHandler.ifDirective(condition);
@@ -1630,14 +1637,13 @@ void functionIfDirective() :
 
 void functionElseDirective() :
 {
-  String condition = "";
-  String s = null;
+  SassListItem condition = null;
 }
 {
   < ELSE_SYM >(< S >)* 
-  ( < IF > ( s = booleanExpressionToken() { condition += s; } )+ )?
+  ( < IF >(< S >)* ( condition = booleanExpression() ) )?
   < LBRACE >(< S >)*
-  { if(!condition.trim().equals("")){ documentHandler.ifDirective(condition); }
+  { if(condition != null){ documentHandler.ifDirective(condition); }
     else{ documentHandler.elseDirective(); }  
   }
   ( functionBlockStatement() )*
@@ -2231,7 +2237,7 @@ LexicalUnitImpl term(LexicalUnitImpl prev) :
   { prev = getLastUnit(prev); }
   (result = nonVariableTerm(prev) | result = variableTerm(prev))
       {
-	  return result;
+	      return result;
       }
 }
 

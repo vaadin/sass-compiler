@@ -15,8 +15,10 @@
  */
 package com.vaadin.sass.internal.tree.controldirective;
 
+import com.vaadin.sass.internal.parser.SassListItem;
+
 public interface IfElseNode {
 
-    String getExpression();
+    SassListItem getExpression();
 
 }

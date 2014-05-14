@@ -116,6 +116,6 @@ public class ArithmeticExpressionEvaluator {
         }
         // createExpression returns either a BinaryExpression or a
         // LexicalUnitImpl
-        return (LexicalUnitImpl) terms;
+        return (LexicalUnitImpl) result;
     }
 }

@@ -18,45 +18,54 @@ package com.vaadin.sass.internal.tree.controldirective;
 import java.util.Collection;
 
 import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.parser.LexicalUnitImpl;
+import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.IVariableNode;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.VariableNode;
-import com.vaadin.sass.internal.util.StringUtil;
 
 public class IfNode extends Node implements IfElseNode, IVariableNode {
-    private String expression;
+    private SassListItem expression;
 
-    public IfNode(String expression) {
+    public IfNode(SassListItem expression) {
+        if (expression == null) {
+            expression = LexicalUnitImpl.createIdent("false");
+        }
         this.expression = expression;
     }
 
     @Override
-    public String getExpression() {
-        if (expression != null) {
-            return expression.trim();
-        } else {
-            return "false";
-        }
+    public SassListItem getExpression() {
+        return expression;
     }
 
     @Override
     public String toString() {
-        return "@if " + expression;
+        return "@if " + expression.toString();
     }
 
     @Override
     public void replaceVariables(Collection<VariableNode> variables) {
-        for (final VariableNode node : variables) {
-            if (StringUtil.containsVariable(expression, node.getName())) {
-                expression = StringUtil.replaceVariable(expression,
-                        node.getName(), node.getExpr().printState());
-            }
-        }
+        expression = expression.replaceVariables(variables);
     }
 
     @Override
     public void traverse() {
-        replaceVariables(ScssStylesheet.getVariables());
+        /*
+         * "replaceVariables(ScssStylesheet.getVariables());" seems duplicated
+         * and can be extracted out of if, but it is not.
+         * containsArithmeticalOperator must be called before replaceVariables.
+         * Because for the "/" operator, it needs to see if its predecessor or
+         * successor is a Variable or not, to determine it is an arithmetic
+         * operator.
+         */
+        if (expression.containsArithmeticalOperator()) {
+            replaceVariables(ScssStylesheet.getVariables());
+            expression = expression.evaluateArithmeticExpressions();
+        } else {
+            replaceVariables(ScssStylesheet.getVariables());
+        }
+        expression = expression.replaceFunctions();
     }
 
 }

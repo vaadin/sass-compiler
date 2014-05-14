@@ -201,9 +201,7 @@ public class SassExpression implements SassListItem, Serializable {
         Iterator<SassListItem> it = items.iterator();
         while (it.hasNext()) {
             SassListItem item = it.next();
-            if (it.hasNext() || !isWhitespace(item)) {
-                result += strategy.build(item);
-            }
+            result += strategy.build(item);
         }
         return result;
     }

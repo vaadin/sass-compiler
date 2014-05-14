@@ -5,7 +5,7 @@ $borderWeight : solid;
 	  .#{$animal}-icon #animal, .menu {
 	    background-image: url('/images/#{$animal}.png');
 	    @include logo(10px);
-	    @if 1+1 == 2 { border: 1px solid; }
+	    @if 1+ 1 == 2 { border: 1px solid; }
 	  }
 	}
 }
@@ -18,13 +18,13 @@ $borderWeight : solid;
 }
 
 .falseIf {
-	@if 1+2 == 2 { border: 2px solid; }
+	@if 1+ 2 == 2 { border: 2px solid; }
 	@else { border: 1px solid; }
 }
 
 .falseIfTrueElse {
-	@if 1+2 == 2 { border: 2px solid; }
-	@else if 1+1 == 2 { border: 1px solid; }
+	@if 1+ 2 == 2 { border: 2px solid; }
+	@else if 1+ 1 == 2 { border: 1px solid; }
 	@else { border: 3px solid; }
 }
 

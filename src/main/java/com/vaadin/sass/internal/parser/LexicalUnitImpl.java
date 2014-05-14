@@ -708,6 +708,31 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         return new LexicalUnitImpl(0, 0, null, SAC_IDENT, s);
     }
 
+    public static LexicalUnitImpl createEquals(int line, int column) {
+        return new LexicalUnitImpl(SCSS_OPERATOR_EQUALS, line, column, null);
+    }
+
+    public static LexicalUnitImpl createNotEqual(int line, int column) {
+        return new LexicalUnitImpl(SCSS_OPERATOR_NOT_EQUAL, line, column, null);
+    }
+
+    public static LexicalUnitImpl createGreaterThan(int line, int column) {
+        return new LexicalUnitImpl(SAC_OPERATOR_GT, line, column, null);
+    }
+
+    public static LexicalUnitImpl createGreaterThanOrEqualTo(int line,
+            int column) {
+        return new LexicalUnitImpl(SAC_OPERATOR_GE, line, column, null);
+    }
+
+    public static LexicalUnitImpl createLessThan(int line, int column) {
+        return new LexicalUnitImpl(SAC_OPERATOR_LT, line, column, null);
+    }
+
+    public static LexicalUnitImpl createLessThanOrEqualTo(int line, int column) {
+        return new LexicalUnitImpl(SAC_OPERATOR_LE, line, column, null);
+    }
+
     @Override
     public SassListItem replaceVariables(Collection<VariableNode> variables) {
         // TODO simplify
@@ -862,6 +887,12 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
             break;
         case LexicalUnit.SAC_OPERATOR_EXP:
             text = "^";
+            break;
+        case LexicalUnitImpl.SCSS_OPERATOR_EQUALS:
+            text = "==";
+            break;
+        case LexicalUnitImpl.SCSS_OPERATOR_NOT_EQUAL:
+            text = "!=";
             break;
         case LexicalUnit.SAC_OPERATOR_LT:
             text = "<";
@@ -1043,4 +1074,25 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         return next == null ? this : new SassExpression(this);
     }
 
+    /**
+     * In the chain of LexicalUnitImpl objects starting at this, removes
+     * trailing objects with only whitespace contents.
+     * 
+     * Note: this method modifies the chain by setting the next-reference of the
+     * last non-whitespace object to null.
+     * 
+     * @return this
+     */
+    public LexicalUnitImpl removeTrailingWhitespace() {
+        LexicalUnitImpl current = this;
+        LexicalUnitImpl lastNonspace = this;
+        while (current != null) {
+            if (!SassExpression.isWhitespace(current)) {
+                lastNonspace = current;
+            }
+            current = current.next;
+        }
+        lastNonspace.next = null;
+        return this;
+    }
 }

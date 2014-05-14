@@ -1,0 +1,104 @@
+$a: 1;
+$b: 2;
+$c: 1.75;
+$d: stringval;
+$e: string;
+
+.equals{
+    @if 1 == 1 {
+        one: 1;
+    }
+    @if 1 == 2 {
+        one: 2;
+    }
+    @if $a == 1{
+        a : 1;
+    }
+    @else{
+        a : not 1;
+    }
+    @if 2 == $b {
+        b : 2;
+    }
+    @if 5 == $b {
+        b : 5;
+    }
+    @if $a == $b {
+        a: equal to #{$b}
+    }
+    @if round($c) == $b {
+        c: rounds to #{$b};
+    }
+    @if 1 + 1 == 2{
+        oneplusone: 2;
+    }
+    @if $a + $b == 3{
+        aplusb: 3;
+    }
+    @if $a == $d{
+        a: equal to #{$d};
+    }
+    @if $d == $e{
+        d: equal to #{$e};
+    }
+    @if $d == stringval{
+        d: stringval;
+    }
+}
+
+.not-equal{
+    @if 1 != 2{
+        one: unequal with 2;
+    }
+    @if 1 != $a{
+        one: unequal with #{$a};
+    }
+    @if 1 != $b{
+        one: unequal with #{$b};
+    }
+    @if $a != $c{
+        a: unequal with #{$c};
+    }
+    @if $d != $e{
+        #{$d}: unequal with #{$e};
+    }
+}
+
+.less-or-equal{
+    @if $a < $b{
+        a: less than #{$b};
+    }
+    @if $b < $a{
+        b: less than #{$a};
+    }
+    @if round($c) < $b{
+        c-rounded: less than #{$b};
+    }
+    @if round($c) <= $b{
+        c-rounded: at most #{$b};
+    }
+    @if $c <= $c{
+        c: at most c;
+    }
+}
+
+.greater-or-equal{
+    @if 3 > 2{
+        three: greater than 2;
+    }
+    @if $c > $b{
+        c: greater than #{$b};
+    }
+    @if $b > $b{
+        b: greater than #{$b};
+    }
+    @if $b > $c{
+        b: greater than #{$c};
+    }
+    @if round($c) >= $c{
+        c-rounded: at least #{$c};
+    }
+    @if $b >= $b{
+        b: at least #{$b};
+    }
+}

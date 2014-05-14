@@ -1,0 +1,25 @@
+.equals {
+  one: 1;
+  a: 1;
+  b: 2;
+  c: rounds to 2;
+  oneplusone: 2;
+  aplusb: 3;
+  d: stringval; }
+
+.not-equal {
+  one: unequal with 2;
+  one: unequal with 2;
+  a: unequal with 1.75;
+  stringval: unequal with string; }
+
+.less-or-equal {
+  a: less than 2;
+  c-rounded: at most 2;
+  c: at most c; }
+
+.greater-or-equal {
+  three: greater than 2;
+  b: greater than 1.75;
+  c-rounded: at least 1.75;
+  b: at least 2; }

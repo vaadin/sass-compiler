@@ -21,6 +21,8 @@ public interface SCSSLexicalUnit extends LexicalUnit {
     static final short SCSS_VARIABLE = 100;
     static final short SCSS_OPERATOR_LEFT_PAREN = 101;
     static final short SCSS_OPERATOR_RIGHT_PAREN = 102;
+    static final short SCSS_OPERATOR_EQUALS = 103;
+    static final short SCSS_OPERATOR_NOT_EQUAL = 104;
     static final short SCSS_NULL = 105;
 
     static final short SAC_LEM = 200;

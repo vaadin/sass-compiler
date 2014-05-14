@@ -71,7 +71,7 @@ public interface SCSSDocumentHandler extends DocumentHandler {
 
     void endIfElseDirective();
 
-    void ifDirective(String evaluator);
+    void ifDirective(SassListItem evaluator);
 
     void elseDirective();
 
