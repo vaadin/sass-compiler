@@ -41,6 +41,5 @@ public class TypeSelector extends SimpleSelector {
     @Override
     public TypeSelector replaceVariable(VariableNode var) {
         return new TypeSelector(var.replaceInterpolation(localName));
-
     }
 }

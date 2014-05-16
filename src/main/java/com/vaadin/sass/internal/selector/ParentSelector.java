@@ -15,6 +15,8 @@
  */
 package com.vaadin.sass.internal.selector;
 
+import com.vaadin.sass.internal.tree.VariableNode;
+
 /**
  * Single SCSS parent selector "&".
  * 
@@ -31,4 +33,8 @@ public class ParentSelector extends TypeSelector {
         super("&");
     }
 
+    @Override
+    public ParentSelector replaceVariable(VariableNode var) {
+        return this;
+    }
 }

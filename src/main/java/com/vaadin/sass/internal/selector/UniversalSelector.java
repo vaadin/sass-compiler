@@ -15,6 +15,8 @@
  */
 package com.vaadin.sass.internal.selector;
 
+import com.vaadin.sass.internal.tree.VariableNode;
+
 /**
  * Single CSS3 universal selector "*".
  * 
@@ -26,6 +28,11 @@ public class UniversalSelector extends TypeSelector {
 
     private UniversalSelector() {
         super("*");
+    }
+
+    @Override
+    public UniversalSelector replaceVariable(VariableNode var) {
+        return this;
     }
 
 }
