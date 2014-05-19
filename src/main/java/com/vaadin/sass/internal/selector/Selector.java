@@ -348,4 +348,17 @@ public class Selector implements Serializable {
         return parts.hashCode();
     }
 
+    /**
+     * Returns whether the selector contains a placeholder selector
+     */
+    public boolean isPlaceholder() {
+        for (SelectorSegment segment : parts) {
+            if (segment instanceof SimpleSelectorSequence
+                    && ((SimpleSelectorSequence) segment).isPlaceholder()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

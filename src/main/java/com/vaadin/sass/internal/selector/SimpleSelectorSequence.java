@@ -228,4 +228,16 @@ public class SimpleSelectorSequence extends ArrayList<SimpleSelector> implements
         return seq;
     }
 
+    /**
+     * Returns whether this selector contains a placeholder (%-selector)
+     */
+    public boolean isPlaceholder() {
+        for (SimpleSelector s : this) {
+            if (s instanceof PlaceholderSelector) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

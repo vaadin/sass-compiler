@@ -100,6 +100,15 @@ public class ExtendNodeHandler {
 
                 selectorList.addAll(newSelectors);
 
+                // remove all placeholder selectors
+                Iterator<Selector> it = selectorList.iterator();
+                while (it.hasNext()) {
+                    Selector s = it.next();
+                    if (s.isPlaceholder()) {
+                        it.remove();
+                    }
+                }
+
                 // remove block if selector list is empty
                 if (selectorList.isEmpty()) {
                     nodeIt.remove();

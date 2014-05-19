@@ -1265,6 +1265,7 @@ SimpleSelector simple_nontype_selector() :
 }
 {
   ( s=class_selector()
+  | s=placeholder_selector()
   | s=id_selector()
   | s=pseudo_selector()
   | s=attribute_selector() )
@@ -1289,6 +1290,15 @@ SimpleSelector class_selector() :
 }
 {
   "." s=ident_interpolation_seq() { return new ClassSelector(s); }
+}
+
+
+SimpleSelector placeholder_selector() :
+{
+  String s;
+}
+{
+  "%" s=ident_interpolation_seq() { return new PlaceholderSelector(s); }
 }
 
 
