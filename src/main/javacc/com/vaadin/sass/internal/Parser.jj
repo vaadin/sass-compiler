@@ -2520,7 +2520,7 @@ LexicalUnitImpl function(char operator, LexicalUnitImpl prev) :
             String body = skipStatementUntilSemiColon();
             String fileName = source.getURI();
             String currentDir = System.getProperty("user.dir");
-            if (fileName.startsWith(currentDir)) {
+            if (fileName.startsWith(currentDir.replace("\\", "/"))) {
                 fileName = fileName.substring(currentDir.length());
             }
             return LexicalUnitImpl.createIdent(n.beginLine, n.beginColumn,
