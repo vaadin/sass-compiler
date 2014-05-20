@@ -1,13 +1,13 @@
 /* line 9, ../templates/_filename_fn_import.scss */
 filename {
-  imported: /test/sass/templates/_filename_fn_import.scss;
+  imported: /target/test-classes/sasslangbroken/scss/_filename_fn_import.scss;
 }
 
-/* line 11, ../templates/filename_fn.scss */
+/* line 11, ../templates/268-update_stylesheet.scss */
 filename {
-  local: /test/sass/templates/filename_fn.scss;
-  local-mixin: /test/sass/templates/filename_fn.scss;
-  local-function: /test/sass/templates/filename_fn.scss;
-  imported-mixin: /test/sass/templates/_filename_fn_import.scss;
-  imported-function: /test/sass/templates/_filename_fn_import.scss;
+  local: /target/test-classes/sasslangbroken/scss/268-update_stylesheet.scss;
+  local-mixin: /target/test-classes/sasslangbroken/scss/268-update_stylesheet.scss;
+  local-function: /target/test-classes/sasslangbroken/scss/268-update_stylesheet.scss;
+  imported-mixin: /target/test-classes/sasslangbroken/scss/_filename_fn_import.scss;
+  imported-function: /target/test-classes/sasslangbroken/scss/_filename_fn_import.scss;
 }

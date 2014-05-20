@@ -1,0 +1,11 @@
+filename {
+  imported: /target/test-classes/sasslang/scss/_filename_fn_import.scss;
+}
+
+filename {
+  local: /target/test-classes/sasslang/scss/259-update_stylesheet.scss;
+  local-mixin: /target/test-classes/sasslang/scss/259-update_stylesheet.scss;
+  local-function: /target/test-classes/sasslang/scss/259-update_stylesheet.scss;
+  imported-mixin: /target/test-classes/sasslang/scss/_filename_fn_import.scss;
+  imported-function: /target/test-classes/sasslang/scss/_filename_fn_import.scss;
+}

@@ -2458,7 +2458,16 @@ LexicalUnitImpl function(char operator, LexicalUnitImpl prev) :
     n=<FUNCTION> ( <S> )*  
     {
         String fname = convertIdent(n.image);
-        if("expression(".equals(fname)){
+        if ("filename(".equals(fname)) {
+            String body = skipStatementUntilSemiColon();
+            String fileName = source.getURI();
+            String currentDir = System.getProperty("user.dir");
+            if (fileName.startsWith(currentDir)) {
+                fileName = fileName.substring(currentDir.length());
+            }
+            return LexicalUnitImpl.createIdent(n.beginLine, n.beginColumn,
+                 null, fileName);
+        } else if("expression(".equals(fname)){
             String body = skipStatementUntilSemiColon();
             return LexicalUnitImpl.createIdent(n.beginLine, n.beginColumn,
                  null, fname+body);
