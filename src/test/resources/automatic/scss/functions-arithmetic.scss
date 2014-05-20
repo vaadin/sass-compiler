@@ -1,3 +1,6 @@
 foo{
    value: round(3.4) + round(3.4);
+   value2: round(3.4 + 5.9);
+   value3: round(abs(-5) + 7.5);
+   value4: round(abs(ceil(3.6 + abs(-5))));
 }

@@ -548,6 +548,9 @@ TOKEN :
   | < NOT_EQ : "!=" >
   | < GTE : ">=" >
   | < LTE: "<=" >
+  | < AND: "and" >
+  | < OR: "or" >
+  | < NOT: "not" >
 }
 
 <DEFAULT>
@@ -851,7 +854,7 @@ void keyframes() :
 {
  try {
   n=<KEY_FRAME_SYM> ( <S> )* {keyframeName = n.image;}
-  (n = <IDENT>{animationname += n.image; }|n = < INTERPOLATION >{ animationname += n.image; })+(<S>)*
+  (n = ident() {animationname += n.image; }|n = < INTERPOLATION >{ animationname += n.image; })+(<S>)*
    {start = true; documentHandler.startKeyFrames(keyframeName, animationname); }
    <LBRACE> ( <S> )* ( keyframeSelector() | contentDirective() )* <RBRACE> ( <S> )*
  } catch (ParseException e) {
@@ -971,7 +974,7 @@ void mediaStatement(MediaListImpl ml) :
 String medium() : /* tv, projection, screen, ... */
 {Token n;}
 {
-    n=<IDENT> { return convertIdent(n.image); }
+    n=ident() { return convertIdent(n.image); }
 }
 
 /**
@@ -986,7 +989,7 @@ void page() :
 }
 {
  try {
-  <PAGE_SYM> ( <S> )* ( n=<IDENT> ( <S> )* )?
+  <PAGE_SYM> ( <S> )* ( n=ident() ( <S> )* )?
   ( pseudo=pseudo_page() )? 
       {
 	  if (n != null) {
@@ -1021,7 +1024,7 @@ void page() :
 String pseudo_page() :
 { Token n; }
 {
-    ":" n=<IDENT> ( <S> )* { return convertIdent(n.image); }
+    ":" n=ident() ( <S> )* { return convertIdent(n.image); }
 }
 
 void fontFace() :
@@ -1134,7 +1137,7 @@ void microsoftExtension() :
   // This is not really taking the syntax of filter rules into account
   n = < MICROSOFT_RULE > (< S >)* { name = n.image; }
 	< COLON >
-	((n = < IDENT > { value += n.image; })
+	((n = ident() { value += n.image; })
 	| (n = < NUMBER > { value += n.image; }) 
 	| (n = < STRING > { value += n.image; })
 	| (n = < COMMA > { value += n.image; })
@@ -1159,10 +1162,19 @@ String property() :
 {Token t;String s = "";
 }
 {
-    (t = <IDENT>{s += t.image; }|t = < INTERPOLATION >{ s += t.image; })+(< S >)*
+    (t = propertyIdent(){s += t.image; }|t = < INTERPOLATION >{ s += t.image; })+(< S >)*
     {
         return s;
     }
+}
+
+Token propertyIdent() :
+{
+    Token t;
+}
+{
+    ( t = < IDENT> | t = <AND> | t = <OR> | t = <NOT> | t = <EACH_IN> | t = <THROUGH>)
+    { return t; }
 }
 
 String variableName() :
@@ -1279,7 +1291,7 @@ String ident_interpolation_seq() :
   String s = "";
 }
 {
-  (t=<IDENT> {s+=t.image;} | t=<INTERPOLATION> {s+=t.image;})+
+  (t=propertyIdent() {s+=t.image;} | t=<INTERPOLATION> {s+=t.image;})+
   { return convertIdent(s); }
 }
 
@@ -1429,13 +1441,13 @@ SassList expressionList():
 SassList expressionSubList():
 {
     // Empty lists and parenthesized lists are not supported yet.
-    LexicalUnitImpl unit;
+    SassListItem item;
     List<SassListItem> list = new ArrayList<SassListItem>();
     int line = token.beginLine;
     int column = token.beginColumn;
 }
 {
-    (LOOKAHEAD(2) unit = variableListItem(){ list.add(unit); })+
+    (LOOKAHEAD(2) item = variableListItem(){ list.add(item); })+
     {
         SassList result = new SassList(SassList.Separator.SPACE, list);
         result.setSourcePosition(line, column);
@@ -1443,7 +1455,17 @@ SassList expressionSubList():
     }
 }
 
-LexicalUnitImpl variableListItem():
+SassListItem variableListItem():
+{
+    LexicalUnitImpl firstUnit;
+}
+{
+    firstUnit = variableListItemAsUnit() {
+        return createExpression(firstUnit);
+    }
+}
+
+LexicalUnitImpl variableListItemAsUnit():
 {
     LexicalUnitImpl first, res;
 }
@@ -1502,20 +1524,43 @@ SassListItem booleanExpression():
 {
     SassListItem res, next;
     LexicalUnitImpl op;
+    List<SassListItem> items = new ArrayList<SassListItem>();
 }
 {
-    ( "(" (<S>)* res=booleanExpression() ")" (<S>)* ) { return res; }
+    ( "(" (<S>)* res=booleanExpression() ")" (<S>)* ) {
+      items.add(LexicalUnitImpl.createLeftParenthesis(res.getLineNumber(), res.getColumnNumber(), null));
+      items.add(res);
+      items.add(LexicalUnitImpl.createRightParenthesis(res.getLineNumber(), res.getColumnNumber(), null));
+      return new SassExpression(items);
+    }
     | (
-      res = variableListItem()
+      res = variableListItem() { items.add(createExpression(res)); }
       (
-        (op = booleanOperator() next = variableListItem()) { 
-          res = BinaryBooleanExpression.createExpression(res, op, next);
+        (op = booleanOperator() next = variableListItem()) {
+          items.add(op);
+          items.add(createExpression(next)); 
         }
       )*
-    )
-    {
-      // this also performs replaceChains()
-      return BinaryBooleanExpression.createExpression(res);
+    ) {
+      if (items.size() == 1) {
+        return items.get(0);
+      } else {
+        return new SassExpression(items);
+      }
+    }
+}
+
+JAVACODE
+SassListItem createExpression(SassListItem first){
+    if(!(first instanceof LexicalUnitImpl)){
+        return first;
+    }
+    LexicalUnitImpl firstUnit = (LexicalUnitImpl) first;
+    if(firstUnit.getNextLexicalUnit() == null){
+        return firstUnit;
+    }
+    else{
+        return new SassExpression(firstUnit);
     }
 }
 
@@ -1532,6 +1577,8 @@ LexicalUnitImpl booleanOperator() :
    |n = < PRECEDES > { operator = LexicalUnitImpl.createGreaterThan(n.beginLine, n.beginColumn); }
    |n = < LTE > { operator = LexicalUnitImpl.createLessThanOrEqualTo(n.beginLine, n.beginColumn); }
    |n = < NOT_EQ > { operator = LexicalUnitImpl.createNotEqual(n.beginLine, n.beginColumn); } 
+   |n = < AND > { operator = LexicalUnitImpl.createAnd(n.beginLine, n.beginColumn); }
+   |n = < OR > { operator = LexicalUnitImpl.createOr(n.beginLine, n.beginColumn); }
    ) (<S>)* 
 ){
    return operator;
@@ -1566,11 +1613,11 @@ SassList stringList():
     Token input;
 }
 {
-    (input = < IDENT > (< S >)*)
+    (input = ident() (< S >)*)
     { unit = LexicalUnitImpl.createIdent(input.beginLine, input.beginColumn,
                                          null, input.image); strings.add(unit); }
 
-    (< COMMA >(< S >)* input = < IDENT > 
+    (< COMMA >(< S >)* input = ident() 
         { unit = LexicalUnitImpl.createIdent(input.beginLine, input.beginColumn,
                                              null, input.image); strings.add(unit); } (< S >)*)*
     {
@@ -2380,10 +2427,21 @@ String identInterpolationString() :
     String s = "";
 }
 {
-    (   (n = <FROM> | n= <THROUGH> | n= <TO> | n = <EACH_IN> | n = <MICROSOFT_RULE>) { s += convertIdent(n.image); }
+    (   (n = <OR> | n = <AND> | n = <NOT> | n = <FROM> | n= <THROUGH> | n= <TO> | n = <EACH_IN> | 
+         n = <MICROSOFT_RULE>) { s += convertIdent(n.image); }
       | (LOOKAHEAD(1) ( n = <IDENT> | n = <INTERPOLATION>) {s += convertIdent(n.image); })+
     ) 
     { return s; }
+}
+
+Token ident() :
+{
+    Token n;
+}
+{
+    ( n = <IDENT> | n = <OR> | n = <AND> | n = <NOT> | n = <FROM> | n = <THROUGH> |
+      n = <TO> | n = <EACH_IN> )
+    { return n; }
 }
 
 LexicalUnitImpl stringTerm(char op, LexicalUnitImpl prev) : 

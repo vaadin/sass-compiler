@@ -193,10 +193,10 @@ public class SassList implements SassListItem, Iterable<SassListItem>,
     }
 
     @Override
-    public SassList evaluateArithmeticExpressions() {
+    public SassList evaluateFunctionsAndExpressions(boolean evaluateArithmetics) {
         List<SassListItem> list = new ArrayList<SassListItem>();
         for (SassListItem item : this) {
-            list.add(item.evaluateArithmeticExpressions());
+            list.add(item.evaluateFunctionsAndExpressions(evaluateArithmetics));
         }
         return new SassList(getSeparator(), list);
     }
@@ -208,15 +208,6 @@ public class SassList implements SassListItem, Iterable<SassListItem>,
         List<SassListItem> list = new ArrayList<SassListItem>();
         for (SassListItem item : this) {
             list.add(item.replaceVariables(variables));
-        }
-        return new SassList(getSeparator(), list);
-    }
-
-    @Override
-    public SassList replaceFunctions() {
-        List<SassListItem> list = new ArrayList<SassListItem>();
-        for (SassListItem item : this) {
-            list.add(item.replaceFunctions());
         }
         return new SassList(getSeparator(), list);
     }

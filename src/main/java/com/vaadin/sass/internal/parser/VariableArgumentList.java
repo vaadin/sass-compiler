@@ -67,18 +67,19 @@ public class VariableArgumentList extends SassList implements Serializable {
     }
 
     @Override
-    public VariableArgumentList replaceFunctions() { // handle the VariableNodes
+    public VariableArgumentList evaluateFunctionsAndExpressions(
+            boolean evaluateArithmetics) {
         List<SassListItem> list = new ArrayList<SassListItem>();
         for (SassListItem item : this) {
-            list.add(item.replaceFunctions());
+            list.add(item.evaluateFunctionsAndExpressions(evaluateArithmetics));
         }
         List<VariableNode> named = new ArrayList<VariableNode>();
         for (VariableNode node : namedVariables) {
             named.add(new VariableNode(node.getName(), node.getExpr()
-                    .replaceFunctions(), node.isGuarded()));
+                    .evaluateFunctionsAndExpressions(evaluateArithmetics), node
+                    .isGuarded()));
         }
         return new VariableArgumentList(getSeparator(), list, named);
-
     }
 
     @Override

@@ -77,7 +77,6 @@ public class VariableNode extends Node implements IVariableNode {
     @Override
     public void replaceVariables(Collection<VariableNode> variables) {
         expr = expr.replaceVariables(variables);
-        expr = expr.replaceFunctions();
     }
 
     /**
@@ -104,12 +103,9 @@ public class VariableNode extends Node implements IVariableNode {
          * successor is a Variable or not, to determine it is an arithmetic
          * operator.
          */
-        if (expr.containsArithmeticalOperator()) {
-            replaceVariables(ScssStylesheet.getVariables());
-            expr = expr.evaluateArithmeticExpressions();
-        } else {
-            replaceVariables(ScssStylesheet.getVariables());
-        }
+        boolean hasOperator = expr.containsArithmeticalOperator();
+        replaceVariables(ScssStylesheet.getVariables());
+        expr = expr.evaluateFunctionsAndExpressions(hasOperator);
         VariableNodeHandler.traverse(this);
     }
 

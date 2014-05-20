@@ -1,0 +1,26 @@
+foo{
+    @if false or false{
+        false-or-false: true;
+    }
+    @if false or true{
+        false-or-true: true;
+    }
+    @if true or false{
+        true-or-false: true;
+    }
+    @if true or true{
+        true-or-true: true;
+    }
+    @if false and false{
+        false-and-false: true;
+    }
+    @if false and true{
+        false-and-true: true;
+    }
+    @if true and false{
+        true-and-false: true;
+    }
+    @if true and true{
+        true-and-true: true;
+    }
+}

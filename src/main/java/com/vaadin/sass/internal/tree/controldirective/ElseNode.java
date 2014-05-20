@@ -15,13 +15,13 @@
  */
 package com.vaadin.sass.internal.tree.controldirective;
 
-import com.vaadin.sass.internal.parser.BinaryBooleanExpression;
+import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.Node;
 
 public class ElseNode extends Node implements IfElseNode {
 
     @Override
-    public BinaryBooleanExpression getExpression() {
+    public SassListItem getExpression() {
         return null;
     }
 

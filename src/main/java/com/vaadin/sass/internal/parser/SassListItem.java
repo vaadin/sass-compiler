@@ -48,24 +48,24 @@ public interface SassListItem {
     public boolean containsArithmeticalOperator();
 
     /**
-     * Evaluates the arithmetic expressions of this item without modifying this
-     * item.
+     * Evaluates the arithmetic expressions and functions of this item without
+     * modifying this item.
      * 
-     * @return For single values, the result of the arithmetic expression. For a
-     *         list, a copy of the list where the arithmetic expressions have
-     *         been replaced with their evaluated values.
+     * @param evaluateArithmetics
+     *            True indicates that the arithmetic expressions in this item
+     *            should be evaluated. This parameter is used to handle the case
+     *            where the operator '/' should not be interpreted as an
+     *            arithmetic operation. The arithmetic expressions occurring in
+     *            the parameter lists of functions will be evaluated even if
+     *            evaluateArithmetics is false.
+     * 
+     * @return For single values, the result of the arithmetic expression or
+     *         function. For a list, a copy of the list where the arithmetic
+     *         expressions and functions have been replaced with their evaluated
+     *         values.
      */
-    public SassListItem evaluateArithmeticExpressions();
-
-    /**
-     * Returns a new item that is the result of evaluating all functions in this
-     * item. Does not modify this item. If the item does not change as a result
-     * of evaluating functions, an implementation can return the item itself.
-     * Otherwise a new item should be returned. For a list with both changed and
-     * unchanged items, the unchanged items can be references to the same
-     * objects as in the original list.
-     */
-    public SassListItem replaceFunctions();
+    public SassListItem evaluateFunctionsAndExpressions(
+            boolean evaluateArithmetics);
 
     /**
      * Returns a new item that is otherwise equal to this one but all

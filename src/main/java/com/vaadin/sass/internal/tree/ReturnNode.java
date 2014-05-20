@@ -57,10 +57,7 @@ public class ReturnNode extends Node implements IVariableNode {
             expr = expr.replaceVariables(actualParams);
         }
         expr = expr.replaceVariables(ScssStylesheet.getVariables());
-        expr = expr.replaceFunctions();
-        if (arith) {
-            expr = expr.evaluateArithmeticExpressions();
-        }
+        expr = expr.evaluateFunctionsAndExpressions(arith);
         return expr;
     }
 

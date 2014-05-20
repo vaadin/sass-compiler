@@ -21,7 +21,6 @@ import java.util.Stack;
 
 import com.vaadin.sass.internal.expression.exception.ArithmeticException;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
-import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SCSSLexicalUnit;
 import com.vaadin.sass.internal.parser.SassExpression;
 import com.vaadin.sass.internal.parser.SassListItem;
@@ -44,21 +43,18 @@ public class ArithmeticExpressionEvaluator {
     }
 
     private Object createExpression(List<SassListItem> terms) {
-        LexicalUnitImpl current = null;
+        SassListItem current = null;
         boolean afterOperand = false;
         Stack<Object> operands = new Stack<Object>();
         Stack<Object> operators = new Stack<Object>();
         inputTermLoop: for (int i = 0; i < terms.size(); ++i) {
-            if (!(terms.get(i) instanceof LexicalUnitImpl)) {
-                throw new ParseException("Illegal value in expression",
-                        terms.get(i));
-            }
-            current = (LexicalUnitImpl) terms.get(i);
+            current = terms.get(i).evaluateFunctionsAndExpressions(true);
             if (SassExpression.isWhitespace(current)) {
                 continue;
             }
             if (afterOperand) {
-                if (current.getLexicalUnitType() == SCSSLexicalUnit.SCSS_OPERATOR_RIGHT_PAREN) {
+                if (LexicalUnitImpl.checkLexicalUnitType(current,
+                        SCSSLexicalUnit.SCSS_OPERATOR_RIGHT_PAREN)) {
                     Object operator = null;
                     while (!operators.isEmpty()
                             && ((operator = operators.pop()) != Parentheses.LEFT)) {
@@ -68,7 +64,8 @@ public class ArithmeticExpressionEvaluator {
                 }
                 afterOperand = false;
                 for (BinaryOperator operator : BinaryOperator.values()) {
-                    if (current.getLexicalUnitType() == operator.type) {
+                    if (LexicalUnitImpl.checkLexicalUnitType(current,
+                            operator.type)) {
                         while (!operators.isEmpty()
                                 && (operators.peek() != Parentheses.LEFT)
                                 && (((BinaryOperator) operators.peek()).precedence >= operator.precedence)) {
@@ -83,7 +80,8 @@ public class ArithmeticExpressionEvaluator {
                 throw new ArithmeticException("Illegal arithmetic expression",
                         current);
             }
-            if (current.getLexicalUnitType() == SCSSLexicalUnit.SCSS_OPERATOR_LEFT_PAREN) {
+            if (LexicalUnitImpl.checkLexicalUnitType(current,
+                    SCSSLexicalUnit.SCSS_OPERATOR_LEFT_PAREN)) {
                 operators.push(Parentheses.LEFT);
                 continue;
             }
@@ -108,14 +106,14 @@ public class ArithmeticExpressionEvaluator {
         return expression;
     }
 
-    public LexicalUnitImpl evaluate(List<SassListItem> terms) {
+    public SassListItem evaluate(List<SassListItem> terms) {
         Object result = ArithmeticExpressionEvaluator.get().createExpression(
                 terms);
         if (result instanceof BinaryExpression) {
             return ((BinaryExpression) result).eval();
         }
         // createExpression returns either a BinaryExpression or a
-        // LexicalUnitImpl
-        return (LexicalUnitImpl) result;
+        // SassListItem
+        return (SassListItem) result;
     }
 }

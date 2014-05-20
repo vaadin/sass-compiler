@@ -59,13 +59,8 @@ public class IfNode extends Node implements IfElseNode, IVariableNode {
          * successor is a Variable or not, to determine it is an arithmetic
          * operator.
          */
-        if (expression.containsArithmeticalOperator()) {
-            replaceVariables(ScssStylesheet.getVariables());
-            expression = expression.evaluateArithmeticExpressions();
-        } else {
-            replaceVariables(ScssStylesheet.getVariables());
-        }
-        expression = expression.replaceFunctions();
+        boolean hasOperator = expression.containsArithmeticalOperator();
+        replaceVariables(ScssStylesheet.getVariables());
+        expression = expression.evaluateFunctionsAndExpressions(hasOperator);
     }
-
 }

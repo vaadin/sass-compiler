@@ -189,7 +189,7 @@ public abstract class NodeWithVariableArguments extends Node implements
     public void replaceVariables(Collection<VariableNode> variables) {
         for (final VariableNode arg : getArglist()) {
             SassListItem expr = arg.getExpr().replaceVariables(variables);
-            expr = expr.replaceFunctions();
+            expr = expr.evaluateFunctionsAndExpressions(true);
             arg.setExpr(expr);
         }
     }

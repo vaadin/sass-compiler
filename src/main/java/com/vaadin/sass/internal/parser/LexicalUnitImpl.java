@@ -700,7 +700,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
 
     public static LexicalUnitImpl createRightParenthesis(int line, int column,
             LexicalUnitImpl previous) {
-        return new LexicalUnitImpl(SCSS_OPERATOR_LEFT_PAREN, line, column,
+        return new LexicalUnitImpl(SCSS_OPERATOR_RIGHT_PAREN, line, column,
                 previous);
     }
 
@@ -731,6 +731,14 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
 
     public static LexicalUnitImpl createLessThanOrEqualTo(int line, int column) {
         return new LexicalUnitImpl(SAC_OPERATOR_LE, line, column, null);
+    }
+
+    public static LexicalUnitImpl createAnd(int line, int column) {
+        return new LexicalUnitImpl(SCSS_OPERATOR_AND, line, column, null);
+    }
+
+    public static LexicalUnitImpl createOr(int line, int column) {
+        return new LexicalUnitImpl(SCSS_OPERATOR_OR, line, column, null);
     }
 
     @Override
@@ -797,11 +805,12 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     }
 
     @Override
-    public SassListItem replaceFunctions() {
+    public SassListItem evaluateFunctionsAndExpressions(
+            boolean evaluateArithmetics) {
         if (params != null) {
             SCSSFunctionGenerator generator = getGenerator(getFunctionName());
             LexicalUnitImpl copy = createFunction(line, column, null, fname,
-                    params.replaceFunctions());
+                    params.evaluateFunctionsAndExpressions(true));
             if (generator == null) {
                 SassListItem result = copy.replaceCustomFunctions();
                 if (result != null) {
@@ -887,6 +896,12 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
             break;
         case LexicalUnit.SAC_OPERATOR_EXP:
             text = "^";
+            break;
+        case LexicalUnitImpl.SCSS_OPERATOR_LEFT_PAREN:
+            text = "(";
+            break;
+        case LexicalUnitImpl.SCSS_OPERATOR_RIGHT_PAREN:
+            text = ")";
             break;
         case LexicalUnitImpl.SCSS_OPERATOR_EQUALS:
             text = "==";
@@ -1025,11 +1040,6 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     @Override
     public boolean containsArithmeticalOperator() {
         return false;
-    }
-
-    @Override
-    public LexicalUnitImpl evaluateArithmeticExpressions() {
-        return this;
     }
 
     // TODO mutates this

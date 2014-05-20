@@ -30,7 +30,7 @@ public class ArithmeticExpressionEvaluatorTest {
     private ArithmeticExpressionEvaluator evaluator = new ArithmeticExpressionEvaluator();
 
     private LexicalUnitImpl evaluate(SassListItem... terms) {
-        return evaluator.evaluate(Arrays.asList(terms));
+        return (LexicalUnitImpl) evaluator.evaluate(Arrays.asList(terms));
     }
 
     private final LexicalUnitImpl operand2 = LexicalUnitImpl.createInteger(0,

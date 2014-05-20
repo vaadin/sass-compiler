@@ -15,18 +15,18 @@
  */
 package com.vaadin.sass.internal.expression.exception;
 
-import com.vaadin.sass.internal.parser.LexicalUnitImpl;
+import com.vaadin.sass.internal.parser.SassListItem;
 
 public class ArithmeticException extends RuntimeException {
     public ArithmeticException(String errorMsg) {
         super(errorMsg);
     }
 
-    public ArithmeticException(String error, LexicalUnitImpl term) {
+    public ArithmeticException(String error, SassListItem term) {
         super(buildMessage(error, term));
     }
 
-    private static String buildMessage(String message, LexicalUnitImpl term) {
+    private static String buildMessage(String message, SassListItem term) {
         if (term == null) {
             return message;
         }

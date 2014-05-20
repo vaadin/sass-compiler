@@ -52,7 +52,15 @@ public class SassExpression implements SassListItem, Serializable {
         }
     }
 
-    protected SassExpression(List<SassListItem> items) {
+    /**
+     * Constructs a SassExpression from a list of items. The list is not copied
+     * but used directly and no expansion of LexicalUnitImpl chains is
+     * performed.
+     * 
+     * @param items
+     *            list of items (not copied but used directly)
+     */
+    public SassExpression(List<SassListItem> items) {
         if (!items.isEmpty()) {
             line = items.get(0).getLineNumber();
             column = items.get(0).getColumnNumber();
@@ -158,20 +166,17 @@ public class SassExpression implements SassListItem, Serializable {
     }
 
     @Override
-    public SassListItem evaluateArithmeticExpressions() {
-        if (items.size() == 0) {
-            return this;
-        }
-        return ArithmeticExpressionEvaluator.get().evaluate(items);
-    }
-
-    @Override
-    public SassExpression replaceFunctions() {
+    public SassListItem evaluateFunctionsAndExpressions(
+            boolean evaluateArithmetics) {
         List<SassListItem> list = new ArrayList<SassListItem>();
         for (SassListItem item : items) {
-            list.add(item.replaceFunctions());
+            list.add(item.evaluateFunctionsAndExpressions(evaluateArithmetics));
         }
-        return new SassExpression(list);
+        if (list.size() == 0 || !evaluateArithmetics) {
+            return new SassExpression(list);
+        } else {
+            return ArithmeticExpressionEvaluator.get().evaluate(list);
+        }
     }
 
     @Override

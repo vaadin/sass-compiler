@@ -19,7 +19,8 @@ import java.util.ArrayList;
 
 import org.w3c.flute.parser.ParseException;
 
-import com.vaadin.sass.internal.parser.BinaryBooleanExpression;
+import com.vaadin.sass.internal.expression.BinaryOperator;
+import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.controldirective.ElseNode;
 import com.vaadin.sass.internal.tree.controldirective.IfElseDefNode;
@@ -31,8 +32,9 @@ public class IfElseNodeHandler {
 
         for (final Node child : node.getChildren()) {
             if (child instanceof IfNode) {
-                if (BinaryBooleanExpression.evaluate(((IfNode) child)
-                        .getExpression())) {
+                SassListItem expression = ((IfNode) child).getExpression();
+                expression = expression.evaluateFunctionsAndExpressions(true);
+                if (BinaryOperator.isTrue(expression)) {
                     replaceDefNodeWithCorrectChild(node, node.getParentNode(),
                             child);
                     break;

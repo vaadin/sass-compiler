@@ -91,7 +91,6 @@ public class RuleNode extends Node implements IVariableNode {
             }
         }
         value = value.replaceVariables(variables);
-        value = value.replaceFunctions();
     }
 
     @Override
@@ -104,12 +103,9 @@ public class RuleNode extends Node implements IVariableNode {
          * successor is a Variable or not, to determine it is an arithmetic
          * operator.
          */
-        if (value.containsArithmeticalOperator()) {
-            replaceVariables(ScssStylesheet.getVariables());
-            value = value.evaluateArithmeticExpressions();
-        } else {
-            replaceVariables(ScssStylesheet.getVariables());
-        }
+        boolean hasOperators = value.containsArithmeticalOperator();
+        replaceVariables(ScssStylesheet.getVariables());
+        value = value.evaluateFunctionsAndExpressions(hasOperators);
     }
 
     private String buildString(BuildStringStrategy strategy) {
