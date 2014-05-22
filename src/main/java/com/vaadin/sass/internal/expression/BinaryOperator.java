@@ -24,16 +24,6 @@ import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassListItem;
 
 public enum BinaryOperator {
-    AND(LexicalUnitImpl.SCSS_OPERATOR_AND, 1) {
-        @Override
-        public SassListItem eval(SassListItem leftValue, SassListItem rightValue) {
-            if (isTrue(leftValue)) {
-                return rightValue;
-            } else {
-                return leftValue;
-            }
-        }
-    },
     OR(LexicalUnitImpl.SCSS_OPERATOR_OR, 1) {
         @Override
         public SassListItem eval(SassListItem leftValue, SassListItem rightValue) {
@@ -44,7 +34,17 @@ public enum BinaryOperator {
             }
         }
     },
-    EQUALS(LexicalUnitImpl.SCSS_OPERATOR_EQUALS, 2) {
+    AND(LexicalUnitImpl.SCSS_OPERATOR_AND, 2) {
+        @Override
+        public SassListItem eval(SassListItem leftValue, SassListItem rightValue) {
+            if (isTrue(leftValue)) {
+                return rightValue;
+            } else {
+                return leftValue;
+            }
+        }
+    },
+    EQUALS(LexicalUnitImpl.SCSS_OPERATOR_EQUALS, 3) {
         @Override
         public SassListItem eval(SassListItem leftValue, SassListItem rightValue) {
             boolean value = leftValue.printState().equals(
@@ -52,7 +52,7 @@ public enum BinaryOperator {
             return createBooleanUnit(value);
         }
     },
-    NOT_EQUAL(LexicalUnitImpl.SCSS_OPERATOR_NOT_EQUAL, 2) {
+    NOT_EQUAL(LexicalUnitImpl.SCSS_OPERATOR_NOT_EQUAL, 3) {
         @Override
         public SassListItem eval(SassListItem leftValue, SassListItem rightValue) {
             boolean value = !leftValue.printState().equals(
@@ -60,63 +60,63 @@ public enum BinaryOperator {
             return createBooleanUnit(value);
         }
     },
-    LESS_THAN(LexicalUnitImpl.SAC_OPERATOR_LT, 2) {
+    LESS_THAN(LexicalUnitImpl.SAC_OPERATOR_LT, 3) {
         @Override
         public LexicalUnitImpl evalInternal(LexicalUnitImpl leftValue,
                 LexicalUnitImpl rightValue) {
             return createBooleanUnit(getFloatValue(leftValue) < getFloatValue(rightValue));
         }
     },
-    GREATER_THAN(LexicalUnitImpl.SAC_OPERATOR_GT, 2) {
+    GREATER_THAN(LexicalUnitImpl.SAC_OPERATOR_GT, 3) {
         @Override
         public LexicalUnitImpl evalInternal(LexicalUnitImpl leftValue,
                 LexicalUnitImpl rightValue) {
             return createBooleanUnit(getFloatValue(leftValue) > getFloatValue(rightValue));
         }
     },
-    LESS_THAN_OR_EQUALS(LexicalUnitImpl.SAC_OPERATOR_LE, 2) {
+    LESS_THAN_OR_EQUALS(LexicalUnitImpl.SAC_OPERATOR_LE, 3) {
         @Override
         public LexicalUnitImpl evalInternal(LexicalUnitImpl leftValue,
                 LexicalUnitImpl rightValue) {
             return createBooleanUnit(getFloatValue(leftValue) <= getFloatValue(rightValue));
         }
     },
-    GREATER_THAN_OR_EQUALS(LexicalUnitImpl.SAC_OPERATOR_GE, 2) {
+    GREATER_THAN_OR_EQUALS(LexicalUnitImpl.SAC_OPERATOR_GE, 3) {
         @Override
         public LexicalUnitImpl evalInternal(LexicalUnitImpl leftValue,
                 LexicalUnitImpl rightValue) {
             return createBooleanUnit(getFloatValue(leftValue) >= getFloatValue(rightValue));
         }
     },
-    ADD(LexicalUnit.SAC_OPERATOR_PLUS, 3) {
+    ADD(LexicalUnit.SAC_OPERATOR_PLUS, 4) {
         @Override
         public LexicalUnitImpl evalInternal(LexicalUnitImpl leftValue,
                 LexicalUnitImpl rightValue) {
             return leftValue.add(rightValue);
         }
     },
-    MINUS(LexicalUnit.SAC_OPERATOR_MINUS, 3) {
+    MINUS(LexicalUnit.SAC_OPERATOR_MINUS, 4) {
         @Override
         public LexicalUnitImpl evalInternal(LexicalUnitImpl leftValue,
                 LexicalUnitImpl rightValue) {
             return leftValue.minus(rightValue);
         }
     },
-    MUL(LexicalUnit.SAC_OPERATOR_MULTIPLY, 4) {
+    MUL(LexicalUnit.SAC_OPERATOR_MULTIPLY, 5) {
         @Override
         public LexicalUnitImpl evalInternal(LexicalUnitImpl leftValue,
                 LexicalUnitImpl rightValue) {
             return leftValue.multiply(rightValue);
         }
     },
-    DIV(LexicalUnit.SAC_OPERATOR_SLASH, 4) {
+    DIV(LexicalUnit.SAC_OPERATOR_SLASH, 5) {
         @Override
         public LexicalUnitImpl evalInternal(LexicalUnitImpl leftValue,
                 LexicalUnitImpl rightValue) {
             return leftValue.divide(rightValue);
         }
     },
-    MOD(LexicalUnit.SAC_OPERATOR_MOD, 4) {
+    MOD(LexicalUnit.SAC_OPERATOR_MOD, 5) {
         @Override
         public LexicalUnitImpl evalInternal(LexicalUnitImpl leftValue,
                 LexicalUnitImpl rightValue) {

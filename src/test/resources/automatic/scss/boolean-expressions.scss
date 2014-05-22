@@ -1,0 +1,77 @@
+$a: true;
+$a_1: blue;
+$a_2: 3 * 4;
+$a_3: 1, 2 3;
+$b: false;
+$b_1: null;
+
+.test-simple {
+    a-or-b: $a or $b;
+    a-and-b: $a and $b;
+}
+
+.preserve-whitespace {
+    $left: left;
+    $right: right;
+    first: #{$left} < #{$right};
+    second: #{$left}> $right;
+    third: $left ==#{$right};
+}
+
+.test-false-and-true {
+    @if $a_1 or $b {
+        a_1-or-b: $a_1 or $b;
+    }
+    @if $a_1 or $b_1 {
+        a_1-or-b_1: $a_1 or $b_1;
+    }
+    @if $a_2 or $b {
+        a_2-or-b: $a_2 or $b;
+    }
+    @if $a_3 or $b_1 {
+        a_3-or-b_1: $a_3 or $b_1;
+    }
+    @if $a_1 and $b {
+        true-a_1-and-b: $a_1 and $b;
+    }
+    @else {
+        false-a_1-and-b: $a_1 and $b;
+    }
+    $temp: $a_2 and $b_1;
+    @if $a_2 and $b_1 {
+        true-a_2-and-b_1: value-is-#{$temp};
+    }
+    @else {
+        false-a_2-and-b_1: value-is-#{$temp};
+    }
+    b-and-b_1: $b and $b_1;
+    b_1-and-b: $b_1 and $b;
+    a_1-or-a_2: $a_1 or $a_2;
+    a_2-or-a_1: $a_2 or $a_1;
+    a_1-and-a_2: $a_1 and $a_2;
+    a_2-and-a_1: $a_2 and $a_1;
+}
+
+.test-complex {
+    $a: 10;
+    $b: 15;
+    $c: 20;
+    $d: 5;
+    first: $a < $b or $c < $d;
+    second: $a < $b and $b < $c and $c < $d;
+    third: $d < $a and $a < $b and $b < $c;
+    fourth: $a < $b and $c < $d or $a < $c;
+    fifth: $a < $b and $c < $d or $c < $a;
+    sixth: $a < $b and $b < $c and $c < $d or $a_2;
+    seventh: $a < $b and $b < $c and $c < $d or false and $a_2;
+    eighth: $d < $a and $a < $b and $b < $c or $a_2 and false;
+}
+
+.default-using-or {
+    $color1: null;
+    $color2: blue;
+    $color3: red;
+    blue: $color1 or $color2;
+    blue: $color2 or $color3;
+    red: $color3 or $color2;
+}

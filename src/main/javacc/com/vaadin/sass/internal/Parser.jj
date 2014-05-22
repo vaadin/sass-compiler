@@ -1460,19 +1460,9 @@ SassListItem variableListItem():
     LexicalUnitImpl firstUnit;
 }
 {
-    firstUnit = variableListItemAsUnit() {
+    firstUnit = variableListItemAsUnit(null) {
         return createExpression(firstUnit);
     }
-}
-
-LexicalUnitImpl variableListItemAsUnit():
-{
-    LexicalUnitImpl first, res;
-}
-{
-    first = term(null){ res = first; }
-    (LOOKAHEAD(2)(res = nonCommaOperator(res) res = term(res)))*
-    { return first.removeTrailingWhitespace(); }
 }
 
 void controlDirective() :
@@ -1490,11 +1480,12 @@ void ifContentStatement() :
 
 void ifDirective() :
 {
-  SassListItem evaluator;
+  SassList list;
+  SassListItem evaluator = null;
 }
 {
   < IF_SYM >(< S >)*
-  ( evaluator = booleanExpression() )
+  ( list = expressionSubList() { evaluator = list.flatten(); }  )
   < LBRACE >(< S >)*    
   { documentHandler.startIfElseDirective();
     documentHandler.ifDirective(evaluator);
@@ -1507,47 +1498,18 @@ void ifDirective() :
 
 void elseDirective() :
 {
+  SassList list;
   SassListItem evaluator = null;
 }
 {
   < ELSE_SYM >(< S >)*
-  ( < IF > (< S >)* ( evaluator = booleanExpression() ) )?
+  ( < IF > (< S >)* ( list = expressionSubList() { evaluator = list.flatten(); } ) )?
   < LBRACE >(< S >)*
   { if(evaluator != null){ documentHandler.ifDirective(evaluator); }
     else{ documentHandler.elseDirective(); }  
   }
   ( ifContentStatement() | fontFace() )*
   < RBRACE >(< S >)*
-}
-
-SassListItem booleanExpression():
-{
-    SassListItem res, next;
-    LexicalUnitImpl op;
-    List<SassListItem> items = new ArrayList<SassListItem>();
-}
-{
-    ( "(" (<S>)* res=booleanExpression() ")" (<S>)* ) {
-      items.add(LexicalUnitImpl.createLeftParenthesis(res.getLineNumber(), res.getColumnNumber(), null));
-      items.add(res);
-      items.add(LexicalUnitImpl.createRightParenthesis(res.getLineNumber(), res.getColumnNumber(), null));
-      return new SassExpression(items);
-    }
-    | (
-      res = variableListItem() { items.add(createExpression(res)); }
-      (
-        (op = booleanOperator() next = variableListItem()) {
-          items.add(op);
-          items.add(createExpression(next)); 
-        }
-      )*
-    ) {
-      if (items.size() == 1) {
-        return items.get(0);
-      } else {
-        return new SassExpression(items);
-      }
-    }
 }
 
 JAVACODE
@@ -1562,27 +1524,6 @@ SassListItem createExpression(SassListItem first){
     else{
         return new SassExpression(firstUnit);
     }
-}
-
-LexicalUnitImpl booleanOperator() :
-{
-  Token n = null;
-  LexicalUnitImpl operator;
-}
-{
- (
-   (n = < COMPARE > { operator = LexicalUnitImpl.createEquals(n.beginLine, n.beginColumn); }
-   |n = < SUCCEEDS > { operator = LexicalUnitImpl.createLessThan(n.beginLine, n.beginColumn); }
-   |n = < GTE > { operator = LexicalUnitImpl.createGreaterThanOrEqualTo(n.beginLine, n.beginColumn);  }
-   |n = < PRECEDES > { operator = LexicalUnitImpl.createGreaterThan(n.beginLine, n.beginColumn); }
-   |n = < LTE > { operator = LexicalUnitImpl.createLessThanOrEqualTo(n.beginLine, n.beginColumn); }
-   |n = < NOT_EQ > { operator = LexicalUnitImpl.createNotEqual(n.beginLine, n.beginColumn); } 
-   |n = < AND > { operator = LexicalUnitImpl.createAnd(n.beginLine, n.beginColumn); }
-   |n = < OR > { operator = LexicalUnitImpl.createOr(n.beginLine, n.beginColumn); }
-   ) (<S>)* 
-){
-   return operator;
- }
 }
   
 void eachDirective() :
@@ -1677,11 +1618,12 @@ void functionControlDirective() :
 
 void functionIfDirective() :
 {
+  SassList list;
   SassListItem condition;
 }
 {
   < IF_SYM >(< S >)*
-  ( condition = booleanExpression() )
+  ( list = expressionSubList() {condition = list.flatten(); } )
   < LBRACE >(< S >)*    
   { documentHandler.startIfElseDirective();
     documentHandler.ifDirective(condition);
@@ -1694,11 +1636,12 @@ void functionIfDirective() :
 
 void functionElseDirective() :
 {
+  SassList list;
   SassListItem condition = null;
 }
 {
   < ELSE_SYM >(< S >)* 
-  ( < IF >(< S >)* ( condition = booleanExpression() ) )?
+  ( < IF >(< S >)* ( list = expressionSubList() { condition = list.flatten(); } ) )?
   < LBRACE >(< S >)*
   { if(condition != null){ documentHandler.ifDirective(condition); }
     else{ documentHandler.elseDirective(); }  
@@ -2211,6 +2154,63 @@ LexicalUnitImpl operator(LexicalUnitImpl prev) :
           }
           return unit;
       }
+}
+
+LexicalUnitImpl variableListItemAsUnit(LexicalUnitImpl prev):
+{
+    Token n;
+    LexicalUnitImpl first, res;
+}
+{
+    (n = "(" (<S>)* { first = LexicalUnitImpl.createLeftParenthesis(n.beginLine, n.beginColumn, prev);}
+    res = variableListItemAsUnit(first){ res = getLastUnit(res); }
+    ")" (<S>)* { res = LexicalUnitImpl.createRightParenthesis(n.beginLine, n.beginColumn, res);}
+    |
+    first = term(prev){ res = first; }
+    (LOOKAHEAD(2)( res = arithmeticOrBooleanOperator(res) res = term(res)))*
+    { return first.removeTrailingWhitespace(); }
+    )
+    {
+        return first;
+    }
+}
+
+/**
+ * @exception ParseException exception during the parse
+ */
+LexicalUnitImpl arithmeticOrBooleanOperator(LexicalUnitImpl prev) :
+{
+    LexicalUnitImpl result;
+}
+{
+    { prev = getLastUnit(prev); }
+    ( result = nonCommaOperator(prev) | result = booleanOperator(prev) )
+    { return result; }
+}
+
+LexicalUnitImpl booleanOperator(LexicalUnitImpl prev) :
+{
+  Token n = null;
+  boolean spaceAfter = false;
+  LexicalUnitImpl operator;
+}
+{
+(
+    (n = < COMPARE > { operator = LexicalUnitImpl.createEquals(n.beginLine, n.beginColumn, prev); }
+    |n = < SUCCEEDS > { operator = LexicalUnitImpl.createLessThan(n.beginLine, n.beginColumn, prev); }
+    |n = < GTE > { operator = LexicalUnitImpl.createGreaterThanOrEqualTo(n.beginLine, n.beginColumn, prev);  }
+    |n = < PRECEDES > { operator = LexicalUnitImpl.createGreaterThan(n.beginLine, n.beginColumn, prev); }
+    |n = < LTE > { operator = LexicalUnitImpl.createLessThanOrEqualTo(n.beginLine, n.beginColumn, prev); }
+    |n = < NOT_EQ > { operator = LexicalUnitImpl.createNotEqual(n.beginLine, n.beginColumn, prev); } 
+    |n = < AND > { operator = LexicalUnitImpl.createAnd(n.beginLine, n.beginColumn, prev); }
+    |n = < OR > { operator = LexicalUnitImpl.createOr(n.beginLine, n.beginColumn, prev); }
+    ) (<S> {spaceAfter = true; })* 
+){
+    if(spaceAfter){
+            LexicalUnitImpl.createSpace(token.beginLine, token.beginColumn, operator);
+    }
+    return operator;
+ }
 }
 
 /**

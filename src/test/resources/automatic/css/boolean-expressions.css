@@ -1,0 +1,41 @@
+.test-simple {
+    a-or-b: true;
+    a-and-b: false;
+}
+
+.preserve-whitespace {
+    first: left < right;
+    second: left> right;
+    third: left ==right;
+}
+
+.test-false-and-true {
+    a_1-or-b: blue;
+    a_1-or-b_1: blue;
+    a_2-or-b: 12;
+    a_3-or-b_1: 1, 2 3;
+    false-a_1-and-b: false;
+    false-a_2-and-b_1: value-is-;
+    b-and-b_1: false;
+    a_1-or-a_2: blue;
+    a_2-or-a_1: 12;
+    a_1-and-a_2: 12;
+    a_2-and-a_1: blue;
+}
+
+.test-complex {
+    first: true;
+    second: false;
+    third: true;
+    fourth: true;
+    fifth: false;
+    sixth: 12;
+    seventh: false;
+    eighth: true;
+}
+
+.default-using-or {
+    blue: blue;
+    blue: blue;
+    red: red;
+}

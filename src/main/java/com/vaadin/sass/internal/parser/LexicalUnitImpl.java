@@ -708,37 +708,44 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         return new LexicalUnitImpl(0, 0, null, SAC_IDENT, s);
     }
 
-    public static LexicalUnitImpl createEquals(int line, int column) {
-        return new LexicalUnitImpl(SCSS_OPERATOR_EQUALS, line, column, null);
+    public static LexicalUnitImpl createEquals(int line, int column,
+            LexicalUnitImpl prev) {
+        return new LexicalUnitImpl(SCSS_OPERATOR_EQUALS, line, column, prev);
     }
 
-    public static LexicalUnitImpl createNotEqual(int line, int column) {
-        return new LexicalUnitImpl(SCSS_OPERATOR_NOT_EQUAL, line, column, null);
+    public static LexicalUnitImpl createNotEqual(int line, int column,
+            LexicalUnitImpl prev) {
+        return new LexicalUnitImpl(SCSS_OPERATOR_NOT_EQUAL, line, column, prev);
     }
 
-    public static LexicalUnitImpl createGreaterThan(int line, int column) {
-        return new LexicalUnitImpl(SAC_OPERATOR_GT, line, column, null);
+    public static LexicalUnitImpl createGreaterThan(int line, int column,
+            LexicalUnitImpl prev) {
+        return new LexicalUnitImpl(SAC_OPERATOR_GT, line, column, prev);
     }
 
     public static LexicalUnitImpl createGreaterThanOrEqualTo(int line,
-            int column) {
-        return new LexicalUnitImpl(SAC_OPERATOR_GE, line, column, null);
+            int column, LexicalUnitImpl prev) {
+        return new LexicalUnitImpl(SAC_OPERATOR_GE, line, column, prev);
     }
 
-    public static LexicalUnitImpl createLessThan(int line, int column) {
-        return new LexicalUnitImpl(SAC_OPERATOR_LT, line, column, null);
+    public static LexicalUnitImpl createLessThan(int line, int column,
+            LexicalUnitImpl prev) {
+        return new LexicalUnitImpl(SAC_OPERATOR_LT, line, column, prev);
     }
 
-    public static LexicalUnitImpl createLessThanOrEqualTo(int line, int column) {
-        return new LexicalUnitImpl(SAC_OPERATOR_LE, line, column, null);
+    public static LexicalUnitImpl createLessThanOrEqualTo(int line, int column,
+            LexicalUnitImpl prev) {
+        return new LexicalUnitImpl(SAC_OPERATOR_LE, line, column, prev);
     }
 
-    public static LexicalUnitImpl createAnd(int line, int column) {
-        return new LexicalUnitImpl(SCSS_OPERATOR_AND, line, column, null);
+    public static LexicalUnitImpl createAnd(int line, int column,
+            LexicalUnitImpl prev) {
+        return new LexicalUnitImpl(SCSS_OPERATOR_AND, line, column, prev);
     }
 
-    public static LexicalUnitImpl createOr(int line, int column) {
-        return new LexicalUnitImpl(SCSS_OPERATOR_OR, line, column, null);
+    public static LexicalUnitImpl createOr(int line, int column,
+            LexicalUnitImpl prev) {
+        return new LexicalUnitImpl(SCSS_OPERATOR_OR, line, column, prev);
     }
 
     @Override
