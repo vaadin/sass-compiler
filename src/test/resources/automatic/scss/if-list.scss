@@ -1,0 +1,13 @@
+.foo {
+	$i : one two;
+	@if (all == $i) {
+		color: green;
+	} @else {
+		color: red;
+	}
+	@if ($i == "all") {
+		color2: green;
+	} @else {
+		color2: red;
+	}
+}
