@@ -1,0 +1,8 @@
+@font-face {
+  font-family: family;
+  @if true {
+    src: url('url1.eot');
+  } @else {
+    src: url('url2.eot');
+  }
+}

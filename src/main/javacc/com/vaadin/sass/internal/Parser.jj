@@ -1036,7 +1036,7 @@ void fontFace() :
   <FONT_FACE_SYM> ( <S> )*
      <LBRACE> (<S>)*
       { start = true; documentHandler.startFontFace(); }
-     ( declaration() )? ( ";" ( <S> )* ( declaration() )? )*
+     ( declaration() | controlDirective() )? ( ";" ( <S> )* ( declaration() | controlDirective() )? )*
      <RBRACE> (<S>)*
  } catch (ParseException e) {
      reportError(getLocator(), e);
