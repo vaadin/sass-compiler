@@ -27,10 +27,7 @@ import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.selector.Selector;
-import com.vaadin.sass.internal.tree.ForNode;
 import com.vaadin.sass.internal.tree.VariableNode;
-import com.vaadin.sass.internal.tree.WhileNode;
-import com.vaadin.sass.internal.tree.controldirective.EachDefNode;
 
 public interface SCSSDocumentHandler extends DocumentHandler {
     ScssStylesheet getStyleSheet();
@@ -49,10 +46,14 @@ public interface SCSSDocumentHandler extends DocumentHandler {
 
     void debugDirective();
 
-    ForNode forDirective(String var, String from, String to, boolean exclusive,
-            String body);
+    void startForDirective(String var, SassListItem from, SassListItem to,
+            boolean exclusive);
 
-    WhileNode whileDirective(String condition, String body);
+    void endForDirective();
+
+    void startWhileDirective(SassListItem evaluator);
+
+    void endWhileDirective();
 
     void startNestedProperties(String name);
 
@@ -63,7 +64,9 @@ public interface SCSSDocumentHandler extends DocumentHandler {
     void property(String name, SassListItem value, boolean important,
             String comment);
 
-    EachDefNode startEachDirective(String variable, SassList list);
+    void startEachDirective(String variable, SassList list);
+
+    void startEachDirective(String var, String listVariable);
 
     void endEachDirective();
 
@@ -82,8 +85,6 @@ public interface SCSSDocumentHandler extends DocumentHandler {
     void extendDirective(List<Selector> list, boolean optional);
 
     void microsoftDirective(String name, String value);
-
-    EachDefNode startEachDirective(String var, String listVariable);
 
     void startKeyFrames(String keyframeName, String animationname);
 

@@ -16,54 +16,21 @@
 package com.vaadin.sass.internal.visitor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
-import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.SassListItem;
-import com.vaadin.sass.internal.tree.IVariableNode;
-import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.VariableNode;
 import com.vaadin.sass.internal.tree.controldirective.EachDefNode;
 
-public class EachNodeHandler {
+public class EachNodeHandler extends LoopNodeHandler {
 
-    public static void traverse(EachDefNode node) {
-        replaceEachDefNode(node);
+    public static void traverse(EachDefNode eachNode) {
+        Collection<VariableNode> loopVariables = new ArrayList<VariableNode>();
+        for (final SassListItem var : eachNode.getVariables()) {
+            loopVariables.add(new VariableNode(eachNode.getVariableName()
+                    .substring(1), var, false));
+        }
+        replaceLoopNode(eachNode, loopVariables, true);
     }
 
-    private static void replaceEachDefNode(EachDefNode defNode) {
-        Node last = defNode;
-
-        for (final SassListItem var : defNode.getVariables()) {
-            VariableNode varNode = new VariableNode(defNode.getVariableName()
-                    .substring(1), var, false);
-            ArrayList<VariableNode> variables = new ArrayList<VariableNode>(
-                    ScssStylesheet.getVariables());
-            variables.add(varNode);
-
-            for (final Node child : defNode.getChildren()) {
-
-                Node copy = child.copy();
-
-                replaceInterpolation(copy, variables);
-
-                defNode.getParentNode().appendChild(copy, last);
-                last = copy;
-            }
-
-        }
-        defNode.setChildren(new ArrayList<Node>());
-        defNode.getParentNode().removeChild(defNode);
-    }
-
-    private static void replaceInterpolation(Node copy,
-            ArrayList<VariableNode> variables) {
-        if (copy instanceof IVariableNode) {
-            IVariableNode n = (IVariableNode) copy;
-            n.replaceVariables(variables);
-        }
-
-        for (Node c : copy.getChildren()) {
-            replaceInterpolation(c, variables);
-        }
-    }
 }

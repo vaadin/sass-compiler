@@ -14,36 +14,28 @@
  * the License.
  */
 
-package com.vaadin.sass.internal.tree;
+package com.vaadin.sass.internal.tree.controldirective;
 
-public class ForNode extends Node {
-    private static final long serialVersionUID = -1159180539216623335L;
+import com.vaadin.sass.internal.parser.SassListItem;
+import com.vaadin.sass.internal.tree.Node;
+import com.vaadin.sass.internal.visitor.WhileNodeHandler;
 
-    String var;
-    String from;
-    String to;
-    boolean exclusive;
-    String body;
+public class WhileNode extends Node {
 
-    public ForNode(String var, String from, String to, boolean exclusive,
-            String body) {
-        super();
-        this.var = var;
-        this.from = from;
-        this.to = to;
-        this.exclusive = exclusive;
-        this.body = body;
+    private SassListItem condition;
+
+    public WhileNode(SassListItem condition) {
+        this.condition = condition;
     }
 
     @Override
     public String toString() {
-        return "For Node: " + "{variable: " + var + ", from:" + from + ", to: "
-                + to + ", exclusive: " + exclusive + ", body" + body;
+        return "While Node: { condition: " + condition + "}";
     }
 
     @Override
     public void traverse() {
-
+        WhileNodeHandler.traverse(this);
     }
 
 }

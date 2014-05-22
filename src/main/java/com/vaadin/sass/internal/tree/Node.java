@@ -57,7 +57,7 @@ public abstract class Node implements Serializable {
         if (childrenNodes != null && !childrenNodes.isEmpty()) {
             int index = children.indexOf(after);
             if (index != -1) {
-                children.addAll(index, childrenNodes);
+                children.addAll(index + 1, childrenNodes);
                 for (final Node child : childrenNodes) {
                     if (child.getParentNode() != null) {
                         child.getParentNode().removeChild(child);

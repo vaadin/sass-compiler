@@ -40,3 +40,15 @@ $borderWeight : solid;
 		color: blue;		
 	}
 }
+
+@for $i from 1 through 4 {
+    .for-#{$i} {
+        width: 60px + $i
+    }
+}
+
+@for $i from 1 to 4 {
+    .for-#{$i} {
+        width: 70px + $i
+    }
+}

@@ -37,7 +37,6 @@ import com.vaadin.sass.internal.tree.CommentNode;
 import com.vaadin.sass.internal.tree.ContentNode;
 import com.vaadin.sass.internal.tree.ExtendNode;
 import com.vaadin.sass.internal.tree.FontFaceNode;
-import com.vaadin.sass.internal.tree.ForNode;
 import com.vaadin.sass.internal.tree.FunctionDefNode;
 import com.vaadin.sass.internal.tree.ImportNode;
 import com.vaadin.sass.internal.tree.KeyframeSelectorNode;
@@ -52,11 +51,12 @@ import com.vaadin.sass.internal.tree.ReturnNode;
 import com.vaadin.sass.internal.tree.RuleNode;
 import com.vaadin.sass.internal.tree.SimpleNode;
 import com.vaadin.sass.internal.tree.VariableNode;
-import com.vaadin.sass.internal.tree.WhileNode;
 import com.vaadin.sass.internal.tree.controldirective.EachDefNode;
 import com.vaadin.sass.internal.tree.controldirective.ElseNode;
+import com.vaadin.sass.internal.tree.controldirective.ForNode;
 import com.vaadin.sass.internal.tree.controldirective.IfElseDefNode;
 import com.vaadin.sass.internal.tree.controldirective.IfNode;
+import com.vaadin.sass.internal.tree.controldirective.WhileNode;
 
 public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
 
@@ -97,27 +97,30 @@ public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
     }
 
     @Override
-    public ForNode forDirective(String var, String from, String to,
-            boolean exclusive, String body) {
-        ForNode node = new ForNode(var, from, to, exclusive, body);
-        log(node);
-        return node;
+    public void startForDirective(String var, SassListItem from,
+            SassListItem to, boolean exclusive) {
+        ForNode node = new ForNode(var, from, to, exclusive);
+        nodeStack.peek().appendChild(node);
+        nodeStack.push(node);
     }
 
     @Override
-    public EachDefNode startEachDirective(String var, SassList list) {
+    public void endForDirective() {
+        nodeStack.pop();
+    }
+
+    @Override
+    public void startEachDirective(String var, SassList list) {
         EachDefNode node = new EachDefNode(var, list);
         nodeStack.peek().appendChild(node);
         nodeStack.push(node);
-        return node;
     }
 
     @Override
-    public EachDefNode startEachDirective(String var, String listVariable) {
+    public void startEachDirective(String var, String listVariable) {
         EachDefNode node = new EachDefNode(var, listVariable);
         nodeStack.peek().appendChild(node);
         nodeStack.push(node);
-        return node;
     }
 
     @Override
@@ -126,10 +129,15 @@ public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
     }
 
     @Override
-    public WhileNode whileDirective(String condition, String body) {
-        WhileNode node = new WhileNode(condition, body);
-        log(node);
-        return node;
+    public void startWhileDirective(SassListItem condition) {
+        WhileNode node = new WhileNode(condition);
+        nodeStack.peek().appendChild(node);
+        nodeStack.push(node);
+    }
+
+    @Override
+    public void endWhileDirective() {
+        nodeStack.pop();
     }
 
     @Override

@@ -13,28 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.sass.internal.visitor;
 
-package com.vaadin.sass.internal.tree;
+import com.vaadin.sass.internal.parser.ParseException;
+import com.vaadin.sass.internal.tree.controldirective.WhileNode;
 
-public class WhileNode extends Node {
-    private static final long serialVersionUID = 7593896018196027279L;
+public class WhileNodeHandler {
 
-    private String condition;
-    private String body;
-
-    public WhileNode(String condition, String body) {
-        this.condition = condition;
-        this.body = body;
-    }
-
-    @Override
-    public String toString() {
-        return "While Node: { condition: " + condition + ", body:" + body + "}";
-    }
-
-    @Override
-    public void traverse() {
-
+    public static void traverse(WhileNode node) {
+        throw new ParseException(
+                "@while is not supported by the current version of the SASS compiler");
     }
 
 }

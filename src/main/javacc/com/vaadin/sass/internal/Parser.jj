@@ -1468,7 +1468,7 @@ SassListItem variableListItem():
 void controlDirective() :
 {}
 {
-  ifDirective() | eachDirective()
+  ifDirective() | eachDirective() | forDirective() | whileDirective()
 }
 
 void ifContentStatement() :
@@ -1536,6 +1536,7 @@ void eachDirective() :
     < EACH_SYM >
     (< S >)*
     var = < VARIABLE > (< S >)* < EACH_IN > (< S >)*
+    // TODO allow variables in a list, too
     (   list = stringList() 
         {documentHandler.startEachDirective(var.image, list);}
        |listVariable = variableName()
@@ -1849,38 +1850,42 @@ void warnDirective() :
     ( (";" (<S>)*) | acceptMissingSemicolon(RBRACE, EOF))
 }
 
-Node forDirective() :
+void forDirective() :
 {
-    String var;
-    String from;
-    String to;
-    boolean exclusive;
-    String body;
-    Token tok;
+  String var;
+  SassListItem from;
+  SassListItem to;
 }
 {
-    var = variableName()
-    {
-        int[] toThrough = {TO, THROUGH};
-        from = skipStatementUntil(toThrough);
-    }
-    (tok = <TO> {exclusive = true;}
-    | tok = <THROUGH> {exclusive = false;})
-    to = skipStatementUntilLeftBrace()
-    (<S>)*
-    body = skipStatement()
-    {return documentHandler.forDirective(var, from, to, exclusive, body);}
+  <FOR_SYM> (<S>)*
+  var = variableName() <FROM> (<S>)* from = numericExpr()
+  (
+    ( <TO> (<S>)* to = numericExpr()
+      { documentHandler.startForDirective(var, from, to, true); }
+    )
+    | ( <THROUGH> (<S>)* to = numericExpr()
+      { documentHandler.startForDirective(var, from, to, false); }
+    )
+  )
+  < LBRACE >(< S >)*    
+  ( ifContentStatement() | fontFace() )*
+  < RBRACE >(< S >)*
+  { documentHandler.endForDirective(); }
 }
 
-Node whileDirective() :
+void whileDirective() :
 {
-    String condition;
-    String body;
+  SassList list;
+  SassListItem evaluator;
 }
 {
-    condition = skipStatementUntilLeftBrace()
-    body = skipStatement()
-    {   return documentHandler.whileDirective(condition, body);}
+  < WHILE_SYM >(< S >)*
+  ( list = expressionSubList() { evaluator = list.flatten(); }  )
+  < LBRACE >(< S >)*    
+  { documentHandler.startWhileDirective(evaluator); }
+  ( ifContentStatement() | fontFace() )*
+  < RBRACE >(< S >)*
+  { documentHandler.endWhileDirective(); }
 }
 
 void extendDirective() : 
@@ -2275,6 +2280,19 @@ LexicalUnitImpl expr() :
 /**
  * @exception ParseException exception during the parse
  */
+LexicalUnitImpl numericExpr() :
+{
+    LexicalUnitImpl first, res;
+}
+{
+    first=numericTerm(null){ res = first; }
+    ( LOOKAHEAD(2) res=nonCommaOperator(res) res=numericTerm(res))*
+  { return first; }
+}
+
+/**
+ * @exception ParseException exception during the parse
+ */
 char unaryOperator() :
 {}
 {
@@ -2293,6 +2311,23 @@ LexicalUnitImpl term(LexicalUnitImpl prev) :
 {
   { prev = getLastUnit(prev); }
   (result = nonVariableTerm(prev) | result = variableTerm(prev))
+      {
+	      return result;
+      }
+}
+
+/**
+ * @exception ParseException exception during the parse
+ */
+LexicalUnitImpl numericTerm(LexicalUnitImpl prev) :
+{ LexicalUnitImpl result = null;
+  Token n = null;
+  char op = ' ';
+}
+{
+  { prev = getLastUnit(prev); }
+  (  ((op = unaryOperator())? ( result = numberTerm(op, prev) | result = function(op, prev) ( <S> )*))
+   | result = variableTerm(prev))
       {
 	      return result;
       }
