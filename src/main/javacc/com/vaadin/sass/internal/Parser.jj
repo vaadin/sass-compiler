@@ -746,8 +746,7 @@ void parserUnit() :
 	( charset() )?
 	( <S> comments()
 	 | ignoreStatement() )*
-	( importDeclaration() ( ignoreStatement() ( <S> )* )* )*
-	afterImportDeclaration()
+	topLevelDeclaration()
 	<EOF>
     } finally {
 	documentHandler.endDocument(source);
@@ -770,13 +769,13 @@ void charset() :
     }
 }
 
-void afterImportDeclaration() :
+void topLevelDeclaration() :
 {String ret; 
  Locator l;
 }
 {
   ( 
-     ( debuggingDirective() | mixinDirective() | functionDirective() | controlDirective() | includeDirective() | styleRule() | media() 
+     ( importDeclaration() | debuggingDirective() | mixinDirective() | functionDirective() | controlDirective() | includeDirective() | styleRule() | media() 
              | page() | fontFace() | keyframes() | variable()
       | { l = getLocator(); } ret=skipStatement() 
       {
