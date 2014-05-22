@@ -1,0 +1,28 @@
+@function returnValue($arg: ()) {
+    @return $arg;
+}
+
+@mixin empty-list-default($arg: (), $arg2: default) {
+    length-first-argument: length($arg);
+    length-second-argument: length($arg2);
+}
+
+.test-empty-list-1 {
+    $var: ();
+    length-var: length($var);
+    $var: append($var, a);
+    $var: append($var, b);
+    updated-var-separator-space: $var;
+    @include empty-list-default();
+}
+
+.test-empty-list-2 {
+    @include empty-list-default(value, ());
+    length-empty: length(returnValue());
+    length-empty-2: length(returnValue( () ));
+    length-one: length(returnValue(value));
+}
+
+.test-empty-list-3 {
+    @include empty-list-default($arg: (), $arg2: ());
+}

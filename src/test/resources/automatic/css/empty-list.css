@@ -1,0 +1,19 @@
+.test-empty-list-1 {
+    length-var: 0;
+    updated-var-separator-space: a b;
+    length-first-argument: 0;
+    length-second-argument: 1;
+}
+
+.test-empty-list-2 {
+    length-first-argument: 1;
+    length-second-argument: 0;
+    length-empty: 0;
+    length-empty-2: 0;
+    length-one: 1;
+}
+
+.test-empty-list-3 {
+    length-first-argument: 0;
+    length-second-argument: 0;
+}

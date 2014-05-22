@@ -1422,7 +1422,7 @@ void variable() :
 
 SassList expressionList():
 {
-    // Empty lists and parenthesized lists are not supported yet.
+    // Nonempty parenthesized lists are not supported yet.
     List<SassListItem> primaryList = new ArrayList<SassListItem>();
     int line = token.beginLine;
     int column = token.beginColumn;
@@ -1440,14 +1440,18 @@ SassList expressionList():
 
 SassList expressionSubList():
 {
-    // Empty lists and parenthesized lists are not supported yet.
+    // Nonempty parenthesized lists are not supported yet.
     SassListItem item;
     List<SassListItem> list = new ArrayList<SassListItem>();
     int line = token.beginLine;
     int column = token.beginColumn;
 }
 {
-    (LOOKAHEAD(2) item = variableListItem(){ list.add(item); })+
+    LOOKAHEAD(3)"(" (<S>)* ")" (<S>)*
+    {
+        return new SassList(SassList.Separator.SPACE);
+    }
+    | (LOOKAHEAD(2) item = variableListItem(){ list.add(item); })+
     {
         SassList result = new SassList(SassList.Separator.SPACE, list);
         result.setSourcePosition(line, column);
