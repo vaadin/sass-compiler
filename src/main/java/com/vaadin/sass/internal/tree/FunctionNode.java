@@ -61,13 +61,13 @@ public class FunctionNode extends NodeWithVariableArguments {
     }
 
     private ReturnNode getReturnNode(ArrayList<Node> defChildren) {
-        if (defChildren.size() != 1
+        // one or more return nodes, the first one should be used
+        if (defChildren.size() == 0
                 || !(defChildren.get(0) instanceof ReturnNode)) {
-            // TODO second parameter not very useful now
             throw new ParseException(
                     "Function "
                             + getName()
-                            + " evaluation failed - did not result in one return statement",
+                            + " evaluation failed - did not result in a return statement",
                     this);
         }
         return (ReturnNode) defChildren.get(0);
