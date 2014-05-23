@@ -56,12 +56,7 @@ public class MixinNode extends NodeWithVariableArguments {
     @Override
     public void doTraverse() throws Exception {
         replaceVariables(ScssStylesheet.getVariables());
-        if (!getArglist().isEmpty()) {
-            updateSeparator(
-                    getArglist().get(getArglist().size() - 1).getExpr(),
-                    hasVariableArguments());
-        }
-        setArglist(expandVariableArguments(getArglist(), hasVariableArguments()));
+        expandVariableArguments();
         replaceVariablesForChildren();
         MixinNodeHandler.traverse(this);
     }

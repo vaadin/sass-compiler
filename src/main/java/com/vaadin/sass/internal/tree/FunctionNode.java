@@ -37,19 +37,12 @@ public class FunctionNode extends NodeWithVariableArguments {
     public FunctionNode(FunctionDefNode def, LexicalUnitImpl invocation) {
         super(invocation.getFunctionName(), invocation.getParameterList());
 
-        if (invocation.getParameterList().size() > 0) {
-            updateSeparator(
-                    invocation.getParameterList().get(
-                            invocation.getParameterList().size() - 1),
-                    hasVariableArguments());
-        }
-
         this.def = def;
+        expandVariableArguments();
     }
 
     @Override
     public String toString() {
-        // TODO arglist might not be very informative when printed out
         return "Function Node: {name: " + getName() + ", args: " + getArglist()
                 + "}";
     }

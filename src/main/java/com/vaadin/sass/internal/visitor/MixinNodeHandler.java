@@ -51,10 +51,7 @@ public class MixinNodeHandler {
             mixinNode.getParentNode().appendChildrenAfter(
                     new ArrayList<Node>(defClone.getChildren()), mixinNode);
         } else {
-            if (mixinNode.getArglist() != null
-                    && !mixinNode.getArglist().isEmpty()) {
-                defClone.replacePossibleArguments(mixinNode);
-            }
+            defClone.replacePossibleArguments(mixinNode);
 
             Node previous = mixinNode;
             for (final Node child : new ArrayList<Node>(defClone.getChildren())) {

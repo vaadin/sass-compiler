@@ -81,7 +81,8 @@ public abstract class DefNode extends Node implements IVariableNode {
     // -- should then perhaps also change DefNode to use these? (not yet done)
     public void replacePossibleArguments(
             NodeWithVariableArguments actualArgumentNode) {
-        List<VariableNode> actualArguments = actualArgumentNode.getArglist();
+        List<VariableNode> actualArguments = actualArgumentNode.getArglist()
+                .getVariableNodeList();
         if (actualArguments.size() > 0) {
             ArrayList<VariableNode> remainingDefArguments = new ArrayList<VariableNode>(
                     getArglist());
@@ -144,7 +145,8 @@ public abstract class DefNode extends Node implements IVariableNode {
                     }
                 }
                 VariableArgumentList remaining = new VariableArgumentList(
-                        actualArgumentNode.getSeparator(), unnamed, named);
+                        actualArgumentNode.getSeparator(), unnamed, named,
+                        false);
                 getArglist().get(lastIndex).setExpr(remaining);
             }
         }

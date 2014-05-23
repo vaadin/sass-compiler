@@ -117,6 +117,6 @@ public class VariableNode extends Node implements IVariableNode {
 
     @Override
     public VariableNode copy() {
-        return (VariableNode) super.copy();
+        return new VariableNode(name, expr, guarded);
     }
 }

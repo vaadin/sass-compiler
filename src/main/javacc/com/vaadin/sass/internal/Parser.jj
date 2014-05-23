@@ -2572,7 +2572,7 @@ LexicalUnitImpl function(char operator, LexicalUnitImpl prev) :
             }
         }
         params = new SassList(SassList.Separator.COMMA, items);
-    } ((<ELLIPSIS>){ params = new VariableArgumentList(params); } (<S>)*)? )? ")"
+    } ((<ELLIPSIS>){ params = new VariableArgumentList(params, true); } (<S>)*)? )? ")"
     {
         if (operator != ' ') {
         throw new CSSParseException("invalid operator before a function.", 

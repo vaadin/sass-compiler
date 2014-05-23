@@ -17,7 +17,6 @@ package com.vaadin.sass.internal.tree;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,7 +25,6 @@ import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.parser.VariableArgumentList;
-import com.vaadin.sass.internal.util.DeepCopy;
 
 /**
  * NodeWithVariableArguments is used as a superclass for nodes that handle
@@ -44,141 +42,54 @@ public abstract class NodeWithVariableArguments extends Node implements
 
     // these are the actual parameter values, not whether the definition node
     // uses varargs
-    private List<VariableNode> arglist = new ArrayList<VariableNode>();
-    private SassList.Separator sep = SassList.Separator.COMMA;
-    private boolean hasVariableArguments;
+    private VariableArgumentList arglist;
     private String name;
 
     public NodeWithVariableArguments(String name,
             Collection<VariableNode> args, boolean hasVariableArgs) {
-        super();
+        ArrayList<SassListItem> unnamed = new ArrayList<SassListItem>();
+        ArrayList<VariableNode> named = new ArrayList<VariableNode>();
         if (args != null && !args.isEmpty()) {
-            args = DeepCopy.copy(args);
-            arglist.addAll(args);
+            for (VariableNode arg : args) {
+                if (arg.getName() == null) {
+                    unnamed.add(arg.getExpr());
+                } else {
+                    named.add(arg.copy());
+                }
+            }
         }
-        hasVariableArguments = hasVariableArgs;
         this.name = name;
+        arglist = new VariableArgumentList(SassList.Separator.COMMA, unnamed,
+                named, hasVariableArgs);
     }
 
-    public NodeWithVariableArguments(String name, SassList args) {
-        super();
-        hasVariableArguments = args instanceof VariableArgumentList;
+    public NodeWithVariableArguments(String name, SassList parameterList) {
         this.name = name;
-
-        List<VariableNode> actualParams = new ArrayList<VariableNode>();
-        for (int i = 0; i < args.size(); ++i) {
-            actualParams.add(new VariableNode(null, args.get(i), false));
+        if (parameterList instanceof VariableArgumentList) {
+            arglist = (VariableArgumentList) parameterList;
+        } else {
+            arglist = new VariableArgumentList(parameterList, false);
         }
-        // when using this constructor, args contents already evaluated so can
-        // perform expandVariableArguments immediately
-        arglist = expandVariableArguments(actualParams, hasVariableArguments);
     }
 
     public boolean hasVariableArguments() {
-        return hasVariableArguments;
+        return arglist.hasVariableArguments();
     }
 
-    public List<VariableNode> getArglist() {
+    public VariableArgumentList getArglist() {
         return arglist;
     }
 
-    protected void setArglist(List<VariableNode> arglist) {
-        this.arglist = arglist;
+    protected void expandVariableArguments() {
+        arglist = arglist.expandVariableArguments();
     }
 
     public SassList.Separator getSeparator() {
-        return sep;
-    }
-
-    protected void updateSeparator(SassListItem expr,
-            boolean hasVariableArguments) {
-        if (hasVariableArguments) {
-            if (expr instanceof SassList) {
-                SassList lastList = (SassList) expr;
-                if (lastList.size() > 1) {
-                    sep = lastList.getSeparator();
-                    return;
-                }
-            }
-        }
-        sep = SassList.Separator.COMMA;
-    }
-
-    protected static List<VariableNode> expandVariableArguments(
-            List<VariableNode> arglist, boolean hasVariableArguments) {
-        /*
-         * If there are variable arguments, the last argument is expanded into
-         * separate arguments.
-         * 
-         * Note that the separator character should be preserved when an
-         * 
-         * @include expands variables into separate arguments and the
-         * corresponding @mixin packs them again into a list. Some cases have
-         * not yet been verified to work as they should.
-         * 
-         * To illustrate the cases, suppose that there is a mixin with variable
-         * arguments @mixin foo($a1, $a2, ..., $ak...). That is used by an
-         * include with variable arguments: @include foo($b1, $b2, ..., $bl...).
-         * Then the include will expand the argument bl into separate arguments,
-         * if bl is a list. The mixin will pack possibly several arguments into
-         * a list ak. The cases are then
-         * 
-         * 1) k = l. Then ak will be a list equal to bl. To retain the
-         * separator, it needs to be taken from the list bl.
-         * 
-         * 2) l < k. Now ak will be a sublist of bl, the first elements of bl
-         * will be used for the parameters a(l+1), ..., a(k-1). If a list should
-         * retain the separator, its sublist should also have the same
-         * separator.
-         * 
-         * 3) l > k, the uncertain and only partially verified case. Now, ak
-         * will be a list that contains the parameters b(k+1), ..., b(l-1) and
-         * the contents of the list bl. Using the separator of the list bl means
-         * that the same separator will also separate the parameters b(k+1)...
-         * from each other in the list ak. That is the approach adopted here,
-         * but it is only based on a limited amount of testing.
-         * 
-         * The separator of a one-element list is considered to be a comma here.
-         * 
-         * 
-         * Also note that the named and unnamed parameters are stored in two
-         * separate lists. The named parameters packed into a variable argument
-         * list cannot be accessed inside the mixin. While this is unexpected,
-         * it seems to be the desired behavior, although only a limited amount
-         * of testing has been done to verify this.
-         */
-        if (hasVariableArguments) {
-            List<VariableNode> newArglist = new ArrayList<VariableNode>(arglist);
-            VariableNode last = newArglist.get(newArglist.size() - 1);
-            newArglist.remove(newArglist.size() - 1);
-            SassListItem expr = last.getExpr();
-            if (expr instanceof SassList) {
-                SassList lastList = (SassList) expr;
-                for (SassListItem item : lastList) {
-                    newArglist.add(new VariableNode(null, item, false));
-                }
-            } else {
-                newArglist.add(new VariableNode(null, expr, false));
-            }
-            // Append any remaining variable name-value pairs to the argument
-            // list
-            if (expr instanceof VariableArgumentList) {
-                for (VariableNode namedNode : ((VariableArgumentList) expr)
-                        .getNamedVariables()) {
-                    newArglist.add(namedNode.copy());
-                }
-            }
-            return newArglist;
-        }
-        return arglist;
+        return arglist.getSeparator();
     }
 
     public String getName() {
         return name;
-    }
-
-    private void setName(String name) {
-        this.name = name;
     }
 
     /**
@@ -187,11 +98,8 @@ public abstract class NodeWithVariableArguments extends Node implements
      */
     @Override
     public void replaceVariables(Collection<VariableNode> variables) {
-        for (final VariableNode arg : getArglist()) {
-            SassListItem expr = arg.getExpr().replaceVariables(variables);
-            expr = expr.evaluateFunctionsAndExpressions(true);
-            arg.setExpr(expr);
-        }
+        arglist = arglist.replaceVariables(variables);
+        arglist = arglist.evaluateFunctionsAndExpressions(true);
     }
 
     @Override

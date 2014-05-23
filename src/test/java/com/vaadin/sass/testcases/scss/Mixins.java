@@ -73,29 +73,28 @@ public class Mixins extends AbstractTestBase {
                 .get(0);
         Assert.assertEquals("rounded-borders", mixinNode0MainBlock.getName());
         Assert.assertEquals("mixinVar", mixinNode0MainBlock.getArglist().get(0)
-                .getExpr().getContainedValue().getStringValue());
+                .getContainedValue().getStringValue());
         Assert.assertEquals(LexicalUnitImpl.SCSS_VARIABLE, mixinNode0MainBlock
-                .getArglist().get(0).getExpr().getContainedValue()
-                .getLexicalUnitType());
+                .getArglist().get(0).getContainedValue().getLexicalUnitType());
         MixinNode mixinNOde1MainBlock = (MixinNode) mainBlockNode.getChildren()
                 .get(1);
         Assert.assertEquals("font-settings", mixinNOde1MainBlock.getName());
-        Assert.assertTrue(mixinNOde1MainBlock.getArglist().isEmpty());
+        Assert.assertTrue(mixinNOde1MainBlock.getArglist().size() == 0);
 
         MixinNode mixinNOde2MainBlock = (MixinNode) mainBlockNode.getChildren()
                 .get(2);
         Assert.assertEquals("main-details", mixinNOde2MainBlock.getName());
-        Assert.assertTrue(mixinNOde1MainBlock.getArglist().isEmpty());
+        Assert.assertTrue(mixinNOde1MainBlock.getArglist().size() == 0);
 
         MixinNode mixinNode1MainBlock = (MixinNode) mainBlockNode.getChildren()
                 .get(1);
-        Assert.assertTrue(mixinNode1MainBlock.getArglist().isEmpty());
+        Assert.assertTrue(mixinNode1MainBlock.getArglist().size() == 0);
 
         BlockNode footerBlockNode = (BlockNode) root.getChildren().get(3);
         MixinNode mixinNodeFooterBlock = (MixinNode) footerBlockNode
                 .getChildren().get(0);
         Assert.assertEquals("mixinVar", mixinNodeFooterBlock.getArglist()
-                .get(0).getExpr().getContainedValue().getStringValue());
+                .get(0).getContainedValue().getStringValue());
 
         Assert.assertTrue(root.getChildren().get(0) instanceof MixinDefNode);
         Assert.assertTrue(root.getChildren().get(1) instanceof MixinDefNode);
