@@ -1534,42 +1534,16 @@ void eachDirective() :
 {
     Token var;
     SassList list = null;
-    String listVariable = null;
 }
 {
     < EACH_SYM >
     (< S >)*
     var = < VARIABLE > (< S >)* < EACH_IN > (< S >)*
-    // TODO allow variables in a list, too
-    (   list = stringList() 
-        {documentHandler.startEachDirective(var.image, list);}
-       |listVariable = variableName()
-        {documentHandler.startEachDirective(var.image, listVariable);}
-    )
+    list = expressionList() { documentHandler.startEachDirective(var.image, list.flatten()); }
     < LBRACE >(< S >)*
     ( ifContentStatement() )*
     < RBRACE >(< S >)*
-    { documentHandler.endEachDirective();}
-}
-
-SassList stringList():
-{
-    List<SassListItem> strings = new ArrayList<SassListItem>();
-    LexicalUnitImpl unit;
-    Token input;
-}
-{
-    (input = ident() (< S >)*)
-    { unit = LexicalUnitImpl.createIdent(input.beginLine, input.beginColumn,
-                                         null, input.image); strings.add(unit); }
-
-    (< COMMA >(< S >)* input = ident() 
-        { unit = LexicalUnitImpl.createIdent(input.beginLine, input.beginColumn,
-                                             null, input.image); strings.add(unit); } (< S >)*)*
-    {
-        return new SassList(SassList.Separator.COMMA, strings);
-    }
-
+    { documentHandler.endEachDirective(); }
 }
 
 void mixinDirective() :
@@ -1612,13 +1586,14 @@ void functionDirective() :
 void functionBlockStatement() :
 {}
 {
-    variable() | functionControlDirective() | returnDirective()
+    variable() | functionControlDirective() | returnDirective() | debuggingDirective()
 }
 
 void functionControlDirective() :
 {}
 {
-  functionIfDirective() | functionEachDirective()
+  // TODO functionWhileDirective()
+  functionIfDirective() | functionEachDirective() | functionForDirective()
 }
 
 void functionIfDirective() :
@@ -1659,21 +1634,39 @@ void functionEachDirective() :
 {
     Token var;
     SassList list = null;
-    String listVariable = null;
 }
 {
     < EACH_SYM >
     (< S >)*
     var = < VARIABLE > (< S >)* < EACH_IN > (< S >)*
-    (   list = stringList() 
-        {documentHandler.startEachDirective(var.image, list);}
-       |listVariable = variableName()
-        {documentHandler.startEachDirective(var.image, listVariable);}
-    )
+    list = expressionList() { documentHandler.startEachDirective(var.image, list.flatten()); }
     < LBRACE >(< S >)*
     ( functionBlockStatement() )*
     < RBRACE >(< S >)*
     { documentHandler.endEachDirective();}
+}
+
+void functionForDirective() :
+{
+  String var;
+  SassListItem from;
+  SassListItem to;
+}
+{
+  <FOR_SYM> (<S>)*
+  var = variableName() <FROM> (<S>)* from = numericExpr()
+  (
+    ( <TO> (<S>)* to = numericExpr()
+      { documentHandler.startForDirective(var, from, to, true); }
+    )
+    | ( <THROUGH> (<S>)* to = numericExpr()
+      { documentHandler.startForDirective(var, from, to, false); }
+    )
+  )
+  < LBRACE >(< S >)*    
+  ( functionBlockStatement() )*
+  < RBRACE >(< S >)*
+  { documentHandler.endForDirective(); }
 }
 
 ArrayList<VariableNode> arglist() :

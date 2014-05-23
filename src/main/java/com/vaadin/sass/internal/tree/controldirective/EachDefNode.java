@@ -20,6 +20,7 @@ import java.util.Collection;
 
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.SassList;
+import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.IVariableNode;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.VariableNode;
@@ -29,23 +30,20 @@ public class EachDefNode extends Node implements IVariableNode {
     private static final long serialVersionUID = 7943948981204906221L;
 
     private String var;
-    private SassList list;
+    private SassListItem list;
 
-    private String listVariable;
-
-    public EachDefNode(String var, SassList list) {
+    public EachDefNode(String var, SassListItem list) {
         super();
         this.var = var;
         this.list = list;
     }
 
-    public EachDefNode(String var, String listVariable) {
-        this.var = var;
-        this.listVariable = listVariable;
-    }
-
     public SassList getVariables() {
-        return list;
+        if (list instanceof SassList) {
+            return (SassList) list;
+        } else {
+            return new SassList(list);
+        }
     }
 
     public String getVariableName() {
@@ -54,34 +52,13 @@ public class EachDefNode extends Node implements IVariableNode {
 
     @Override
     public String toString() {
-        if (hasListVariable()) {
-            return "Each Definition Node: {variable : " + var + ", "
-                    + "listVariable : " + listVariable + "}";
-        } else {
-            return "Each Definition Node: {variable : " + var + ", "
-                    + "children : " + list.size() + "}";
-        }
-    }
-
-    public boolean hasListVariable() {
-        return listVariable != null;
+        return "Each Definition Node: {variable : " + var + ", "
+                + "children : " + list + "}";
     }
 
     @Override
     public void replaceVariables(Collection<VariableNode> variables) {
-        if (listVariable != null) {
-            for (final VariableNode var : variables) {
-                if (listVariable.equals(var.getName())) {
-                    list = (SassList) var.getExpr();
-                    listVariable = null;
-                    break;
-                }
-            }
-        }
-    }
-
-    public String getListVariable() {
-        return listVariable;
+        list = list.replaceVariables(variables);
     }
 
     @Override

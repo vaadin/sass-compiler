@@ -1,0 +1,13 @@
+@each $el in a, b, c {
+   .#{$el} {
+      color: green;
+   }
+}
+
+$a: aa;
+$b: bb;
+@each $el in $a, $b {
+   .#{$el} {
+      color: green;
+   }
+}

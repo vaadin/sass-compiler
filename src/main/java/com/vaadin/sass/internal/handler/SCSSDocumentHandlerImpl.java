@@ -29,7 +29,6 @@ import org.w3c.css.sac.SACMediaList;
 import org.w3c.css.sac.SelectorList;
 
 import com.vaadin.sass.internal.ScssStylesheet;
-import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.selector.Selector;
 import com.vaadin.sass.internal.tree.BlockNode;
@@ -110,15 +109,8 @@ public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
     }
 
     @Override
-    public void startEachDirective(String var, SassList list) {
+    public void startEachDirective(String var, SassListItem list) {
         EachDefNode node = new EachDefNode(var, list);
-        nodeStack.peek().appendChild(node);
-        nodeStack.push(node);
-    }
-
-    @Override
-    public void startEachDirective(String var, String listVariable) {
-        EachDefNode node = new EachDefNode(var, listVariable);
         nodeStack.peek().appendChild(node);
         nodeStack.push(node);
     }

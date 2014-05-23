@@ -37,27 +37,30 @@ public abstract class LoopNodeHandler {
      * @param loopVariables
      *            iterable of the loop variable instances for each iteration -
      *            typically a collection for a fixed iteration count loop
-     * @param expandAllVariables
+     * @param replaceAllVariables
      *            true to replace all variables on every iteration, false to
      *            only replace the loop variable with its value (other variables
-     *            already expanded or will be expanded later)
+     *            are replaced after the whole loop has been expanded)
      */
     protected static void replaceLoopNode(Node loopNode,
-            Iterable<VariableNode> loopVariables, boolean expandAllVariables) {
-        Node last = loopNode;
+            Iterable<VariableNode> loopVariables, boolean replaceAllVariables) {
+        ArrayList<Node> nodes = new ArrayList<Node>();
         for (final VariableNode var : loopVariables) {
-            ArrayList<Node> nodes = iteration(loopNode, var, expandAllVariables);
-            loopNode.getParentNode().appendChildrenAfter(nodes, last);
-            last = nodes.get(nodes.size() - 1);
+            nodes.addAll(iteration(loopNode, var, replaceAllVariables));
         }
+        loopNode.getParentNode().appendChildrenAfter(nodes, loopNode);
         loopNode.setChildren(new ArrayList<Node>());
         loopNode.getParentNode().removeChild(loopNode);
+
+        for (Node node : nodes) {
+            node.traverse();
+        }
     }
 
     private static ArrayList<Node> iteration(Node loopNode,
-            VariableNode loopVar, boolean expandAllVariables) {
+            VariableNode loopVar, boolean replaceAllVariables) {
         Collection<VariableNode> variables;
-        if (expandAllVariables) {
+        if (replaceAllVariables) {
             variables = new ArrayList<VariableNode>(
                     ScssStylesheet.getVariables());
             variables.add(loopVar);

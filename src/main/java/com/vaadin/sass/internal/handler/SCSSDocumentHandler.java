@@ -24,7 +24,6 @@ import org.w3c.css.sac.DocumentHandler;
 import org.w3c.css.sac.SACMediaList;
 
 import com.vaadin.sass.internal.ScssStylesheet;
-import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.selector.Selector;
 import com.vaadin.sass.internal.tree.VariableNode;
@@ -64,9 +63,7 @@ public interface SCSSDocumentHandler extends DocumentHandler {
     void property(String name, SassListItem value, boolean important,
             String comment);
 
-    void startEachDirective(String variable, SassList list);
-
-    void startEachDirective(String var, String listVariable);
+    void startEachDirective(String variable, SassListItem list);
 
     void endEachDirective();
 
