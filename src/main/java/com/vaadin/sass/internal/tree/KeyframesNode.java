@@ -17,6 +17,7 @@
 package com.vaadin.sass.internal.tree;
 
 import java.util.Collection;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.vaadin.sass.internal.ScssStylesheet;
@@ -52,8 +53,8 @@ public class KeyframesNode extends Node implements IVariableNode {
             if (animationName != null && animationName.contains(interpolation)) {
                 if (animationName.contains(interpolation)) {
                     animationName = animationName.replaceAll(Pattern
-                            .quote(interpolation), node.getExpr()
-                            .unquotedString());
+                            .quote(interpolation), Matcher
+                            .quoteReplacement(node.getExpr().unquotedString()));
                 }
             }
         }

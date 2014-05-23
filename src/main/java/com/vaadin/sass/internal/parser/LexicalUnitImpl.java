@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.w3c.css.sac.LexicalUnit;
@@ -804,7 +805,8 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
             if (stringValue != null && stringValue.contains(interpolation)) {
                 LexicalUnitImpl copy = unit.copy();
                 copy.setStringValue(stringValue.replaceAll(Pattern
-                        .quote(interpolation), node.getExpr().unquotedString()));
+                        .quote(interpolation), Matcher.quoteReplacement(node
+                        .getExpr().unquotedString())));
                 item = copy;
             }
         }

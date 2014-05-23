@@ -203,7 +203,8 @@ public class StringUtil {
         // character nor a dash.
         builder.append("(?<![\\w-])").append(Pattern.quote(sub))
                 .append("(?![\\w-])");
-        return text.replaceAll(builder.toString(), value);
+        return text.replaceAll(builder.toString(),
+                Matcher.quoteReplacement(value));
     }
 
     /**
