@@ -10,10 +10,8 @@ $list3: 10,10%,abc;
     n10: nth($list2, 1);
     n20: nth($list2, 2);
     nabc: nth($list3,3);
-    $abc_list: a b,c;
-    nn: nth($abc_list,2);
-    $abc_list_2: a, b c;
-    nn2: nth($abc_list_2,2);
+    nn: nth((a b,c),2);
+    nn2: nth((a,b c),2);
 
     nl1: join($list1,$list2,space);
     nl2: join($list1,$list3,auto);
@@ -25,5 +23,5 @@ $list3: 10,10%,abc;
     ll2: append($list3,bar,space);
     ll3: append($list3,bar,comma);
     ll4: append($list3,bar,auto);
-    ll5: append($abc_list,bar,auto);
+    ll5: append((a b, c),bar,auto);
 }

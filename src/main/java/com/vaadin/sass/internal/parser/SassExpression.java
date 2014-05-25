@@ -68,6 +68,37 @@ public class SassExpression implements SassListItem, Serializable {
         this.items = items;
     }
 
+    /**
+     * Creates a new expression containing the elements of the parameter items
+     * but with trailing whitespace items eliminated. If items contains only one
+     * element excluding the trailing whitespace, returns the only contained
+     * element. Otherwise returns a SassExpression.
+     * 
+     * @param items
+     *            A list of SassListItems.
+     * @return A SassExpression corresponding to items. If there is only one
+     *         item after the removal of whitespace, returns that item instead
+     *         of a SassExpression.
+     */
+    public static SassListItem createExpression(List<SassListItem> items) {
+        // filter out trailing whitespace
+        int lastNonWhitespace = items.size() - 1;
+        while (lastNonWhitespace > 0
+                && isWhitespace(items.get(lastNonWhitespace))) {
+            --lastNonWhitespace;
+        }
+        if (lastNonWhitespace < items.size() - 1) {
+            // copy needed as subList() returns a non-serializable list
+            items = new ArrayList<SassListItem>(items.subList(0,
+                    lastNonWhitespace + 1));
+        }
+        if (items.size() == 1) {
+            return items.get(0);
+        } else {
+            return new SassExpression(items);
+        }
+    }
+
     @Override
     public int getLineNumber() {
         return line;

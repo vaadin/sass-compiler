@@ -1458,16 +1458,6 @@ SassList expressionSubList():
     }
 }
 
-SassListItem variableListItem():
-{
-    LexicalUnitImpl firstUnit;
-}
-{
-    firstUnit = variableListItemAsUnit(null) {
-        return createExpression(firstUnit);
-    }
-}
-
 void controlDirective() :
 {}
 {
@@ -1515,20 +1505,6 @@ void elseDirective() :
   < RBRACE >(< S >)*
 }
 
-JAVACODE
-SassListItem createExpression(SassListItem first){
-    if(!(first instanceof LexicalUnitImpl)){
-        return first;
-    }
-    LexicalUnitImpl firstUnit = (LexicalUnitImpl) first;
-    if(firstUnit.getNextLexicalUnit() == null){
-        return firstUnit;
-    }
-    else{
-        return new SassExpression(firstUnit);
-    }
-}
-  
 void eachDirective() :
 {
     Token var;
@@ -2157,22 +2133,72 @@ LexicalUnitImpl operator(LexicalUnitImpl prev) :
       }
 }
 
-LexicalUnitImpl variableListItemAsUnit(LexicalUnitImpl prev):
+SassListItem variableListItem():
 {
     Token n;
-    LexicalUnitImpl first, res;
+    List<SassListItem> list = new ArrayList<SassListItem>();
+    SassListItem item;
 }
 {
-    (n = "(" (<S>)* { first = LexicalUnitImpl.createLeftParenthesis(n.beginLine, n.beginColumn, prev);}
-    res = variableListItemAsUnit(first){ res = getLastUnit(res); }
-    ")" (<S>)* { res = LexicalUnitImpl.createRightParenthesis(n.beginLine, n.beginColumn, res);}
-    |
-    first = term(prev){ res = first; }
-    (LOOKAHEAD(2)( res = arithmeticOrBooleanOperator(res) res = term(res)))*
-    { return first.removeTrailingWhitespace(); }
-    )
+    addExpressionTerm(list)
+    (LOOKAHEAD(2)( item = arithmeticOrBooleanOperator(null){list.add(item);} addExpressionTerm(list) ))*
     {
-        return first;
+        return SassExpression.createExpression(list);
+    }
+}
+
+JAVACODE
+void removeTrailingWhitespace(List<SassListItem> items){
+    boolean ready = false;
+    while(!ready){
+        SassListItem last = items.get(items.size() - 1);
+        if(last instanceof LexicalUnit){
+            LexicalUnitImpl lastUnit = (LexicalUnitImpl) last;
+            if(lastUnit.getLexicalUnitType() == LexicalUnitImpl.SAC_IDENT && 
+               " ".equals(lastUnit.getStringValue())){
+                items.remove(items.size() - 1);
+            }
+            else{
+                ready = true;
+            }
+        }
+        else{
+            ready = true;
+        }
+    }
+}
+
+void addExpressionTerm(List<SassListItem> items):
+{
+    SassListItem term;
+}
+{
+    term = term(null){ addLexicalUnitChain(items, term); }
+    | term = parenthesizedExpression() {items.add(term); }
+}
+
+SassListItem parenthesizedExpression():
+{
+    SassList list;
+}
+{
+    ("(" (<S>)* list = expressionList() ")" (<S>)*)
+   {
+       return list.flatten();
+   } 
+}
+
+JAVACODE
+void addLexicalUnitChain(List<SassListItem> list, SassListItem first){
+    if(!(first instanceof LexicalUnitImpl)){
+        list.add(first);
+    }
+    else{
+        LexicalUnitImpl current = (LexicalUnitImpl) first;
+        while(current != null){
+            list.add(current.copy());
+            current = current.getNextLexicalUnit();
+        }
     }
 }
 

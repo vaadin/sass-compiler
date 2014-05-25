@@ -1,0 +1,25 @@
+.arithmetic {
+    value-25: 25;
+    value-17: 17;
+    value-27: 27;
+    value-270: 270;
+    with-extra-parentheses-270: 270;
+    with-variables-270: 270;
+    var-extra-parentheses-270: 270;
+}
+
+.lists {
+    a: 1 2 3;
+    len-a: 3;
+    b: 1 2 3;
+    len-b: 3;
+    c: 1 2 3;
+    len-c: 2;
+    len-empty: 0;
+    e: 1 2, 3 4, 5, 6, 7 8;
+    len-e: 4;
+    first-e: 1 2, 3 4;
+    second-e: 5;
+    third-e: 6;
+    fourth-e: 7 8;
+}

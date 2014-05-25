@@ -1092,26 +1092,4 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     public SassListItem replaceChains() {
         return next == null ? this : new SassExpression(this);
     }
-
-    /**
-     * In the chain of LexicalUnitImpl objects starting at this, removes
-     * trailing objects with only whitespace contents.
-     * 
-     * Note: this method modifies the chain by setting the next-reference of the
-     * last non-whitespace object to null.
-     * 
-     * @return this
-     */
-    public LexicalUnitImpl removeTrailingWhitespace() {
-        LexicalUnitImpl current = this;
-        LexicalUnitImpl lastNonspace = this;
-        while (current != null) {
-            if (!SassExpression.isWhitespace(current)) {
-                lastNonspace = current;
-            }
-            current = current.next;
-        }
-        lastNonspace.next = null;
-        return this;
-    }
 }

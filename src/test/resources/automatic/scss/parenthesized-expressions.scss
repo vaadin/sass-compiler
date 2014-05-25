@@ -1,0 +1,35 @@
+.arithmetic {
+    value-25: (4 * 5 + 5); 
+    value-17: (3 * 4) + 5;
+    value-27: 3 * (4 + 5);
+    value-270: (3 * (4 + 5)) * (6 * 2 - 2);
+    with-extra-parentheses-270: ((3 * (4 + 5)) * (6 * 2 - 2));
+    $a: 2;
+    $b: 3;
+    $c: 4;
+    $d: 5;
+    $e: 6;
+    with-variables-270: $b * ($c + $d) * ($e * $a - $a);
+    var-extra-parentheses-270: (((($b * ($c + $d))) * ((($e * $a)) - $a)));
+}
+
+.lists {
+    $a: 1 2 3;
+    a: $a;
+    len-a: length($a);
+    $b: (1 2 3);
+    b: $b;
+    len-b: length($b);
+    $c: 1 (2 3);
+    c: $c;
+    len-c: length($c);
+    $d: ();
+    len-empty: length($d);
+    $e: (1 (2, 3 4), 5, 6, (7 8));
+    e: $e;
+    len-e: length($e);
+    first-e: nth($e, 1);
+    second-e: nth($e, 2);
+    third-e: nth($e, 3);
+    fourth-e: nth($e, 4);
+}
