@@ -34,27 +34,27 @@ public class ArithmeticExpressionEvaluatorTest {
     }
 
     private final LexicalUnitImpl operand2 = LexicalUnitImpl.createInteger(0,
-            0, null, 2);
+            0, 2);
     private final LexicalUnitImpl operatorMultiply = LexicalUnitImpl
-            .createMultiply(0, 0, null);
+            .createMultiply(0, 0);
     private final LexicalUnitImpl operand3 = LexicalUnitImpl.createInteger(0,
-            0, null, 3);
+            0, 3);
     private final LexicalUnitImpl operatorMinus = LexicalUnitImpl.createMinus(
-            0, 0, null);
+            0, 0);
     private final LexicalUnitImpl operand4 = LexicalUnitImpl.createInteger(0,
-            0, null, 4);
+            0, 4);
     private final LexicalUnitImpl operand2cm = LexicalUnitImpl.createCM(0, 0,
-            null, 2);
+ 2);
     private final LexicalUnitImpl operand3px = LexicalUnitImpl.createPX(0, 0,
-            null, 3);
+ 3);
     private final LexicalUnitImpl operand3cm = LexicalUnitImpl.createCM(0, 0,
-            null, 3);
+ 3);
     private final LexicalUnitImpl operand4cm = LexicalUnitImpl.createCM(0, 0,
-            null, 4);
+ 4);
     private final LexicalUnitImpl operatorDivide = LexicalUnitImpl.createSlash(
-            0, 0, null);
+            0, 0);
     private final LexicalUnitImpl operatorComma = LexicalUnitImpl.createComma(
-            2, 3, null);
+            2, 3);
 
     @Test
     public void testPrecedenceSameAsAppearOrder() {

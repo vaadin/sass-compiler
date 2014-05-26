@@ -40,7 +40,7 @@ public class ForNodeHandler extends LoopNodeHandler {
         for (int idx = fromInt; idx <= toInt; ++idx) {
             LexicalUnitImpl idxUnit = LexicalUnitImpl.createInteger(forNode
                     .getFrom().getLineNumber(), forNode.getFrom()
-                    .getColumnNumber(), null, idx);
+                    .getColumnNumber(), idx);
             indices.add(new VariableNode(forNode.getVariableName(), idxUnit,
                     false));
         }

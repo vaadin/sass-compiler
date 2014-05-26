@@ -71,16 +71,15 @@ public class TransparencyModificationFunctionGenerator extends
             SassList newParams = new SassList(SassList.Separator.COMMA,
                     newParamValues);
             return LexicalUnitImpl.createRGBColor(function.getLineNumber(),
-                    function.getColumnNumber(), null, newParams);
+                    function.getColumnNumber(), newParams);
         }
         newParamValues.add(LexicalUnitImpl.createNumber(
-                function.getLineNumber(), function.getColumnNumber(), null,
-                opacity));
+                function.getLineNumber(), function.getColumnNumber(), opacity));
         SassList newParams = new SassList(SassList.Separator.COMMA,
                 newParamValues);
         LexicalUnitImpl result = LexicalUnitImpl.createFunction(
-                function.getLineNumber(), function.getColumnNumber(), null,
-                "rgba", newParams);
+                function.getLineNumber(), function.getColumnNumber(), "rgba",
+                newParams);
         return result;
 
     }
@@ -126,11 +125,11 @@ public class TransparencyModificationFunctionGenerator extends
 
     private LexicalUnitImpl createNumber(LexicalUnitImpl parent, float value) {
         return LexicalUnitImpl.createNumber(parent.getLineNumber(),
-                parent.getColumnNumber(), null, value);
+                parent.getColumnNumber(), value);
     }
 
     private LexicalUnitImpl createNumber(LexicalUnitImpl parent, int value) {
         return LexicalUnitImpl.createNumber(parent.getLineNumber(),
-                parent.getColumnNumber(), null, value);
+                parent.getColumnNumber(), value);
     }
 }

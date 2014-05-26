@@ -407,15 +407,14 @@ public class ColorUtil {
 
     private static LexicalUnitImpl createHslFunction(int hue, int saturation,
             int lightness, int ln, int cn) {
-        LexicalUnitImpl hueUnit = LexicalUnitImpl.createInteger(ln, cn, null,
-                hue);
+        LexicalUnitImpl hueUnit = LexicalUnitImpl.createInteger(ln, cn, hue);
         LexicalUnitImpl saturationUnit = LexicalUnitImpl.createPercentage(ln,
-                cn, null, saturation);
+                cn, saturation);
         LexicalUnitImpl lightnessUnit = LexicalUnitImpl.createPercentage(ln,
-                cn, null, lightness);
+                cn, lightness);
         SassList hslParams = new SassList(Separator.COMMA, hueUnit,
                 saturationUnit, lightnessUnit);
-        return LexicalUnitImpl.createFunction(ln, cn, null, "hsl", hslParams);
+        return LexicalUnitImpl.createFunction(ln, cn, "hsl", hslParams);
     }
 
     private static LexicalUnitImpl adjust(LexicalUnitImpl color,
@@ -449,8 +448,7 @@ public class ColorUtil {
                 funcParam.get(0), funcParam.get(1), newLightness);
 
         return LexicalUnitImpl.createFunction(color.getLineNumber(),
-                color.getColumnNumber(), null, color.getFunctionName(),
-                newParams);
+                color.getColumnNumber(), color.getFunctionName(), newParams);
     }
 
     public static LexicalUnitImpl darken(LexicalUnitImpl darkenFunc) {

@@ -38,6 +38,7 @@ import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -267,10 +268,11 @@ public class Parser implements org.w3c.css.sac.Parser {
 
     public LexicalUnit parsePropertyValue(InputSource source) 
 	    throws CSSException, IOException {
-	this.source = source;
-	ReInit(getCharStreamWithLurk(source));
-
-	return expr();
+        // We don't use the org.w3c.css.sac.Selector interface (not easily extended to
+        // SCSS syntax), so don't even try wrapping com.vaadin.sass.selector.Selectors 
+        // into org.w3c.css.sac.Selector. Why do we implement org.w3c.css.sac.Parser at
+        // all?
+        return null;
     }
 
     public boolean parsePriority(InputSource source) 
@@ -1450,7 +1452,7 @@ SassList expressionSubList():
     {
         return new SassList(SassList.Separator.SPACE);
     }
-    | (LOOKAHEAD(2) item = variableListItem(){ list.add(item); })+
+    | (LOOKAHEAD(2) item = expr(){ list.add(item); })+
     {
         SassList result = new SassList(SassList.Separator.SPACE, list);
         result.setSourcePosition(line, column);
@@ -2103,14 +2105,14 @@ boolean guarded() :
 /**
  * @exception ParseException exception during the parse
  */
-LexicalUnitImpl operator(LexicalUnitImpl prev) :
+List<SassListItem> operator() :
 {
     LexicalUnitImpl unit;
+    List<SassListItem> list;
     boolean spaceAfter = false;
     Token n;
 }
 {
-    { prev = getLastUnit(prev); }
     /* (comments copied from basic_arithmetics.scss)
     *supports:
     * 1. standard arithmetic operations (+, -, *, /, %)
@@ -2121,59 +2123,48 @@ LexicalUnitImpl operator(LexicalUnitImpl prev) :
     * 3. parenthesis is not supported now.
     */
 
-    unit = nonCommaOperator(prev){ return unit; }
+    list = nonCommaOperator(){ return list; }
     | n="," 
-          {unit = LexicalUnitImpl.createComma(n.beginLine, n.beginColumn, prev); } 
+          {unit = LexicalUnitImpl.createComma(n.beginLine, n.beginColumn); } 
       ( <S> {spaceAfter = true;} )* 
       {
-          if(spaceAfter){
-              LexicalUnitImpl.createSpace(token.beginLine, token.beginColumn, unit);
-          }
-          return unit;
+          return createList(unit, spaceAfter);
       }
 }
 
-SassListItem variableListItem():
+JAVACODE
+List<SassListItem> createList(SassListItem item, boolean spaceAfter) {
+   if (spaceAfter){
+      ArrayList<SassListItem> result = new ArrayList<SassListItem>();
+      result.add(item);
+      result.add(LexicalUnitImpl.createSpace(item.getLineNumber(), item.getColumnNumber()));
+      return result;
+   } else {
+      return Collections.<SassListItem>singletonList(item);
+   }
+}
+
+SassListItem expr():
 {
     Token n;
     List<SassListItem> list = new ArrayList<SassListItem>();
-    SassListItem item;
+    List<SassListItem> items;
 }
 {
     addExpressionTerm(list)
-    (LOOKAHEAD(2)( item = arithmeticOrBooleanOperator(null){list.add(item);} addExpressionTerm(list) ))*
+    (LOOKAHEAD(2)( items = arithmeticOrBooleanOperator(){list.addAll(items);} addExpressionTerm(list) ))*
     {
         return SassExpression.createExpression(list);
-    }
-}
-
-JAVACODE
-void removeTrailingWhitespace(List<SassListItem> items){
-    boolean ready = false;
-    while(!ready){
-        SassListItem last = items.get(items.size() - 1);
-        if(last instanceof LexicalUnit){
-            LexicalUnitImpl lastUnit = (LexicalUnitImpl) last;
-            if(lastUnit.getLexicalUnitType() == LexicalUnitImpl.SAC_IDENT && 
-               " ".equals(lastUnit.getStringValue())){
-                items.remove(items.size() - 1);
-            }
-            else{
-                ready = true;
-            }
-        }
-        else{
-            ready = true;
-        }
     }
 }
 
 void addExpressionTerm(List<SassListItem> items):
 {
     SassListItem term;
+    List<SassListItem> terms;
 }
 {
-    term = term(null){ addLexicalUnitChain(items, term); }
+    terms = term(){ items.addAll(terms); }
     | term = parenthesizedExpression() {items.add(term); }
 }
 
@@ -2188,34 +2179,19 @@ SassListItem parenthesizedExpression():
    } 
 }
 
-JAVACODE
-void addLexicalUnitChain(List<SassListItem> list, SassListItem first){
-    if(!(first instanceof LexicalUnitImpl)){
-        list.add(first);
-    }
-    else{
-        LexicalUnitImpl current = (LexicalUnitImpl) first;
-        while(current != null){
-            list.add(current.copy());
-            current = current.getNextLexicalUnit();
-        }
-    }
-}
-
 /**
  * @exception ParseException exception during the parse
  */
-LexicalUnitImpl arithmeticOrBooleanOperator(LexicalUnitImpl prev) :
+List<SassListItem> arithmeticOrBooleanOperator() :
 {
-    LexicalUnitImpl result;
+    List<SassListItem> result;
 }
 {
-    { prev = getLastUnit(prev); }
-    ( result = nonCommaOperator(prev) | result = booleanOperator(prev) )
+    ( result = nonCommaOperator() | result = booleanOperator() )
     { return result; }
 }
 
-LexicalUnitImpl booleanOperator(LexicalUnitImpl prev) :
+List<SassListItem> booleanOperator() :
 {
   Token n = null;
   boolean spaceAfter = false;
@@ -2223,34 +2199,30 @@ LexicalUnitImpl booleanOperator(LexicalUnitImpl prev) :
 }
 {
 (
-    (n = < COMPARE > { operator = LexicalUnitImpl.createEquals(n.beginLine, n.beginColumn, prev); }
-    |n = < SUCCEEDS > { operator = LexicalUnitImpl.createLessThan(n.beginLine, n.beginColumn, prev); }
-    |n = < GTE > { operator = LexicalUnitImpl.createGreaterThanOrEqualTo(n.beginLine, n.beginColumn, prev);  }
-    |n = < PRECEDES > { operator = LexicalUnitImpl.createGreaterThan(n.beginLine, n.beginColumn, prev); }
-    |n = < LTE > { operator = LexicalUnitImpl.createLessThanOrEqualTo(n.beginLine, n.beginColumn, prev); }
-    |n = < NOT_EQ > { operator = LexicalUnitImpl.createNotEqual(n.beginLine, n.beginColumn, prev); } 
-    |n = < AND > { operator = LexicalUnitImpl.createAnd(n.beginLine, n.beginColumn, prev); }
-    |n = < OR > { operator = LexicalUnitImpl.createOr(n.beginLine, n.beginColumn, prev); }
+    (n = < COMPARE > { operator = LexicalUnitImpl.createEquals(n.beginLine, n.beginColumn); }
+    |n = < SUCCEEDS > { operator = LexicalUnitImpl.createLessThan(n.beginLine, n.beginColumn); }
+    |n = < GTE > { operator = LexicalUnitImpl.createGreaterThanOrEqualTo(n.beginLine, n.beginColumn);  }
+    |n = < PRECEDES > { operator = LexicalUnitImpl.createGreaterThan(n.beginLine, n.beginColumn); }
+    |n = < LTE > { operator = LexicalUnitImpl.createLessThanOrEqualTo(n.beginLine, n.beginColumn); }
+    |n = < NOT_EQ > { operator = LexicalUnitImpl.createNotEqual(n.beginLine, n.beginColumn); } 
+    |n = < AND > { operator = LexicalUnitImpl.createAnd(n.beginLine, n.beginColumn); }
+    |n = < OR > { operator = LexicalUnitImpl.createOr(n.beginLine, n.beginColumn); }
     ) (<S> {spaceAfter = true; })* 
 ){
-    if(spaceAfter){
-            LexicalUnitImpl.createSpace(token.beginLine, token.beginColumn, operator);
-    }
-    return operator;
+    return createList(operator, spaceAfter);
  }
 }
 
 /**
  * @exception ParseException exception during the parse
  */
-LexicalUnitImpl nonCommaOperator(LexicalUnitImpl prev) :
+List<SassListItem> nonCommaOperator() :
 {
     Token n;
     LexicalUnitImpl unit;
     boolean spaceAfter = false;
 }
 {
-    { prev = getLastUnit(prev); }
     /* (comments copied from basic_arithmetics.scss)
      *supports:
      * 1. standard arithmetic operations (+, -, *, /, %)
@@ -2260,11 +2232,11 @@ LexicalUnitImpl nonCommaOperator(LexicalUnitImpl prev) :
      * 2. parenthesis is not supported now.
      */
     ( n="/" ( <S> {spaceAfter = true;} )*
-         { unit = LexicalUnitImpl.createSlash(n.beginLine, n.beginColumn, prev); }
+         { unit = LexicalUnitImpl.createSlash(n.beginLine, n.beginColumn); }
      | n="*" ( <S> {spaceAfter = true;} )*
-         { unit =  LexicalUnitImpl.createMultiply(n.beginLine, n.beginColumn, prev); }
+         { unit =  LexicalUnitImpl.createMultiply(n.beginLine, n.beginColumn); }
      | n="%" ( <S> {spaceAfter = true;} )*
-         { unit = LexicalUnitImpl.createModulo(n.beginLine, n.beginColumn, prev); }
+         { unit = LexicalUnitImpl.createModulo(n.beginLine, n.beginColumn); }
      /*
       * for '+', since it can be either a binary operator or an unary operator,
       * which is ambiguous. To avoid this, the binary operator '+' always has
@@ -2273,43 +2245,27 @@ LexicalUnitImpl nonCommaOperator(LexicalUnitImpl prev) :
      */
 
      | n="+" ( <S> {spaceAfter = true;} )+
-         { unit = LexicalUnitImpl.createAdd(n.beginLine, n.beginColumn, prev); }
+         { unit = LexicalUnitImpl.createAdd(n.beginLine, n.beginColumn); }
      | n="-" ( <S> {spaceAfter = true;} )+
-         { unit = LexicalUnitImpl.createMinus(n.beginLine, n.beginColumn, prev); }
+         { unit = LexicalUnitImpl.createMinus(n.beginLine, n.beginColumn); }
     )
     {
-        if(spaceAfter){
-            LexicalUnitImpl.createSpace(token.beginLine, token.beginColumn, unit);
-        }
-        return unit;
+      return createList(unit, spaceAfter);
     }
 }
 
 /**
  * @exception ParseException exception during the parse
  */
-LexicalUnitImpl expr() :
+SassListItem numericExpr() :
 {
-    LexicalUnitImpl first, res;
-    char op;
+    List<SassListItem> current;
+    List<SassListItem> res = new ArrayList<SassListItem>();
 }
 {
-    first=term(null){ res = first; }
-    ( LOOKAHEAD(2) ( LOOKAHEAD(2) res=operator(res) )? res=term(res))*
-  { return first; }
-}
-
-/**
- * @exception ParseException exception during the parse
- */
-LexicalUnitImpl numericExpr() :
-{
-    LexicalUnitImpl first, res;
-}
-{
-    first=numericTerm(null){ res = first; }
-    ( LOOKAHEAD(2) res=nonCommaOperator(res) res=numericTerm(res))*
-  { return first; }
+    current=numericTerm(){ res.addAll(current); }
+    ( LOOKAHEAD(2) current=nonCommaOperator() { res.addAll(current); } current=numericTerm() { res.addAll(current); })*
+  { return SassExpression.createExpression(res); }
 }
 
 /**
@@ -2325,37 +2281,36 @@ char unaryOperator() :
 /**
  * @exception ParseException exception during the parse
  */
-LexicalUnitImpl term(LexicalUnitImpl prev) :
-{ LexicalUnitImpl result = null;
-  Token n = null;
-  char op = ' ';
+List<SassListItem> term() :
+{
+  List<SassListItem> res;
 }
 {
-  { prev = getLastUnit(prev); }
-  (result = nonVariableTerm(prev) | result = variableTerm(prev))
-      {
-	      return result;
-      }
+  ( res = nonVariableTerm() | res = variableTerm() )
+  {
+    return res;
+  }
 }
 
 /**
  * @exception ParseException exception during the parse
  */
-LexicalUnitImpl numericTerm(LexicalUnitImpl prev) :
-{ LexicalUnitImpl result = null;
+List<SassListItem> numericTerm() :
+{
+  SassListItem current;
+  List<SassListItem> res;
   Token n = null;
   char op = ' ';
 }
 {
-  { prev = getLastUnit(prev); }
-  (  ((op = unaryOperator())? ( result = numberTerm(op, prev) | result = function(op, prev) ( <S> )*))
-   | result = variableTerm(prev))
+  (  ((op = unaryOperator())? ( res = numberTerm(op) | current = function(op) { res = createList(current, false); } ( <S> )*))
+   | res = variableTerm())
       {
-	      return result;
+	      return res;
       }
 }
 
-LexicalUnitImpl variableTerm(LexicalUnitImpl prev) :
+List<SassListItem> variableTerm() :
 {
     boolean spaceAfter = false;
     Token n;
@@ -2363,35 +2318,31 @@ LexicalUnitImpl variableTerm(LexicalUnitImpl prev) :
     String varName = "";
 }
 {
-    {prev = getLastUnit(prev); }
     // variableName() is not used here because we need to recognize whether there is whitespace after the name.
     n = <VARIABLE> (<S> {spaceAfter = true;})*
     {
         varName = convertIdent(n.image.substring(1));
-        result = LexicalUnitImpl.createVariable(n.beginLine, n.beginColumn,
-                 prev, varName);
-        if(spaceAfter){
-            LexicalUnitImpl.createSpace(token.beginLine, token.beginColumn, result);
-        }
-        return result;
+        result = LexicalUnitImpl.createVariable(n.beginLine, n.beginColumn, varName);
+
+        return createList(result, spaceAfter);
     }
 }
 
-LexicalUnitImpl nonVariableTerm(LexicalUnitImpl prev) :
+List<SassListItem> nonVariableTerm() :
 {
     char op = ' ';
-    LexicalUnitImpl result = null;
+    SassListItem current = null;
+    List<SassListItem> result = null;
 }
 {
-    { prev = getLastUnit(prev); }
     ( (op = unaryOperator())?
-         ( result = numberTerm(op, prev) | result = function(op, prev) ( <S> )*)
-     | result = stringTerm(op, prev)
+         ( result = numberTerm(op) | current = function(op) { result = createList(current, false); } ( <S> )*)
+     | result = stringTerm(op)
     )
     { return result; }
 }
 
-LexicalUnitImpl numberTerm(char op, LexicalUnitImpl prev) :
+List<SassListItem> numberTerm(char op) :
 {
     boolean spaceAfter = false;
     Token n = null;
@@ -2399,64 +2350,44 @@ LexicalUnitImpl numberTerm(char op, LexicalUnitImpl prev) :
     String s = "";
 }
 {
-    { prev = getLastUnit(prev); }
     (n=<NUMBER>
-	{ result = LexicalUnitImpl.createNumber(n.beginLine, n.beginColumn,
-						prev, number(op, n, 0)); }
+	{ result = LexicalUnitImpl.createNumber(n.beginLine, n.beginColumn, number(op, n, 0)); }
     | n=<PERCENTAGE>
-	{ result = LexicalUnitImpl.createPercentage(n.beginLine, n.beginColumn,
-						    prev, number(op, n, 1)); }
+	{ result = LexicalUnitImpl.createPercentage(n.beginLine, n.beginColumn, number(op, n, 1)); }
     | n=<PT>
-	{ result = LexicalUnitImpl.createPT(n.beginLine, n.beginColumn,
-					    prev, number(op, n, 2)); }
+	{ result = LexicalUnitImpl.createPT(n.beginLine, n.beginColumn, number(op, n, 2)); }
     | n=<CM>
-	{ result = LexicalUnitImpl.createCM(n.beginLine, n.beginColumn,
-					    prev, number(op, n, 2)); }
+	{ result = LexicalUnitImpl.createCM(n.beginLine, n.beginColumn, number(op, n, 2)); }
     | n=<MM>
-	{ result = LexicalUnitImpl.createMM(n.beginLine, n.beginColumn,
-					    prev, number(op, n, 2)); }
+	{ result = LexicalUnitImpl.createMM(n.beginLine, n.beginColumn, number(op, n, 2)); }
     | n=<PC>
-	{ result = LexicalUnitImpl.createPC(n.beginLine, n.beginColumn,
-					    prev, number(op, n, 2)); }
+	{ result = LexicalUnitImpl.createPC(n.beginLine, n.beginColumn, number(op, n, 2)); }
     | n=<IN>
-	{ result = LexicalUnitImpl.createIN(n.beginLine, n.beginColumn,
-					    prev, number(op, n, 2)); }
+	{ result = LexicalUnitImpl.createIN(n.beginLine, n.beginColumn, number(op, n, 2)); }
     | n=<PX>
-	{ result = LexicalUnitImpl.createPX(n.beginLine, n.beginColumn,
-					    prev, number(op, n, 2)); }
+	{ result = LexicalUnitImpl.createPX(n.beginLine, n.beginColumn, number(op, n, 2)); }
     | n=<EMS>
-	{ result = LexicalUnitImpl.createEMS(n.beginLine, n.beginColumn,
-					     prev, number(op, n, 2)); }
+	{ result = LexicalUnitImpl.createEMS(n.beginLine, n.beginColumn, number(op, n, 2)); }
     | n=<LEM>
-        { result = LexicalUnitImpl.createLEM(n.beginLine, n.beginColumn,
-                                             prev, number(op, n, 3)); }
+        { result = LexicalUnitImpl.createLEM(n.beginLine, n.beginColumn, number(op, n, 3)); }
     | n=<REM>       
-        { result = LexicalUnitImpl.createREM(n.beginLine, n.beginColumn,
-                                             prev, number(op, n, 3)); }
+        { result = LexicalUnitImpl.createREM(n.beginLine, n.beginColumn, number(op, n, 3)); }
     | n=<EXS>
-	{ result = LexicalUnitImpl.createEXS(n.beginLine, n.beginColumn,
-					     prev, number(op, n, 2)); }
+	{ result = LexicalUnitImpl.createEXS(n.beginLine, n.beginColumn, number(op, n, 2)); }
     | n=<DEG>
-	{ result = LexicalUnitImpl.createDEG(n.beginLine, n.beginColumn,
-					     prev, number(op, n, 3)); }
+	{ result = LexicalUnitImpl.createDEG(n.beginLine, n.beginColumn, number(op, n, 3)); }
     | n=<RAD>
-	{ result = LexicalUnitImpl.createRAD(n.beginLine, n.beginColumn,
-					     prev, number(op, n, 3)); }
+	{ result = LexicalUnitImpl.createRAD(n.beginLine, n.beginColumn, number(op, n, 3)); }
     | n=<GRAD>
-	{ result = LexicalUnitImpl.createGRAD(n.beginLine, n.beginColumn,
-					      prev, number(op, n, 3)); }
+	{ result = LexicalUnitImpl.createGRAD(n.beginLine, n.beginColumn, number(op, n, 3)); }
     | n=<SECOND>
-	{ result = LexicalUnitImpl.createS(n.beginLine, n.beginColumn,
-					   prev, number(op, n, 1)); }
+	{ result = LexicalUnitImpl.createS(n.beginLine, n.beginColumn, number(op, n, 1)); }
     | n=<MS>
-	{ result = LexicalUnitImpl.createMS(n.beginLine, n.beginColumn,
-					    prev, number(op, n, 2)); }
+	{ result = LexicalUnitImpl.createMS(n.beginLine, n.beginColumn, number(op, n, 2)); }
     | n=<HZ>
-	{ result = LexicalUnitImpl.createHZ(n.beginLine, n.beginColumn,
-					    prev, number(op, n, 2)); }
+	{ result = LexicalUnitImpl.createHZ(n.beginLine, n.beginColumn, number(op, n, 2)); }
     | n=<KHZ>
-	{ result = LexicalUnitImpl.createKHZ(n.beginLine, n.beginColumn,
-					     prev, number(op, n, 3)); }
+	{ result = LexicalUnitImpl.createKHZ(n.beginLine, n.beginColumn, number(op, n, 3)); }
     | n=<DIMEN>
 	{
 	    s = n.image;
@@ -2466,15 +2397,11 @@ LexicalUnitImpl numberTerm(char op, LexicalUnitImpl prev) :
 		i++;
 	    }
 
-	    result = LexicalUnitImpl.createDimen(n.beginLine, n.beginColumn, prev, 
-						 number(op,n,s.length()-i),
-						 s.substring(i));
+	    result = LexicalUnitImpl.createDimen(n.beginLine, n.beginColumn, 
+						 number(op,n,s.length()-i), s.substring(i));
 	}) ( <S> { spaceAfter = true; } )*
 	{
-	    if(spaceAfter){
-            LexicalUnitImpl.createSpace(token.beginLine, token.beginColumn, result);
-        }
-	    return result;
+        return createList(result, spaceAfter);
 	}
 }
 
@@ -2501,7 +2428,7 @@ Token ident() :
     { return n; }
 }
 
-LexicalUnitImpl stringTerm(char op, LexicalUnitImpl prev) : 
+List<SassListItem> stringTerm(char op) : 
 {
     boolean spaceAfter = false;
     int beginLine = getToken(1).beginLine, beginColumn = getToken(1).beginColumn;
@@ -2510,21 +2437,18 @@ LexicalUnitImpl stringTerm(char op, LexicalUnitImpl prev) :
     String s = "";
 }
 {
-    { prev = getLastUnit(prev); }
     ( n=<STRING>
 	{ result =
-	  LexicalUnitImpl.createString(n.beginLine, n.beginColumn, prev,
-				       convertStringIndex(n.image, 1, 
-							  n.image.length() -1));}
+	  LexicalUnitImpl.createString(n.beginLine, n.beginColumn,
+				       convertStringIndex(n.image, 1, n.image.length() -1));}
   | (< DOT >{ s+="."; })?(s = identInterpolationString()){
 	if ("inherit".equals(s)) {
-	    result = LexicalUnitImpl.createInherit(beginLine, beginColumn,
-					       prev);
+	    result = LexicalUnitImpl.createInherit(beginLine, beginColumn);
 	} else {
-	    result = LexicalUnitImpl.createIdent(beginLine, beginColumn,
-					       prev, s);
+	    result = LexicalUnitImpl.createIdent(beginLine, beginColumn, s);
 	}
 
+    // TODO fix this - no prev
 	  /* /
          Auto correction code used in the CSS Validator but must not
           be used by a conformant CSS2 parser.
@@ -2548,15 +2472,12 @@ LexicalUnitImpl stringTerm(char op, LexicalUnitImpl prev) :
 	}
 	/ */
     }
-	| result=hexcolor(prev)	
-        | result=url(prev)
-	| result=unicode(prev)
+	| result=hexcolor()	
+        | result=url()
+	| result=unicode()
          ) ( <S> {spaceAfter = true; })*
     {
-        if(spaceAfter){
-            LexicalUnitImpl.createSpace(token.beginLine, token.beginColumn, result);
-        }
-        return result;
+        return createList(result, spaceAfter);
     }
 }
 
@@ -2564,12 +2485,11 @@ LexicalUnitImpl stringTerm(char op, LexicalUnitImpl prev) :
  * Handle all CSS2 functions.
  * @exception ParseException exception during the parse
  */
-LexicalUnitImpl function(char operator, LexicalUnitImpl prev) :
+LexicalUnitImpl function(char operator) :
 {Token n;
  SassList params = new SassList(SassList.Separator.COMMA);
 }
 {
-    { prev = getLastUnit(prev); }
     n=<FUNCTION> ( <S> )*  
     {
         String fname = convertIdent(n.image);
@@ -2580,12 +2500,10 @@ LexicalUnitImpl function(char operator, LexicalUnitImpl prev) :
             if (fileName.startsWith(currentDir.replace("\\", "/"))) {
                 fileName = fileName.substring(currentDir.length());
             }
-            return LexicalUnitImpl.createIdent(n.beginLine, n.beginColumn,
-                 null, fileName);
+            return LexicalUnitImpl.createIdent(n.beginLine, n.beginColumn, fileName);
         } else if("expression(".equals(fname)){
             String body = skipStatementUntilSemiColon();
-            return LexicalUnitImpl.createIdent(n.beginLine, n.beginColumn,
-                 null, fname+body);
+            return LexicalUnitImpl.createIdent(n.beginLine, n.beginColumn, fname+body);
         }
     }
     ( params=expressionList() {
@@ -2606,60 +2524,53 @@ LexicalUnitImpl function(char operator, LexicalUnitImpl prev) :
         }            
         String f = convertIdent(n.image);
         // f contains the opening parenthesis of the function call
-        return LexicalUnitImpl.createFunction(n.beginLine, n.beginColumn, prev, f.substring(0, f.length() -1), params);
+        return LexicalUnitImpl.createFunction(n.beginLine, n.beginColumn, f.substring(0, f.length() -1), params);
     }
 }
 
-LexicalUnitImpl unicode(LexicalUnitImpl prev) :
+LexicalUnitImpl unicode() :
 { Token n;
 }
 {
   n=<UNICODERANGE>
  {
-     prev = getLastUnit(prev);
-     LexicalUnitImpl params = null;
+     List<SassListItem> params = new ArrayList<SassListItem>();
      String s = n.image.substring(2);
      int index = s.indexOf('-');
      if (index == -1) {
-	 params = LexicalUnitImpl.createInteger(n.beginLine, n.beginColumn,
-						params, Integer.parseInt(s, 16));
+	 params.add(LexicalUnitImpl.createInteger(n.beginLine, n.beginColumn, Integer.parseInt(s, 16)));
      } else {
 	 String s1 = s.substring(0, index);
 	 String s2 = s.substring(index);
 
-	 params = LexicalUnitImpl.createInteger(n.beginLine, n.beginColumn,
-						params, Integer.parseInt(s1, 16));
-	 params = LexicalUnitImpl.createInteger(n.beginLine, n.beginColumn,
-						params, Integer.parseInt(s2, 16));
+	 params.add(LexicalUnitImpl.createInteger(n.beginLine, n.beginColumn, Integer.parseInt(s1, 16)));
+	 params.add(LexicalUnitImpl.createInteger(n.beginLine, n.beginColumn, Integer.parseInt(s2, 16)));
      }
 
-     return LexicalUnitImpl.createUnicodeRange(n.beginLine, n.beginColumn,
-					       prev, params);
+     return LexicalUnitImpl.createUnicodeRange(n.beginLine, n.beginColumn, new SassList(SassList.Separator.COMMA, params));
  }
 }
 
-LexicalUnitImpl url(LexicalUnitImpl prev) :
+LexicalUnitImpl url() :
 { Token n;
 }
 {
   n=<URL>
  {
-   prev = getLastUnit(prev);
    String urlname = n.image.substring(4, n.image.length()-1).trim();
-   return LexicalUnitImpl.createURL(n.beginLine, n.beginColumn, prev, urlname); 
+   return LexicalUnitImpl.createURL(n.beginLine, n.beginColumn, urlname); 
  }
 }
 
 /**
  * @exception ParseException exception during the parse
  */
-LexicalUnitImpl hexcolor(LexicalUnitImpl prev) :
+LexicalUnitImpl hexcolor() :
 {Token n; 
 }
 {
  n=<HASH>
  {
-     prev = getLastUnit(prev);
      int r;
      LexicalUnitImpl first, params = null;
      String s = n.image.substring(1);
@@ -2669,8 +2580,7 @@ LexicalUnitImpl hexcolor(LexicalUnitImpl prev) :
 	 throw new CSSParseException("invalid hexadecimal notation for RGB: " + s, 
 				     getLocator());
      }
-     return LexicalUnitImpl.createIdent(n.beginLine, n.beginColumn,
-             prev, n.image);
+     return LexicalUnitImpl.createIdent(n.beginLine, n.beginColumn, n.image);
  }
 }
 
@@ -2878,20 +2788,6 @@ String convertStringIndex(String s, int start, int len) {
 JAVACODE
 String convertIdent(String s) {
     return convertStringIndex(s, 0, s.length());
-}
-
-// Returns the last lexical unit in a chain of LexicalUnitImpl objects.
-// This is needed because, for instance, numberTerm() can return a
-// LexicalUnitImpl that is followed by another LexicalUnitImpl
-// (whitespace).
-JAVACODE
-LexicalUnitImpl getLastUnit(LexicalUnitImpl unit) {
-    LexicalUnitImpl last = null;
-    while(unit != null){
-        last = unit;
-        unit = unit.getNextLexicalUnit();
-    }
-    return last;
 }
 
 JAVACODE

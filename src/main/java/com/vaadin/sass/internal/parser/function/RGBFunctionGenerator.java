@@ -47,7 +47,7 @@ public class RGBFunctionGenerator extends AbstractFunctionGenerator {
                                 + item.toString(), line, column);
             }
         }
-        return LexicalUnitImpl.createRGBColor(line, column, null, params);
+        return LexicalUnitImpl.createRGBColor(line, column, params);
     }
 
 }

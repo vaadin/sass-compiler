@@ -41,11 +41,7 @@ public class VariableNode extends Node implements IVariableNode {
     }
 
     public void setExpr(SassListItem expr) {
-        if (expr != null) {
-            this.expr = expr.replaceChains();
-        } else {
-            this.expr = null;
-        }
+        this.expr = expr;
     }
 
     public void setName(String name) {

@@ -42,7 +42,7 @@ public class ListLengthFunctionGenerator extends AbstractFunctionGenerator {
             length = 1;
         }
         return LexicalUnitImpl.createInteger(function.getLineNumber(),
-                function.getColumnNumber(), null, length);
+                function.getColumnNumber(), length);
     }
 
 }

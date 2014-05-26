@@ -307,13 +307,4 @@ public class SassList implements SassListItem, Iterable<SassListItem>,
     protected List<SassListItem> getItems() {
         return Collections.unmodifiableList(items);
     }
-
-    @Override
-    public SassListItem replaceChains() {
-        List<SassListItem> result = new ArrayList<SassListItem>();
-        for (SassListItem item : this) {
-            result.add(item.replaceChains());
-        }
-        return new SassList(getSeparator(), result);
-    }
 }

@@ -40,7 +40,7 @@ public class AlphaFunctionGenerator extends AbstractFunctionGenerator {
             opacity = ((LexicalUnitImpl) last).getFloatValue();
         }
         return LexicalUnitImpl.createNumber(function.getLineNumber(),
-                function.getColumnNumber(), null, opacity);
+                function.getColumnNumber(), opacity);
     }
 
     private void checkParameters(LexicalUnitImpl function) {

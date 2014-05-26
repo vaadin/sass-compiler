@@ -50,11 +50,7 @@ public class RuleNode extends Node implements IVariableNode {
     }
 
     private void setValue(SassListItem value) {
-        if (value != null) {
-            this.value = value.replaceChains();
-        } else {
-            this.value = null;
-        }
+        this.value = value;
     }
 
     @Override

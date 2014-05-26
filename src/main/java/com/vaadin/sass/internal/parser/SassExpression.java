@@ -40,31 +40,19 @@ public class SassExpression implements SassListItem, Serializable {
     private int line = 0;
     private int column = 0;
 
-    public SassExpression(LexicalUnitImpl chain) {
-        if (chain != null) {
-            line = chain.getLineNumber();
-            column = chain.getColumnNumber();
-        }
-        items = new ArrayList<SassListItem>();
-        while (chain != null) {
-            items.add(chain.copy());
-            chain = chain.getNextLexicalUnit();
-        }
-    }
-
     /**
      * Constructs a SassExpression from a list of items. The list is not copied
-     * but used directly and no expansion of LexicalUnitImpl chains is
-     * performed.
+     * but used directly.
      * 
      * @param items
      *            list of items (not copied but used directly)
      */
-    public SassExpression(List<SassListItem> items) {
+    private SassExpression(List<SassListItem> items) {
         if (!items.isEmpty()) {
             line = items.get(0).getLineNumber();
             column = items.get(0).getColumnNumber();
         }
+
         this.items = items;
     }
 
@@ -252,7 +240,7 @@ public class SassExpression implements SassListItem, Serializable {
     @Override
     public String unquotedString() {
         if (items.size() == 1 && items.get(0) instanceof LexicalUnitImpl) {
-            return ((LexicalUnitImpl) items.get(0)).printState();
+            return ((LexicalUnitImpl) items.get(0)).unquotedString();
         }
         return printState();
     }
@@ -265,11 +253,6 @@ public class SassExpression implements SassListItem, Serializable {
                             + toString());
         }
         return (LexicalUnitImpl) items.get(0);
-    }
-
-    @Override
-    public SassListItem replaceChains() {
-        return this;
     }
 
     public static boolean isWhitespace(SassListItem unit) {

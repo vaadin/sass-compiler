@@ -41,6 +41,6 @@ public class PercentageFunctionGenerator extends
         value = ((float) intValue) / LexicalUnitImpl.PRECISION;
 
         return LexicalUnitImpl.createPercentage(firstParam.getLineNumber(),
-                firstParam.getColumnNumber(), null, value);
+                firstParam.getColumnNumber(), value);
     }
 }

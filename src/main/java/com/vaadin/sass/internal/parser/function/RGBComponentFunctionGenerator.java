@@ -55,7 +55,7 @@ public class RGBComponentFunctionGenerator extends AbstractFunctionGenerator {
             rgb = ColorUtil.colorToRgb(color);
         }
         return LexicalUnitImpl.createInteger(color.getLineNumber(),
-                color.getColumnNumber(), null, rgb[componentNumber]);
+                color.getColumnNumber(), rgb[componentNumber]);
     }
 
     private void checkParameters(LexicalUnitImpl function) {

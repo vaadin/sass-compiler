@@ -26,7 +26,7 @@ public class ReturnNode extends Node implements IVariableNode {
     private SassListItem expr;
 
     public ReturnNode(SassListItem expression) {
-        expr = expression.replaceChains();
+        expr = expression;
     }
 
     @Override

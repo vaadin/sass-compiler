@@ -83,22 +83,6 @@ public class VariableArgumentList extends SassList implements Serializable {
                 hasVariableArguments);
     }
 
-    @Override
-    public SassListItem replaceChains() {
-        List<SassListItem> unnamed = new ArrayList<SassListItem>();
-        List<VariableNode> named = new ArrayList<VariableNode>();
-        for (SassListItem item : this) {
-            unnamed.add(item.replaceChains());
-        }
-        for (VariableNode namedVariable : getNamedVariables()) {
-            named.add(new VariableNode(namedVariable.getName(), namedVariable
-                    .getExpr().replaceChains(), false));
-        }
-
-        return new VariableArgumentList(getSeparator(), unnamed, named,
-                hasVariableArguments);
-    }
-
     public VariableArgumentList expandVariableArguments() {
         /*
          * If there are variable arguments, the last argument is expanded into

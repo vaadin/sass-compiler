@@ -77,8 +77,6 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
 
     public static final long PRECISION = 100000L;
 
-    private LexicalUnitImpl next;
-
     private short type;
     private int line;
     private int column;
@@ -91,39 +89,38 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     private String fname;
     private SassList params;
 
-    LexicalUnitImpl(short type, int line, int column, LexicalUnitImpl p) {
-        if (p != null) {
-            p.next = this;
-        }
+    LexicalUnitImpl(short type, int line, int column) {
         this.line = line;
         this.column = column - 1;
         this.type = type;
     }
 
-    LexicalUnitImpl(int line, int column, LexicalUnitImpl previous, int i) {
-        this(SAC_INTEGER, line, column, previous);
-        this.i = i;
-        f = i;
-    }
-
-    LexicalUnitImpl(int line, int column, LexicalUnitImpl previous,
-            short dimension, String sdimension, float f) {
-        this(dimension, line, column, previous);
+    LexicalUnitImpl(int line, int column, short dimension, String sdimension,
+            float f) {
+        this(dimension, line, column);
         this.f = f;
         i = (int) f;
         this.dimension = dimension;
         this.sdimension = sdimension;
     }
 
-    LexicalUnitImpl(int line, int column, LexicalUnitImpl previous, short type,
+    LexicalUnitImpl(int line, int column, short dimension, String sdimension,
+            int i) {
+        this(dimension, line, column);
+        this.dimension = dimension;
+        this.i = i;
+        f = i;
+    }
+
+    LexicalUnitImpl(int line, int column, short type,
             String s) {
-        this(type, line, column, previous);
+        this(type, line, column);
         this.s = s;
     }
 
-    LexicalUnitImpl(short type, int line, int column, LexicalUnitImpl previous,
-            String fname, SassList params) {
-        this(type, line, column, previous);
+    LexicalUnitImpl(short type, int line, int column, String fname,
+            SassList params) {
+        this(type, line, column);
         this.fname = fname;
         this.params = params;
     }
@@ -146,8 +143,9 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     }
 
     @Override
+    @Deprecated
     public LexicalUnitImpl getNextLexicalUnit() {
-        return next;
+        return null;
     }
 
     @Override
@@ -402,7 +400,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
      * @return copy of this without next
      */
     public LexicalUnitImpl copy() {
-        LexicalUnitImpl copy = new LexicalUnitImpl(type, line, column, null);
+        LexicalUnitImpl copy = new LexicalUnitImpl(type, line, column);
         copy.i = i;
         copy.f = f;
         copy.s = s;
@@ -433,33 +431,29 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
 
     // here some useful function for creation
     public static LexicalUnitImpl createVariable(int line, int column,
-            LexicalUnitImpl previous, String name) {
-        return new LexicalUnitImpl(line, column, previous, SCSS_VARIABLE, name);
+            String name) {
+        return new LexicalUnitImpl(line, column, SCSS_VARIABLE, name);
     }
 
-    public static LexicalUnitImpl createNull(int line, int column,
-            LexicalUnitImpl previous) {
-        return new LexicalUnitImpl(line, column, previous, SCSS_NULL, "null");
+    public static LexicalUnitImpl createNull(int line, int column) {
+        return new LexicalUnitImpl(line, column, SCSS_NULL, "null");
     }
 
-    public static LexicalUnitImpl createNumber(int line, int column,
-            LexicalUnitImpl previous, float v) {
+    public static LexicalUnitImpl createNumber(int line, int column, float v) {
         int i = (int) v;
         if (v == i) {
-            return new LexicalUnitImpl(line, column, previous, i);
+            return new LexicalUnitImpl(line, column, SAC_INTEGER, "", i);
         } else {
-            return new LexicalUnitImpl(line, column, previous, SAC_REAL, "", v);
+            return new LexicalUnitImpl(line, column, SAC_REAL, "", v);
         }
     }
 
-    public static LexicalUnitImpl createInteger(int line, int column,
-            LexicalUnitImpl previous, int i) {
-        return new LexicalUnitImpl(line, column, previous, i);
+    public static LexicalUnitImpl createInteger(int line, int column, int i) {
+        return new LexicalUnitImpl(line, column, SAC_INTEGER, "", i);
     }
 
-    public static LexicalUnitImpl createPercentage(int line, int column,
-            LexicalUnitImpl previous, float v) {
-        LexicalUnitImpl result = new LexicalUnitImpl(line, column, previous,
+    public static LexicalUnitImpl createPercentage(int line, int column, float v) {
+        LexicalUnitImpl result = new LexicalUnitImpl(line, column,
                 SAC_PERCENTAGE, null, v);
 
         if (Math.round(v * 100 * PRECISION) == (((int) v) * 100 * PRECISION)) {
@@ -469,172 +463,143 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         return result;
     }
 
-    static LexicalUnitImpl createEMS(int line, int column,
-            LexicalUnitImpl previous, float v) {
-        return new LexicalUnitImpl(line, column, previous, SAC_EM, null, v);
+    static LexicalUnitImpl createEMS(int line, int column, float v) {
+        return new LexicalUnitImpl(line, column, SAC_EM, null, v);
     }
 
-    static LexicalUnitImpl createLEM(int line, int column,
-            LexicalUnitImpl previous, float v) {
-        return new LexicalUnitImpl(line, column, previous,
-                SCSSLexicalUnit.SAC_LEM, null, v);
-    }
-
-    static LexicalUnitImpl createREM(int line, int column,
-            LexicalUnitImpl previous, float v) {
-        return new LexicalUnitImpl(line, column, previous,
-                SCSSLexicalUnit.SAC_REM, null, v);
-    }
-
-    static LexicalUnitImpl createEXS(int line, int column,
-            LexicalUnitImpl previous, float v) {
-        return new LexicalUnitImpl(line, column, previous, SAC_EX, null, v);
-    }
-
-    public static LexicalUnitImpl createPX(int line, int column,
-            LexicalUnitImpl previous, float v) {
-        return new LexicalUnitImpl(line, column, previous, SAC_PIXEL, null, v);
-    }
-
-    public static LexicalUnitImpl createCM(int line, int column,
-            LexicalUnitImpl previous, float v) {
-        return new LexicalUnitImpl(line, column, previous, SAC_CENTIMETER,
-                null, v);
-    }
-
-    static LexicalUnitImpl createMM(int line, int column,
-            LexicalUnitImpl previous, float v) {
-        return new LexicalUnitImpl(line, column, previous, SAC_MILLIMETER,
-                null, v);
-    }
-
-    static LexicalUnitImpl createIN(int line, int column,
-            LexicalUnitImpl previous, float v) {
-        return new LexicalUnitImpl(line, column, previous, SAC_INCH, null, v);
-    }
-
-    static LexicalUnitImpl createPT(int line, int column,
-            LexicalUnitImpl previous, float v) {
-        return new LexicalUnitImpl(line, column, previous, SAC_POINT, null, v);
-    }
-
-    static LexicalUnitImpl createPC(int line, int column,
-            LexicalUnitImpl previous, float v) {
-        return new LexicalUnitImpl(line, column, previous, SAC_PICA, null, v);
-    }
-
-    static LexicalUnitImpl createDEG(int line, int column,
-            LexicalUnitImpl previous, float v) {
-        return new LexicalUnitImpl(line, column, previous, SAC_DEGREE, null, v);
-    }
-
-    static LexicalUnitImpl createRAD(int line, int column,
-            LexicalUnitImpl previous, float v) {
-        return new LexicalUnitImpl(line, column, previous, SAC_RADIAN, null, v);
-    }
-
-    static LexicalUnitImpl createGRAD(int line, int column,
-            LexicalUnitImpl previous, float v) {
-        return new LexicalUnitImpl(line, column, previous, SAC_GRADIAN, null, v);
-    }
-
-    static LexicalUnitImpl createMS(int line, int column,
-            LexicalUnitImpl previous, float v) {
-        if (v < 0) {
-            throw new ParseException("Time values may not be negative",
-                    previous);
-        }
-        return new LexicalUnitImpl(line, column, previous, SAC_MILLISECOND,
-                null, v);
-    }
-
-    static LexicalUnitImpl createS(int line, int column,
-            LexicalUnitImpl previous, float v) {
-        if (v < 0) {
-            throw new ParseException("Time values may not be negative",
-                    previous);
-        }
-        return new LexicalUnitImpl(line, column, previous, SAC_SECOND, null, v);
-    }
-
-    static LexicalUnitImpl createHZ(int line, int column,
-            LexicalUnitImpl previous, float v) {
-        if (v < 0) {
-            throw new ParseException("Frequency values may not be negative",
-                    previous);
-        }
-        return new LexicalUnitImpl(line, column, previous, SAC_HERTZ, null, v);
-    }
-
-    static LexicalUnitImpl createKHZ(int line, int column,
-            LexicalUnitImpl previous, float v) {
-        if (v < 0) {
-            throw new ParseException("Frequency values may not be negative",
-                    previous);
-        }
-        return new LexicalUnitImpl(line, column, previous, SAC_KILOHERTZ, null,
+    static LexicalUnitImpl createLEM(int line, int column, float v) {
+        return new LexicalUnitImpl(line, column, SCSSLexicalUnit.SAC_LEM, null,
                 v);
     }
 
-    static LexicalUnitImpl createDimen(int line, int column,
-            LexicalUnitImpl previous, float v, String s) {
-        return new LexicalUnitImpl(line, column, previous, SAC_DIMENSION, s, v);
+    static LexicalUnitImpl createREM(int line, int column, float v) {
+        return new LexicalUnitImpl(line, column, SCSSLexicalUnit.SAC_REM, null,
+                v);
     }
 
-    static LexicalUnitImpl createInherit(int line, int column,
-            LexicalUnitImpl previous) {
-        return new LexicalUnitImpl(line, column, previous, SAC_INHERIT,
-                "inherit");
+    static LexicalUnitImpl createEXS(int line, int column, float v) {
+        return new LexicalUnitImpl(line, column, SAC_EX, null, v);
+    }
+
+    public static LexicalUnitImpl createPX(int line, int column, float v) {
+        return new LexicalUnitImpl(line, column, SAC_PIXEL, null, v);
+    }
+
+    public static LexicalUnitImpl createCM(int line, int column, float v) {
+        return new LexicalUnitImpl(line, column, SAC_CENTIMETER, null, v);
+    }
+
+    static LexicalUnitImpl createMM(int line, int column, float v) {
+        return new LexicalUnitImpl(line, column, SAC_MILLIMETER, null, v);
+    }
+
+    static LexicalUnitImpl createIN(int line, int column, float v) {
+        return new LexicalUnitImpl(line, column, SAC_INCH, null, v);
+    }
+
+    static LexicalUnitImpl createPT(int line, int column, float v) {
+        return new LexicalUnitImpl(line, column, SAC_POINT, null, v);
+    }
+
+    static LexicalUnitImpl createPC(int line, int column, float v) {
+        return new LexicalUnitImpl(line, column, SAC_PICA, null, v);
+    }
+
+    static LexicalUnitImpl createDEG(int line, int column, float v) {
+        return new LexicalUnitImpl(line, column, SAC_DEGREE, null, v);
+    }
+
+    static LexicalUnitImpl createRAD(int line, int column, float v) {
+        return new LexicalUnitImpl(line, column, SAC_RADIAN, null, v);
+    }
+
+    static LexicalUnitImpl createGRAD(int line, int column, float v) {
+        return new LexicalUnitImpl(line, column, SAC_GRADIAN, null, v);
+    }
+
+    static LexicalUnitImpl createMS(int line, int column, float v) {
+        if (v < 0) {
+            throw new ParseException("Time values may not be negative", line,
+                    column);
+        }
+        return new LexicalUnitImpl(line, column, SAC_MILLISECOND, null, v);
+    }
+
+    static LexicalUnitImpl createS(int line, int column, float v) {
+        if (v < 0) {
+            throw new ParseException("Time values may not be negative", line,
+                    column);
+        }
+        return new LexicalUnitImpl(line, column, SAC_SECOND, null, v);
+    }
+
+    static LexicalUnitImpl createHZ(int line, int column, float v) {
+        if (v < 0) {
+            throw new ParseException("Frequency values may not be negative",
+                    line, column);
+        }
+        return new LexicalUnitImpl(line, column, SAC_HERTZ, null, v);
+    }
+
+    static LexicalUnitImpl createKHZ(int line, int column, float v) {
+        if (v < 0) {
+            throw new ParseException("Frequency values may not be negative",
+                    line, column);
+        }
+        return new LexicalUnitImpl(line, column, SAC_KILOHERTZ, null,
+                v);
+    }
+
+    static LexicalUnitImpl createDimen(int line, int column, float v, String s) {
+        return new LexicalUnitImpl(line, column, SAC_DIMENSION, s, v);
+    }
+
+    static LexicalUnitImpl createInherit(int line, int column) {
+        return new LexicalUnitImpl(line, column, SAC_INHERIT, "inherit");
     }
 
     public static LexicalUnitImpl createRawIdent(int line, int column, String s) {
-        return new LexicalUnitImpl(line, column, null, SAC_IDENT, s);
+        return new LexicalUnitImpl(line, column, SAC_IDENT, s);
     }
 
-    public static LexicalUnitImpl createIdent(int line, int column,
-            LexicalUnitImpl previous, String s) {
+    public static LexicalUnitImpl createIdent(int line, int column, String s) {
         if ("null".equals(s)) {
-            return createNull(line, column, previous);
+            return createNull(line, column);
         }
 
-        return new LexicalUnitImpl(line, column, previous, SAC_IDENT, s);
+        return new LexicalUnitImpl(line, column, SAC_IDENT, s);
     }
 
     public static LexicalUnitImpl createString(String s) {
-        return new LexicalUnitImpl(0, 0, null, SAC_STRING_VALUE, s);
+        return new LexicalUnitImpl(0, 0, SAC_STRING_VALUE, s);
     }
 
-    static LexicalUnitImpl createString(int line, int column,
-            LexicalUnitImpl previous, String s) {
-        return new LexicalUnitImpl(line, column, previous, SAC_STRING_VALUE, s);
+    static LexicalUnitImpl createString(int line, int column, String s) {
+        return new LexicalUnitImpl(line, column, SAC_STRING_VALUE, s);
     }
 
-    static LexicalUnitImpl createURL(int line, int column,
-            LexicalUnitImpl previous, String s) {
-        return new LexicalUnitImpl(line, column, previous, SAC_URI, s);
+    static LexicalUnitImpl createURL(int line, int column, String s) {
+        return new LexicalUnitImpl(line, column, SAC_URI, s);
     }
 
-    public static LexicalUnitImpl createAttr(int line, int column,
-            LexicalUnitImpl previous, String s) {
-        return new LexicalUnitImpl(line, column, previous, SAC_ATTR, s);
+    public static LexicalUnitImpl createAttr(int line, int column, String s) {
+        return new LexicalUnitImpl(line, column, SAC_ATTR, s);
     }
 
     public static LexicalUnitImpl createRGBColor(int line, int column,
-            LexicalUnitImpl previous, SassList params) {
-        return new LexicalUnitImpl(SAC_RGBCOLOR, line, column, previous, "rgb",
-                params);
+            SassList params) {
+        return new LexicalUnitImpl(SAC_RGBCOLOR, line, column, "rgb", params);
     }
 
     public static LexicalUnitImpl createRect(int line, int column,
-            LexicalUnitImpl previous, SassList params) {
-        return new LexicalUnitImpl(SAC_RECT_FUNCTION, line, column, previous,
-                "rect", params);
+            SassList params) {
+        return new LexicalUnitImpl(SAC_RECT_FUNCTION, line, column, "rect",
+                params);
     }
 
     public static LexicalUnitImpl createFunction(int line, int column,
-            LexicalUnitImpl previous, String fname, SassList params) {
-        return new LexicalUnitImpl(SAC_FUNCTION, line, column, previous, fname,
-                params);
+            String fname, SassList params) {
+        return new LexicalUnitImpl(SAC_FUNCTION, line, column, fname, params);
     }
 
     public static boolean checkLexicalUnitType(SassListItem item,
@@ -651,102 +616,83 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     }
 
     public static LexicalUnitImpl createUnicodeRange(int line, int column,
-            LexicalUnit previous, LexicalUnit params) {
+            SassList params) {
         // @@ return new LexicalUnitImpl(line, column, previous, null,
         // SAC_UNICODERANGE, params);
         return null;
     }
 
-    public static LexicalUnitImpl createComma(int line, int column,
-            LexicalUnitImpl previous) {
-        return new LexicalUnitImpl(SAC_OPERATOR_COMMA, line, column, previous);
+    public static LexicalUnitImpl createComma(int line, int column) {
+        return new LexicalUnitImpl(SAC_OPERATOR_COMMA, line, column);
     }
 
-    public static LexicalUnitImpl createSpace(int line, int column,
-            LexicalUnitImpl previous) {
-        return new LexicalUnitImpl(line, column, previous, SAC_IDENT, " ");
+    public static LexicalUnitImpl createSpace(int line, int column) {
+        return new LexicalUnitImpl(line, column, SAC_IDENT, " ");
     }
 
-    public static LexicalUnitImpl createSlash(int line, int column,
-            LexicalUnitImpl previous) {
-        return new LexicalUnitImpl(SAC_OPERATOR_SLASH, line, column, previous);
+    public static LexicalUnitImpl createSlash(int line, int column) {
+        return new LexicalUnitImpl(SAC_OPERATOR_SLASH, line, column);
     }
 
-    public static LexicalUnitImpl createAdd(int line, int column,
-            LexicalUnitImpl previous) {
-        return new LexicalUnitImpl(SAC_OPERATOR_PLUS, line, column, previous);
+    public static LexicalUnitImpl createAdd(int line, int column) {
+        return new LexicalUnitImpl(SAC_OPERATOR_PLUS, line, column);
     }
 
-    public static LexicalUnitImpl createMinus(int line, int column,
-            LexicalUnitImpl previous) {
-        return new LexicalUnitImpl(SAC_OPERATOR_MINUS, line, column, previous);
+    public static LexicalUnitImpl createMinus(int line, int column) {
+        return new LexicalUnitImpl(SAC_OPERATOR_MINUS, line, column);
     }
 
-    public static LexicalUnitImpl createMultiply(int line, int column,
-            LexicalUnitImpl previous) {
-        return new LexicalUnitImpl(SAC_OPERATOR_MULTIPLY, line, column,
-                previous);
+    public static LexicalUnitImpl createMultiply(int line, int column) {
+        return new LexicalUnitImpl(SAC_OPERATOR_MULTIPLY, line, column);
     }
 
-    public static LexicalUnitImpl createModulo(int line, int column,
-            LexicalUnitImpl previous) {
-        return new LexicalUnitImpl(SAC_OPERATOR_MOD, line, column, previous);
+    public static LexicalUnitImpl createModulo(int line, int column) {
+        return new LexicalUnitImpl(SAC_OPERATOR_MOD, line, column);
     }
 
-    public static LexicalUnitImpl createLeftParenthesis(int line, int column,
-            LexicalUnitImpl previous) {
-        return new LexicalUnitImpl(SCSS_OPERATOR_LEFT_PAREN, line, column,
-                previous);
+    public static LexicalUnitImpl createLeftParenthesis(int line, int column) {
+        return new LexicalUnitImpl(SCSS_OPERATOR_LEFT_PAREN, line, column);
     }
 
-    public static LexicalUnitImpl createRightParenthesis(int line, int column,
-            LexicalUnitImpl previous) {
-        return new LexicalUnitImpl(SCSS_OPERATOR_RIGHT_PAREN, line, column,
-                previous);
+    public static LexicalUnitImpl createRightParenthesis(int line, int column) {
+        return new LexicalUnitImpl(SCSS_OPERATOR_RIGHT_PAREN, line, column);
     }
 
     public static LexicalUnitImpl createIdent(String s) {
-        return new LexicalUnitImpl(0, 0, null, SAC_IDENT, s);
+        return new LexicalUnitImpl(0, 0, SAC_IDENT, s);
     }
 
-    public static LexicalUnitImpl createEquals(int line, int column,
-            LexicalUnitImpl prev) {
-        return new LexicalUnitImpl(SCSS_OPERATOR_EQUALS, line, column, prev);
+    public static LexicalUnitImpl createEquals(int line, int column) {
+        return new LexicalUnitImpl(SCSS_OPERATOR_EQUALS, line, column);
     }
 
-    public static LexicalUnitImpl createNotEqual(int line, int column,
-            LexicalUnitImpl prev) {
-        return new LexicalUnitImpl(SCSS_OPERATOR_NOT_EQUAL, line, column, prev);
+    public static LexicalUnitImpl createNotEqual(int line, int column) {
+        return new LexicalUnitImpl(SCSS_OPERATOR_NOT_EQUAL, line, column);
     }
 
-    public static LexicalUnitImpl createGreaterThan(int line, int column,
-            LexicalUnitImpl prev) {
-        return new LexicalUnitImpl(SAC_OPERATOR_GT, line, column, prev);
+    public static LexicalUnitImpl createGreaterThan(int line, int column) {
+        return new LexicalUnitImpl(SAC_OPERATOR_GT, line, column);
     }
 
     public static LexicalUnitImpl createGreaterThanOrEqualTo(int line,
-            int column, LexicalUnitImpl prev) {
-        return new LexicalUnitImpl(SAC_OPERATOR_GE, line, column, prev);
+            int column) {
+        return new LexicalUnitImpl(SAC_OPERATOR_GE, line, column);
     }
 
-    public static LexicalUnitImpl createLessThan(int line, int column,
-            LexicalUnitImpl prev) {
-        return new LexicalUnitImpl(SAC_OPERATOR_LT, line, column, prev);
+    public static LexicalUnitImpl createLessThan(int line, int column) {
+        return new LexicalUnitImpl(SAC_OPERATOR_LT, line, column);
     }
 
-    public static LexicalUnitImpl createLessThanOrEqualTo(int line, int column,
-            LexicalUnitImpl prev) {
-        return new LexicalUnitImpl(SAC_OPERATOR_LE, line, column, prev);
+    public static LexicalUnitImpl createLessThanOrEqualTo(int line, int column) {
+        return new LexicalUnitImpl(SAC_OPERATOR_LE, line, column);
     }
 
-    public static LexicalUnitImpl createAnd(int line, int column,
-            LexicalUnitImpl prev) {
-        return new LexicalUnitImpl(SCSS_OPERATOR_AND, line, column, prev);
+    public static LexicalUnitImpl createAnd(int line, int column) {
+        return new LexicalUnitImpl(SCSS_OPERATOR_AND, line, column);
     }
 
-    public static LexicalUnitImpl createOr(int line, int column,
-            LexicalUnitImpl prev) {
-        return new LexicalUnitImpl(SCSS_OPERATOR_OR, line, column, prev);
+    public static LexicalUnitImpl createOr(int line, int column) {
+        return new LexicalUnitImpl(SCSS_OPERATOR_OR, line, column);
     }
 
     @Override
@@ -818,7 +764,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
             boolean evaluateArithmetics) {
         if (params != null) {
             SCSSFunctionGenerator generator = getGenerator(getFunctionName());
-            LexicalUnitImpl copy = createFunction(line, column, null, fname,
+            LexicalUnitImpl copy = createFunction(line, column, fname,
                     params.evaluateFunctionsAndExpressions(true));
             if (generator == null) {
                 SassListItem result = copy.replaceCustomFunctions();
@@ -1015,14 +961,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
                 break;
             }
         }
-        if (getNextLexicalUnit() != null) {
-            if (getNextLexicalUnit().getLexicalUnitType() == SAC_OPERATOR_COMMA) {
-                return text + strategy.build(getNextLexicalUnit());
-            }
-            return text + ' ' + strategy.build(getNextLexicalUnit());
-        } else {
-            return text;
-        }
+        return text;
     }
 
     private int[] getRgb() {
@@ -1086,10 +1025,5 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     @Override
     public LexicalUnitImpl getContainedValue() {
         return this;
-    }
-
-    @Override
-    public SassListItem replaceChains() {
-        return next == null ? this : new SassExpression(this);
     }
 }
