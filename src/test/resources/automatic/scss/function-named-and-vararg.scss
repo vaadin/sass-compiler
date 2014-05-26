@@ -1,0 +1,17 @@
+@function a($a, $b, $c){
+    @return first-#{$a}-second-#{$b}-third-#{$c};
+}
+
+@function b($first: 0, $second: 0, $third: 0){
+    @return $first + 2 * $second + 4 * $third;
+}
+
+.named-and-vararg{
+    $list: 1 2 3;
+    len: a($list...);
+    value_5: b(1, 0, 1);
+    value_1: b($first: 1);
+    value_2: b($second: 1);
+    value_4: b($third: 1);
+    value_5: b($second: 0, $third: 1, $first: 1);
+}

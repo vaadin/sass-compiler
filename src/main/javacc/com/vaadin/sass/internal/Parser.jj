@@ -2487,7 +2487,9 @@ List<SassListItem> stringTerm(char op) :
  */
 LexicalUnitImpl function(char operator) :
 {Token n;
- SassList params = new SassList(SassList.Separator.COMMA);
+ List<VariableNode> items = null;
+ boolean hasVariableArguments = false;
+ VariableArgumentList params;
 }
 {
     n=<FUNCTION> ( <S> )*  
@@ -2506,17 +2508,10 @@ LexicalUnitImpl function(char operator) :
             return LexicalUnitImpl.createIdent(n.beginLine, n.beginColumn, fname+body);
         }
     }
-    ( params=expressionList() {
-        List<SassListItem> items = new ArrayList<SassListItem>();
-        for (SassListItem item : params) {
-            if (item instanceof SassList) {
-                items.add(((SassList) item).flatten());
-            } else {
-                items.add(item);
-            }
-        }
-        params = new SassList(SassList.Separator.COMMA, items);
-    } ((<ELLIPSIS>){ params = new VariableArgumentList(params, true); } (<S>)*)? )? ")"
+    ( items = argValuelist() (<ELLIPSIS> {hasVariableArguments = true; } (<S>)*)?){
+        params = VariableArgumentList.create(SassList.Separator.COMMA, items, hasVariableArguments);
+    }
+    ")"
     {
         if (operator != ' ') {
         throw new CSSParseException("invalid operator before a function.", 
