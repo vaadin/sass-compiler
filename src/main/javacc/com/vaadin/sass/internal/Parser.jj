@@ -2489,7 +2489,7 @@ LexicalUnitImpl function(char operator) :
 {Token n;
  List<VariableNode> items = null;
  boolean hasVariableArguments = false;
- VariableArgumentList params;
+ ActualArgumentList params;
 }
 {
     n=<FUNCTION> ( <S> )*  
@@ -2509,7 +2509,7 @@ LexicalUnitImpl function(char operator) :
         }
     }
     ( items = argValuelist() (<ELLIPSIS> {hasVariableArguments = true; } (<S>)*)?){
-        params = VariableArgumentList.create(SassList.Separator.COMMA, items, hasVariableArguments);
+        params = new ActualArgumentList(SassList.Separator.COMMA, items, hasVariableArguments);
     }
     ")"
     {

@@ -87,7 +87,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     private String sdimension;
     private String s;
     private String fname;
-    private SassList params;
+    private ActualArgumentList params;
 
     LexicalUnitImpl(short type, int line, int column) {
         this.line = line;
@@ -112,14 +112,13 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         f = i;
     }
 
-    LexicalUnitImpl(int line, int column, short type,
-            String s) {
+    LexicalUnitImpl(int line, int column, short type, String s) {
         this(type, line, column);
         this.s = s;
     }
 
     LexicalUnitImpl(short type, int line, int column, String fname,
-            SassList params) {
+            ActualArgumentList params) {
         this(type, line, column);
         this.fname = fname;
         this.params = params;
@@ -285,7 +284,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         return null;
     }
 
-    public SassList getParameterList() {
+    public ActualArgumentList getParameterList() {
         return params;
     }
 
@@ -417,7 +416,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         return result;
     }
 
-    private void setParameterList(SassList params) {
+    private void setParameterList(ActualArgumentList params) {
         this.params = params;
     }
 
@@ -546,8 +545,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
             throw new ParseException("Frequency values may not be negative",
                     line, column);
         }
-        return new LexicalUnitImpl(line, column, SAC_KILOHERTZ, null,
-                v);
+        return new LexicalUnitImpl(line, column, SAC_KILOHERTZ, null, v);
     }
 
     static LexicalUnitImpl createDimen(int line, int column, float v, String s) {
@@ -587,18 +585,18 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     }
 
     public static LexicalUnitImpl createRGBColor(int line, int column,
-            SassList params) {
+            ActualArgumentList params) {
         return new LexicalUnitImpl(SAC_RGBCOLOR, line, column, "rgb", params);
     }
 
     public static LexicalUnitImpl createRect(int line, int column,
-            SassList params) {
+            ActualArgumentList params) {
         return new LexicalUnitImpl(SAC_RECT_FUNCTION, line, column, "rect",
                 params);
     }
 
     public static LexicalUnitImpl createFunction(int line, int column,
-            String fname, SassList params) {
+            String fname, ActualArgumentList params) {
         return new LexicalUnitImpl(SAC_FUNCTION, line, column, fname, params);
     }
 
@@ -730,9 +728,9 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
 
     private static LexicalUnitImpl replaceParams(LexicalUnitImpl item,
             VariableNode node) {
-        SassList params = item.getParameterList();
+        ActualArgumentList params = item.getParameterList();
         if (params != null) {
-            SassList newParams = params.replaceVariables(Collections
+            ActualArgumentList newParams = params.replaceVariables(Collections
                     .singletonList(node));
             LexicalUnitImpl copy = item.copy();
             copy.setParameterList(newParams);

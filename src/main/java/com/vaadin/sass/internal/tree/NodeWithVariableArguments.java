@@ -15,16 +15,14 @@
  */
 package com.vaadin.sass.internal.tree;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.parser.ActualArgumentList;
 import com.vaadin.sass.internal.parser.SassList;
-import com.vaadin.sass.internal.parser.SassListItem;
-import com.vaadin.sass.internal.parser.VariableArgumentList;
 
 /**
  * NodeWithVariableArguments is used as a superclass for nodes that handle
@@ -42,41 +40,27 @@ public abstract class NodeWithVariableArguments extends Node implements
 
     // these are the actual parameter values, not whether the definition node
     // uses varargs
-    private VariableArgumentList arglist;
+    private ActualArgumentList arglist;
     private String name;
 
     public NodeWithVariableArguments(String name,
             Collection<VariableNode> args, boolean hasVariableArgs) {
-        ArrayList<SassListItem> unnamed = new ArrayList<SassListItem>();
-        ArrayList<VariableNode> named = new ArrayList<VariableNode>();
-        if (args != null && !args.isEmpty()) {
-            for (VariableNode arg : args) {
-                if (arg.getName() == null) {
-                    unnamed.add(arg.getExpr());
-                } else {
-                    named.add(arg.copy());
-                }
-            }
-        }
         this.name = name;
-        arglist = new VariableArgumentList(SassList.Separator.COMMA, unnamed,
-                named, hasVariableArgs);
+        arglist = new ActualArgumentList(SassList.Separator.COMMA, args,
+                hasVariableArgs);
     }
 
-    public NodeWithVariableArguments(String name, SassList parameterList) {
+    public NodeWithVariableArguments(String name,
+            ActualArgumentList parameterList) {
         this.name = name;
-        if (parameterList instanceof VariableArgumentList) {
-            arglist = (VariableArgumentList) parameterList;
-        } else {
-            arglist = new VariableArgumentList(parameterList, false);
-        }
+        arglist = parameterList;
     }
 
     public boolean hasVariableArguments() {
         return arglist.hasVariableArguments();
     }
 
-    public VariableArgumentList getArglist() {
+    public ActualArgumentList getArglist() {
         return arglist;
     }
 

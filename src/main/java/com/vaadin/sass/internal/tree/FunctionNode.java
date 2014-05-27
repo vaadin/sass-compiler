@@ -74,7 +74,7 @@ public class FunctionNode extends NodeWithVariableArguments {
         // copying is necessary as traversal modifies the parent of the
         // node
         FunctionDefNode defCopy = def.copy();
-        defCopy.replacePossibleArguments(this);
+        defCopy.replacePossibleArguments(getArglist());
         for (VariableNode param : defCopy.getArglist()) {
             ScssStylesheet.addVariable(param);
         }

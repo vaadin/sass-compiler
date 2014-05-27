@@ -17,6 +17,7 @@ package com.vaadin.sass.internal.parser.function;
 
 import java.util.ArrayList;
 
+import com.vaadin.sass.internal.parser.ActualArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassList;
@@ -30,7 +31,7 @@ public class ListJoinFunctionGenerator extends ListFunctionGenerator {
 
     @Override
     public SassListItem compute(LexicalUnitImpl function) {
-        SassList params = function.getParameterList();
+        ActualArgumentList params = function.getParameterList();
         if (params == null || params.size() < 2 || params.size() > 3) {
             throw new ParseException(
                     "The function join() must have two or three parameters. Actual parameters: "

@@ -24,10 +24,10 @@ import static org.w3c.css.sac.LexicalUnit.SAC_PICA;
 import static org.w3c.css.sac.LexicalUnit.SAC_PIXEL;
 import static org.w3c.css.sac.LexicalUnit.SAC_POINT;
 
+import com.vaadin.sass.internal.parser.ActualArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SCSSLexicalUnit;
-import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassListItem;
 
 public class RectFunctionGenerator extends AbstractFunctionGenerator {
@@ -39,7 +39,7 @@ public class RectFunctionGenerator extends AbstractFunctionGenerator {
     @Override
     public SassListItem compute(LexicalUnitImpl function) {
 
-        SassList params = function.getParameterList();
+        ActualArgumentList params = function.getParameterList();
         for (int i = 0; i < params.size(); i++) {
             boolean paramOk = true;
             SassListItem item = params.get(i);

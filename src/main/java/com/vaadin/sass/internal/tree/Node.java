@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import com.vaadin.sass.internal.parser.ActualArgumentList;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.util.DeepCopy;
 
@@ -160,6 +161,8 @@ public abstract class Node implements Serializable {
         String build(Node node);
 
         String build(SassListItem expr);
+
+        String build(ActualArgumentList expr);
     }
 
     public static class PrintStrategy implements BuildStringStrategy {
@@ -174,6 +177,11 @@ public abstract class Node implements Serializable {
             return expr.printState();
         }
 
+        @Override
+        public String build(ActualArgumentList expr) {
+            return expr.printState();
+        }
+
     }
 
     public static class ToStringStrategy implements BuildStringStrategy {
@@ -185,6 +193,11 @@ public abstract class Node implements Serializable {
 
         @Override
         public String build(SassListItem expr) {
+            return expr.toString();
+        }
+
+        @Override
+        public String build(ActualArgumentList expr) {
             return expr.toString();
         }
 

@@ -20,9 +20,10 @@ import java.util.Collection;
 import java.util.List;
 
 import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.parser.ActualArgumentList;
+import com.vaadin.sass.internal.parser.ArgumentList;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassListItem;
-import com.vaadin.sass.internal.parser.VariableArgumentList;
 
 /**
  * DefNode defines the shared functionality of mixin and function definition
@@ -79,9 +80,8 @@ public abstract class DefNode extends Node implements IVariableNode {
      */
     // TODO instead of modifying def, return a VariableArgumentList?
     // -- should then perhaps also change DefNode to use these? (not yet done)
-    public void replacePossibleArguments(
-            NodeWithVariableArguments actualArgumentNode) {
-        List<VariableNode> actualArguments = actualArgumentNode.getArglist()
+    public void replacePossibleArguments(ActualArgumentList actualArgumentList) {
+        List<VariableNode> actualArguments = actualArgumentList
                 .getVariableNodeList();
         if (actualArguments.size() > 0) {
             ArrayList<VariableNode> remainingDefArguments = new ArrayList<VariableNode>(
@@ -144,9 +144,8 @@ public abstract class DefNode extends Node implements IVariableNode {
                         // call.
                     }
                 }
-                VariableArgumentList remaining = new VariableArgumentList(
-                        actualArgumentNode.getSeparator(), unnamed, named,
-                        false);
+                ArgumentList remaining = new ArgumentList(
+                        actualArgumentList.getSeparator(), unnamed, named);
                 getArglist().get(lastIndex).setExpr(remaining);
             }
         }

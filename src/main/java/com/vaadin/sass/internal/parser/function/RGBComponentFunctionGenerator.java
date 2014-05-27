@@ -15,9 +15,9 @@
  */
 package com.vaadin.sass.internal.parser.function;
 
+import com.vaadin.sass.internal.parser.ActualArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
-import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.util.ColorUtil;
 
@@ -43,7 +43,7 @@ public class RGBComponentFunctionGenerator extends AbstractFunctionGenerator {
                 .getContainedValue();
         int[] rgb;
         if (ColorUtil.isRgba(color)) {
-            SassList rgbaComponents = color.getParameterList();
+            ActualArgumentList rgbaComponents = color.getParameterList();
             if (rgbaComponents.size() == 2) { // the first component is a hex
                                               // color
                 rgb = ColorUtil.colorToRgb((LexicalUnitImpl) rgbaComponents
@@ -59,7 +59,7 @@ public class RGBComponentFunctionGenerator extends AbstractFunctionGenerator {
     }
 
     private void checkParameters(LexicalUnitImpl function) {
-        SassList params = function.getParameterList();
+        ActualArgumentList params = function.getParameterList();
         if (params.size() != 1 || !(params.get(0) instanceof LexicalUnitImpl)) {
             throw new ParseException("Function " + function.getFunctionName()
                     + " must have exactly one single value parameter", function);

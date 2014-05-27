@@ -22,9 +22,9 @@ import java.util.Map.Entry;
 
 import org.w3c.css.sac.LexicalUnit;
 
+import com.vaadin.sass.internal.parser.ActualArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
-import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassList.Separator;
 
 public class ColorUtil {
@@ -317,12 +317,12 @@ public class ColorUtil {
     private static LexicalUnitImpl colorToHslUnit(LexicalUnitImpl color) {
         int[] hsl = colorToHsl(color);
 
-        return createHslFunction(hsl[0], hsl[1], hsl[2],
-                color.getLineNumber(), color.getColumnNumber());
+        return createHslFunction(hsl[0], hsl[1], hsl[2], color.getLineNumber(),
+                color.getColumnNumber());
     }
 
     private static int[] hslToRgb(LexicalUnitImpl hsl) {
-        SassList hslParam = hsl.getParameterList();
+        ActualArgumentList hslParam = hsl.getParameterList();
         if (hslParam.size() != 3) {
             throw new ParseException(
                     "The function hsl() requires exactly three parameters", hsl);
@@ -412,8 +412,8 @@ public class ColorUtil {
                 cn, saturation);
         LexicalUnitImpl lightnessUnit = LexicalUnitImpl.createPercentage(ln,
                 cn, lightness);
-        SassList hslParams = new SassList(Separator.COMMA, hueUnit,
-                saturationUnit, lightnessUnit);
+        ActualArgumentList hslParams = new ActualArgumentList(Separator.COMMA,
+                hueUnit, saturationUnit, lightnessUnit);
         return LexicalUnitImpl.createFunction(ln, cn, "hsl", hslParams);
     }
 
@@ -432,7 +432,7 @@ public class ColorUtil {
 
     private static LexicalUnitImpl adjustHsl(LexicalUnitImpl color,
             float amountByPercent, ColorOperation op) {
-        SassList funcParam = color.getParameterList();
+        ActualArgumentList funcParam = color.getParameterList();
         LexicalUnitImpl lightness = funcParam.get(2).getContainedValue();
         float newValue = 0f;
         if (op == ColorOperation.Darken) {
@@ -444,15 +444,16 @@ public class ColorUtil {
         }
         LexicalUnitImpl newLightness = lightness.copyWithValue(newValue);
 
-        SassList newParams = new SassList(funcParam.getSeparator(),
-                funcParam.get(0), funcParam.get(1), newLightness);
+        ActualArgumentList newParams = new ActualArgumentList(
+                funcParam.getSeparator(), funcParam.get(0), funcParam.get(1),
+                newLightness);
 
         return LexicalUnitImpl.createFunction(color.getLineNumber(),
                 color.getColumnNumber(), color.getFunctionName(), newParams);
     }
 
     public static LexicalUnitImpl darken(LexicalUnitImpl darkenFunc) {
-        SassList params = darkenFunc.getParameterList();
+        ActualArgumentList params = darkenFunc.getParameterList();
         LexicalUnitImpl color = params.get(0).getContainedValue();
         float amount = getAmountValue(params);
 
@@ -460,14 +461,14 @@ public class ColorUtil {
     }
 
     public static LexicalUnitImpl lighten(LexicalUnitImpl lightenFunc) {
-        SassList params = lightenFunc.getParameterList();
+        ActualArgumentList params = lightenFunc.getParameterList();
         LexicalUnitImpl color = params.get(0).getContainedValue();
         float amount = getAmountValue(params);
 
         return adjust(color, amount, ColorOperation.Lighten);
     }
 
-    private static float getAmountValue(SassList params) {
+    private static float getAmountValue(ActualArgumentList params) {
         float amount = 10f;
         if (params.size() > 1) {
             amount = params.get(1).getContainedValue().getFloatValue();

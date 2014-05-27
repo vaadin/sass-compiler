@@ -15,6 +15,7 @@
  */
 package com.vaadin.sass.internal.parser.function;
 
+import com.vaadin.sass.internal.parser.ActualArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassList;
@@ -28,7 +29,7 @@ public class ListLengthFunctionGenerator extends AbstractFunctionGenerator {
 
     @Override
     public SassListItem compute(LexicalUnitImpl function) {
-        SassList params = function.getParameterList();
+        ActualArgumentList params = function.getParameterList();
         if (params == null || params.size() != 1) {
             throw new ParseException(
                     "The function length() requires exactly one parameter. Actual parameters: "
