@@ -70,7 +70,8 @@ public class MixinNodeHandler {
             replaceChildVariables(mixinDef, child);
         }
         if (node instanceof IVariableNode) {
-            ((IVariableNode) node).replaceVariables(mixinDef.getArglist());
+            ((IVariableNode) node).replaceVariables(mixinDef.getArglist()
+                    .getArguments());
         }
     }
 }

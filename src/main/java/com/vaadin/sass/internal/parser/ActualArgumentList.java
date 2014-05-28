@@ -40,8 +40,7 @@ public class ActualArgumentList implements Serializable {
     // argument is always unnamed in an actual argument list.
     private SassListItem variableArgument = null;
 
-    public ActualArgumentList(ArgumentList list,
-            SassListItem variableArgument) {
+    public ActualArgumentList(ArgumentList list, SassListItem variableArgument) {
         arglist = list;
         this.variableArgument = variableArgument;
     }
@@ -222,5 +221,9 @@ public class ActualArgumentList implements Serializable {
         }
         nodes.addAll(arglist.getNamedVariables());
         return nodes;
+    }
+
+    public List<VariableNode> getNamedVariables() {
+        return arglist.getNamedVariables();
     }
 }

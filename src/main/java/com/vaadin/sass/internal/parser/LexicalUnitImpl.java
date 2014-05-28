@@ -732,6 +732,8 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         if (params != null) {
             ActualArgumentList newParams = params.replaceVariables(Collections
                     .singletonList(node));
+            // TODO both copy and setParameterList set the parameter list -
+            // could optimize
             LexicalUnitImpl copy = item.copy();
             copy.setParameterList(newParams);
             return copy;

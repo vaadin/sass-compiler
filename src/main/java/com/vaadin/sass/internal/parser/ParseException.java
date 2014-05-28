@@ -75,6 +75,13 @@ public class ParseException extends CSSException {
         currentUnit = unit;
     }
 
+    public ParseException(String message, ActualArgumentList args) {
+        this(message);
+        if (args.size() > 0) {
+            currentUnit = args.get(0);
+        }
+    }
+
     public ParseException(String message, Node node) {
         super(message);
         currentNode = node;
