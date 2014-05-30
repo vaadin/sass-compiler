@@ -475,7 +475,7 @@ PARSER_END(Parser)
  * The tokenizer 
  */
 
-<DEFAULT>
+<DEFAULT,ELSE_STATE>
 TOKEN :
 {
     < S : ( [ " ", "\t" , "\n" , "\r", "\f" ] )+ > 
@@ -521,7 +521,6 @@ TOKEN :
 {
   < CDO : "<!--" >
   | < CDC : "-->" >
-  | < LBRACE : "{" >
   | < RBRACE : "}">
   | < DASHMATCH : "|=" >
   | < PREFIXMATCH : "^=" >
@@ -610,23 +609,30 @@ TOKEN :
   | <EACH_SYM           : "@each">
   | <WHILE_SYM          : "@while">
   | <IF_SYM             : "@if">
-  | <ELSE_SYM           : "@else">
+  | <ELSE_SYM           : "@else"> : ELSE_STATE
   | <EXTEND_SYM         : "@extend">
   | <MOZ_DOCUMENT_SYM   : "@-moz-document">
   | <SUPPORTS_SYM       : "@supports">
   | <CONTENT_SYM        : "@content">
 }
 
-< DEFAULT >
+<ELSE_STATE>
 TOKEN:
 {
-  < MICROSOFT_RULE : "filter"|"-ms-filter" > 
+    <IF                   : "if"> : DEFAULT
+}
+
+<DEFAULT, ELSE_STATE>
+TOKEN:
+{
+    < LBRACE : "{" > : DEFAULT
+    
 }
 
 < DEFAULT >
 TOKEN:
 {
-  < IF : "if" > 
+  < MICROSOFT_RULE : "filter"|"-ms-filter" > 
 }
 
 <DEFAULT>
@@ -2306,7 +2312,7 @@ List<SassListItem> numericTerm() :
 }
 {
   ( op = unaryOperator() )?
-  (  ( res = numberTerm(op) ( <S> )* )
+  (  ( res = numberTerm(op) )
    | ( current = function(op) { res = createList(current, false); } ( <S> )* )
    | res = variableTerm(op) )
       {

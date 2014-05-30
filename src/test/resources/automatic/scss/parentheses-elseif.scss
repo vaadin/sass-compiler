@@ -1,0 +1,7 @@
+.x {
+  @if false {
+    f: false;
+  } @else if (1 < 2) {
+    t: true;
+  }
+}
