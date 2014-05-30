@@ -2284,9 +2284,11 @@ char unaryOperator() :
 List<SassListItem> term() :
 {
   List<SassListItem> res;
+  char op = ' ';
 }
 {
-  ( res = nonVariableTerm() | res = variableTerm() )
+  ( op = unaryOperator() )?
+  ( res = nonVariableTerm(op) | res = variableTerm(op) )
   {
     return res;
   }
@@ -2303,18 +2305,20 @@ List<SassListItem> numericTerm() :
   char op = ' ';
 }
 {
-  (  ((op = unaryOperator())? ( res = numberTerm(op) | current = function(op) { res = createList(current, false); } ( <S> )*))
-   | res = variableTerm())
+  ( op = unaryOperator() )?
+  (  ( res = numberTerm(op) ( <S> )* )
+   | ( current = function(op) { res = createList(current, false); } ( <S> )* )
+   | res = variableTerm(op) )
       {
 	      return res;
       }
 }
 
-List<SassListItem> variableTerm() :
+List<SassListItem> variableTerm(char op) :
 {
     boolean spaceAfter = false;
     Token n;
-    LexicalUnitImpl result = null;
+    SassListItem result = null;
     String varName = "";
 }
 {
@@ -2323,21 +2327,28 @@ List<SassListItem> variableTerm() :
     {
         varName = convertIdent(n.image.substring(1));
         result = LexicalUnitImpl.createVariable(n.beginLine, n.beginColumn, varName);
+        
+        if (op == '-') {
+            result = SassExpression.createExpression(
+              LexicalUnitImpl.createNumber(n.beginLine, n.beginColumn, -1),
+              LexicalUnitImpl.createMultiply(n.beginLine, n.beginColumn),
+              result
+              );
+        }
 
         return createList(result, spaceAfter);
     }
 }
 
-List<SassListItem> nonVariableTerm() :
+List<SassListItem> nonVariableTerm(char op) :
 {
-    char op = ' ';
     SassListItem current = null;
     List<SassListItem> result = null;
 }
 {
-    ( (op = unaryOperator())?
-         ( result = numberTerm(op) | current = function(op) { result = createList(current, false); } ( <S> )*)
-     | result = stringTerm(op)
+    ( result = numberTerm(op)
+    | ( current = function(op) { result = createList(current, false); } ( <S> )* )
+    | result = stringTerm(op)
     )
     { return result; }
 }
@@ -2438,9 +2449,10 @@ List<SassListItem> stringTerm(char op) :
 }
 {
     ( n=<STRING>
-	{ result =
-	  LexicalUnitImpl.createString(n.beginLine, n.beginColumn,
-				       convertStringIndex(n.image, 1, n.image.length() -1));}
+	{
+	  s = convertStringIndex(n.image, 1, n.image.length() -1);
+	  if (op != ' ') { s = "" + op + s; }
+	  result = LexicalUnitImpl.createString(n.beginLine, n.beginColumn, s);}
   | (< DOT >{ s+="."; })?(s = identInterpolationString()){
 	if ("inherit".equals(s)) {
 	    result = LexicalUnitImpl.createInherit(beginLine, beginColumn);

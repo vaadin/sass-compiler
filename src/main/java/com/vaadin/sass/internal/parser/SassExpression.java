@@ -17,6 +17,7 @@ package com.vaadin.sass.internal.parser;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -54,6 +55,22 @@ public class SassExpression implements SassListItem, Serializable {
         }
 
         this.items = items;
+    }
+
+    /**
+     * Creates a new expression containing the elements of the parameter items
+     * but with trailing whitespace items eliminated. If items contains only one
+     * element excluding the trailing whitespace, returns the only contained
+     * element. Otherwise returns a SassExpression.
+     * 
+     * @param items
+     *            one or more SassListItems.
+     * @return A SassExpression corresponding to items. If there is only one
+     *         item after the removal of whitespace, returns that item instead
+     *         of a SassExpression.
+     */
+    public static SassListItem createExpression(SassListItem... items) {
+        return createExpression(Arrays.asList(items));
     }
 
     /**
