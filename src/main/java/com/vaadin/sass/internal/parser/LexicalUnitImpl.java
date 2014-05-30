@@ -748,12 +748,21 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
             LexicalUnitImpl unit = (LexicalUnitImpl) item;
             String interpolation = "#{$" + node.getName() + "}";
             String stringValue = unit.getStringValue();
-            if (stringValue != null && stringValue.contains(interpolation)) {
-                LexicalUnitImpl copy = unit.copy();
-                copy.setStringValue(stringValue.replaceAll(Pattern
-                        .quote(interpolation), Matcher.quoteReplacement(node
-                        .getExpr().unquotedString())));
-                item = copy;
+            if (stringValue != null) {
+                SassListItem expr = node.getExpr();
+                // strings should be unquoted
+                if (stringValue.equals(interpolation)
+                        && !checkLexicalUnitType(expr,
+                                LexicalUnitImpl.SAC_STRING_VALUE)) {
+                    // no more replacements needed, use data type of expr
+                    return expr;
+                } else if (stringValue.contains(interpolation)) {
+                    LexicalUnitImpl copy = unit.copy();
+                    copy.setStringValue(stringValue.replaceAll(
+                            Pattern.quote(interpolation),
+                            Matcher.quoteReplacement(expr.unquotedString())));
+                    item = copy;
+                }
             }
         }
         return item;
