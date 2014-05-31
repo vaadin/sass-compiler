@@ -81,8 +81,11 @@ public class FunctionNode extends NodeWithVariableArguments {
 
         // only contains variable nodes, return nodes and control
         // structures
-        for (Node node : new ArrayList<Node>(defCopy.getChildren())) {
-            node.traverse();
+        while (defCopy.getChildren().size() > 0) {
+            defCopy.getChildren().get(0).traverse();
+            if (defCopy.getChildren().get(0) instanceof ReturnNode) {
+                break;
+            }
         }
 
         ReturnNode returnNode = getReturnNode(defCopy.getChildren());

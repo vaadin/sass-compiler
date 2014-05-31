@@ -47,22 +47,19 @@ public class MixinNodeHandler {
 
         defClone.replaceContentDirective(mixinNode);
 
-        if (mixinDef.getArglist().isEmpty()) {
-            mixinNode.getParentNode().appendChildrenAfter(
-                    new ArrayList<Node>(defClone.getChildren()), mixinNode);
-        } else {
+        ArrayList<Node> children = new ArrayList<Node>(defClone.getChildren());
+        if (!mixinDef.getArglist().isEmpty()) {
             defClone.replacePossibleArguments(mixinNode.getArglist());
-
-            Node previous = mixinNode;
-            for (final Node child : new ArrayList<Node>(defClone.getChildren())) {
+            for (final Node child : children) {
                 replaceChildVariables(defClone, child);
-                mixinNode.getParentNode().appendChild(child, previous);
-                previous = child;
             }
-
         }
-
-        mixinNode.getParentNode().removeChild(mixinNode);
+        // might have changed
+        children = new ArrayList<Node>(defClone.getChildren());
+        mixinNode.getParentNode().replaceNode(mixinNode, children);
+        for (Node child : children) {
+            child.traverse();
+        }
     }
 
     private static void replaceChildVariables(MixinDefNode mixinDef, Node node) {

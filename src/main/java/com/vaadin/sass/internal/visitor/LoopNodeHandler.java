@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
-import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.tree.IVariableNode;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.VariableNode;
@@ -37,36 +36,22 @@ public abstract class LoopNodeHandler {
      * @param loopVariables
      *            iterable of the loop variable instances for each iteration -
      *            typically a collection for a fixed iteration count loop
-     * @param replaceAllVariables
-     *            true to replace all variables on every iteration, false to
-     *            only replace the loop variable with its value (other variables
-     *            are replaced after the whole loop has been expanded)
      */
     protected static void replaceLoopNode(Node loopNode,
-            Iterable<VariableNode> loopVariables, boolean replaceAllVariables) {
+            Iterable<VariableNode> loopVariables) {
         ArrayList<Node> nodes = new ArrayList<Node>();
         for (final VariableNode var : loopVariables) {
-            nodes.addAll(iteration(loopNode, var, replaceAllVariables));
+            nodes.addAll(iteration(loopNode, var));
         }
-        loopNode.getParentNode().appendChildrenAfter(nodes, loopNode);
-        loopNode.setChildren(new ArrayList<Node>());
-        loopNode.getParentNode().removeChild(loopNode);
+        loopNode.getParentNode().replaceNode(loopNode, nodes);
 
         for (Node node : nodes) {
             node.traverse();
         }
     }
 
-    private static ArrayList<Node> iteration(Node loopNode,
-            VariableNode loopVar, boolean replaceAllVariables) {
-        Collection<VariableNode> variables;
-        if (replaceAllVariables) {
-            variables = new ArrayList<VariableNode>(
-                    ScssStylesheet.getVariables());
-            variables.add(loopVar);
-        } else {
-            variables = Collections.singleton(loopVar);
-        }
+    private static ArrayList<Node> iteration(Node loopNode, VariableNode loopVar) {
+        Collection<VariableNode> variables = Collections.singleton(loopVar);
 
         ArrayList<Node> nodes = new ArrayList<Node>();
         for (final Node child : loopNode.getChildren()) {

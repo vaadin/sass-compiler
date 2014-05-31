@@ -29,7 +29,7 @@ public class FontFaceNode extends Node {
 
     @Override
     public void traverse() {
-        // Not in use for FontFaceNode
+        traverseChildren();
     }
 
     private String buildString(BuildStringStrategy strategy) {

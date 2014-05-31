@@ -73,10 +73,8 @@ public class ImportNodeHandler {
                             updateUrlInImportedSheet(imported, prefix);
                         }
 
-                        node.appendChildrenAfter(
-                                new ArrayList<Node>(imported.getChildren()),
-                                importNode);
-                        node.removeChild(importNode);
+                        node.replaceNode(importNode, new ArrayList<Node>(
+                                imported.getChildren()));
                     } catch (CSSException e) {
                         Logger.getLogger(ImportNodeHandler.class.getName())
                                 .log(Level.SEVERE, null, e);
@@ -89,6 +87,10 @@ public class ImportNodeHandler {
                         throw new ParseException(
                                 "CSS imports can only be used at the top level, not as nested imports. Within style rules, use SCSS imports.");
                     }
+                }
+            } else {
+                for (Node child : new ArrayList<Node>(node.getChildren())) {
+                    traverse(child);
                 }
             }
         }

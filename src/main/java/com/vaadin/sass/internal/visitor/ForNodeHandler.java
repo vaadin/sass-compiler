@@ -45,8 +45,7 @@ public class ForNodeHandler extends LoopNodeHandler {
             indices.add(new VariableNode(forNode.getVariableName(), idxUnit,
                     false));
         }
-        // TODO should all variables be replaced separately on each iteration?
-        replaceLoopNode(forNode, indices, false);
+        replaceLoopNode(forNode, indices);
     }
 
     private static int getInt(SassListItem item) {

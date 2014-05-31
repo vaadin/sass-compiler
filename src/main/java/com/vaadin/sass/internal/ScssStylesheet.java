@@ -62,8 +62,6 @@ public class ScssStylesheet extends Node {
 
     private static final HashSet<IfElseDefNode> ifElseDefNodes = new HashSet<IfElseDefNode>();
 
-    private static HashMap<Node, Node> lastNodeAdded = new HashMap<Node, Node>();
-
     private File file;
 
     private String charset;
@@ -245,11 +243,10 @@ public class ScssStylesheet extends Node {
         functionDefs.clear();
         variables.clear();
         ifElseDefNodes.clear();
-        lastNodeAdded.clear();
         ExtendNodeHandler.clear();
         importOtherFiles(this);
         populateDefinitions(this);
-        traverse(this);
+        traverse();
         ExtendNodeHandler.modifyTree(this);
         removeEmptyBlocks(this);
     }
@@ -261,11 +258,11 @@ public class ScssStylesheet extends Node {
     private void populateDefinitions(Node node) {
         if (node instanceof MixinDefNode) {
             mixinDefs.put(((MixinDefNode) node).getName(), (MixinDefNode) node);
-            node.getParentNode().removeChild(node);
+            node.removeFromParent();
         } else if (node instanceof FunctionDefNode) {
             functionDefs.put(((FunctionDefNode) node).getName(),
                     (FunctionDefNode) node);
-            node.getParentNode().removeChild(node);
+            node.removeFromParent();
         } else if (node instanceof IfElseDefNode) {
             ifElseDefNodes.add((IfElseDefNode) node);
         }
@@ -303,11 +300,6 @@ public class ScssStylesheet extends Node {
         return mainStyleSheet;
     }
 
-    @Override
-    public void traverse() {
-        // Not used for ScssStylesheet
-    }
-
     /**
      * Traverses a node and its children recursively, calling all the
      * appropriate handlers via {@link Node#traverse()}.
@@ -315,43 +307,10 @@ public class ScssStylesheet extends Node {
      * The node itself may be removed during the traversal and replaced with
      * other nodes at the same position or later on the child list of its
      * parent.
-     * 
-     * @param node
-     *            node to traverse
-     * @return true if the node was removed (and possibly replaced by others),
-     *         false if not
      */
-    public boolean traverse(Node node) {
-        Node originalParent = node.getParentNode();
-
-        node.traverse();
-
-        Map<String, VariableNode> variableScope = openVariableScope();
-
-        // the size of the child list may change on each iteration: current node
-        // may get deleted and possibly other nodes have been inserted where it
-        // was or after that position
-        for (int i = 0; i < node.getChildren().size(); i++) {
-            Node current = node.getChildren().get(i);
-            if (traverse(current)) {
-                // current has been removed
-                --i;
-            }
-        }
-
-        closeVariableScope(variableScope);
-
-        // clean up insert point so that processing of the next block will
-        // insert after that block
-        lastNodeAdded.remove(originalParent);
-
-        // has the node been removed from its parent?
-        if (originalParent != null) {
-            boolean removed = !originalParent.getChildren().contains(node);
-            return removed;
-        } else {
-            return false;
-        }
+    @Override
+    public void traverse() {
+        traverseChildren();
     }
 
     /**
@@ -387,11 +346,9 @@ public class ScssStylesheet extends Node {
         for (Node child : new ArrayList<Node>(node.getChildren())) {
             removeEmptyBlocks(child);
         }
-        Node parent = node.getParentNode();
-        if (node instanceof BlockNode && node.getChildren().isEmpty()
-                && parent != null) {
+        if (node instanceof BlockNode && !node.hasChildren()) {
             // remove empty block
-            parent.removeChild(node);
+            node.removeFromParent();
         }
     }
 
@@ -435,10 +392,6 @@ public class ScssStylesheet extends Node {
      */
     public String getFileName() {
         return file.getPath();
-    }
-
-    public static HashMap<Node, Node> getLastNodeAdded() {
-        return lastNodeAdded;
     }
 
     public static final void warning(String msg) {

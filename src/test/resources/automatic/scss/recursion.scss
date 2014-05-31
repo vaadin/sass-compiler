@@ -1,0 +1,26 @@
+@function replace-hilite($shadow-list) {
+  $last: nth($shadow-list, length($shadow-list));
+  
+  @if type-of($last) == color {
+    @return $shadow-list;
+  }
+
+  // If there are multiple shadows in a list, recurse and separate lists with a comma
+  $new: null;
+  @each $part in $shadow-list {
+    @if type-of($part) == list and length($part) > 0 {
+      $part: replace-hilite($part);
+      @if $part {
+        $new: $new, $part;
+      }
+    }
+  }
+
+  @return $new;
+}
+
+.foo {
+    $bevel-style: 0 #111111, 0 #111111;
+    
+    x: replace-hilite($bevel-style);
+}

@@ -1,0 +1,13 @@
+@function both-true($a, $b) {
+  @if $a {
+    @if $b {
+      @return true;
+    } @else {
+      @return false;
+    }
+  }
+  @return false;
+}
+.x {
+  y: both-true(true, true);
+}

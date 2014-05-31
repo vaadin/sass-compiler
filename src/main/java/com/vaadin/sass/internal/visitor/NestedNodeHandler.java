@@ -17,8 +17,6 @@
 package com.vaadin.sass.internal.visitor;
 
 import com.vaadin.sass.internal.tree.NestPropertiesNode;
-import com.vaadin.sass.internal.tree.Node;
-import com.vaadin.sass.internal.tree.RuleNode;
 
 /**
  * Handle nested properties nodes (e.g. "font: { family: serif; }" to
@@ -42,11 +40,6 @@ import com.vaadin.sass.internal.tree.RuleNode;
 public class NestedNodeHandler {
 
     public static void traverse(NestPropertiesNode node) {
-        Node previous = node;
-        for (RuleNode unNested : node.unNesting()) {
-            node.getParentNode().appendChild(unNested, previous);
-            previous = unNested;
-        }
-        node.getParentNode().removeChild(node);
+        node.getParentNode().replaceNode(node, node.unNesting());
     }
 }

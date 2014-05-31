@@ -36,7 +36,7 @@ public class KeyframeSelectorNode extends Node {
 
     @Override
     public void traverse() {
-
+        traverseChildren();
     }
 
     public String buildString(BuildStringStrategy strategy) {

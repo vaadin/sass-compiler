@@ -63,9 +63,8 @@ public class MixinDefNode extends DefNode {
     public MixinDefNode replaceContentNode(ContentNode contentNode,
             MixinNode mixinNode) {
         if (contentNode != null) {
-            contentNode.getParentNode().appendChildrenAfter(
-                    DeepCopy.copy(mixinNode.getChildren()), contentNode);
-            contentNode.getParentNode().removeChild(contentNode);
+            contentNode.getParentNode().replaceNode(contentNode,
+                    DeepCopy.copy(mixinNode.getChildren()));
         }
         return this;
     }
@@ -74,4 +73,5 @@ public class MixinDefNode extends DefNode {
     public MixinDefNode copy() {
         return (MixinDefNode) super.copy();
     }
+
 }

@@ -37,6 +37,6 @@ public class VariableNodeHandler {
                 }
             }
         }
-        node.getParentNode().removeChild(node);
+        node.removeFromParent();
     }
 }

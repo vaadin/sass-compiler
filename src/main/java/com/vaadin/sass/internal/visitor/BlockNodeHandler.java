@@ -17,12 +17,10 @@
 package com.vaadin.sass.internal.visitor;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.selector.Selector;
 import com.vaadin.sass.internal.tree.BlockNode;
-import com.vaadin.sass.internal.tree.Node;
 
 /**
  * Handle nesting of blocks by moving child blocks to their parent, updating
@@ -48,14 +46,13 @@ public class BlockNodeHandler {
     public static void traverse(BlockNode node) {
 
         if (node.getChildren().size() == 0) {
-            // empty blocks are removed later
+            // empty blocks are also removed later
+            node.removeFromParent();
             return;
         }
 
-        Node parent = node.getParentNode();
-
-        if (parent instanceof BlockNode) {
-            combineParentSelectorListToChild(node);
+        if (node.getParentNode() instanceof BlockNode) {
+            replaceParentSelectors(node);
 
         } else if (node.getSelectors().contains("&")) {
             ScssStylesheet.warning("Base-level rule contains"
@@ -81,7 +78,7 @@ public class BlockNodeHandler {
         node.setSelectorList(newSelectors);
     }
 
-    private static void combineParentSelectorListToChild(BlockNode node) {
+    private static void replaceParentSelectors(BlockNode node) {
         BlockNode parentBlock = (BlockNode) node.getParentNode();
 
         ArrayList<Selector> newSelectors = new ArrayList<Selector>();
@@ -94,16 +91,6 @@ public class BlockNodeHandler {
 
         node.setSelectorList(newSelectors);
 
-        Node oldParent = node.getParentNode();
-
-        HashMap<Node, Node> lastNodeAdded = ScssStylesheet.getLastNodeAdded();
-        Node lastAdded = lastNodeAdded.get(oldParent.getParentNode());
-        if (lastAdded == null) {
-            lastAdded = oldParent;
-        }
-
-        oldParent.getParentNode().appendChild(node, lastAdded);
-
-        lastNodeAdded.put(oldParent.getParentNode(), node);
+        parentBlock.getParentNode().adoptGrandChild(node);
     }
 }

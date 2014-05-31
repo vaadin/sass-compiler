@@ -30,7 +30,7 @@ public class EachNodeHandler extends LoopNodeHandler {
             loopVariables.add(new VariableNode(eachNode.getVariableName()
                     .substring(1), var, false));
         }
-        replaceLoopNode(eachNode, loopVariables, true);
+        replaceLoopNode(eachNode, loopVariables);
     }
 
 }

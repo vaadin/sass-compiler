@@ -62,8 +62,10 @@ public class ExtendNode extends Node implements IVariableNode {
     @Override
     public void traverse() {
         try {
+            // TODO here or later?
+            traverseChildren();
             ExtendNodeHandler.traverse(this);
-            getParentNode().removeChild(this);
+            removeFromParent();
         } catch (Exception e) {
             Logger.getLogger(ExtendNode.class.getName()).log(Level.SEVERE,
                     null, e);

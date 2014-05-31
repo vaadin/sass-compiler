@@ -36,11 +36,6 @@ public class IfElseDefNode extends Node {
     @Override
     public void traverse() {
         try {
-
-            for (final Node child : children) {
-                child.traverse();
-            }
-
             IfElseNodeHandler.traverse(this);
         } catch (Exception e) {
             Logger.getLogger(IfElseDefNode.class.getName()).log(Level.SEVERE,

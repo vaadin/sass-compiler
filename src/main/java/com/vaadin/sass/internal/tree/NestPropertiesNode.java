@@ -73,6 +73,7 @@ public class NestPropertiesNode extends Node implements IVariableNode {
 
     @Override
     public void traverse() {
+        traverseChildren();
         NestedNodeHandler.traverse(this);
     }
 

@@ -81,16 +81,12 @@ public class BlockNode extends Node implements IVariableNode {
         return b.toString();
     }
 
-    public void setParentNode(Node node) {
-        parentNode.removeChild(this);
-        node.appendChild(this);
-    }
-
     @Override
     public void traverse() {
         try {
-            BlockNodeHandler.traverse(this);
             replaceVariables(ScssStylesheet.getVariables());
+            BlockNodeHandler.traverse(this);
+            traverseChildren();
         } catch (Exception e) {
             Logger.getLogger(BlockNode.class.getName()).log(Level.SEVERE, null,
                     e);

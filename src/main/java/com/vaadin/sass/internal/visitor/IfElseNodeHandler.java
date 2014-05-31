@@ -16,9 +16,11 @@
 package com.vaadin.sass.internal.visitor;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.w3c.flute.parser.ParseException;
 
+import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.expression.BinaryOperator;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.Node;
@@ -29,14 +31,15 @@ import com.vaadin.sass.internal.tree.controldirective.IfNode;
 public class IfElseNodeHandler {
 
     public static void traverse(IfElseDefNode node) throws Exception {
-
         for (final Node child : node.getChildren()) {
             if (child instanceof IfNode) {
                 SassListItem expression = ((IfNode) child).getExpression();
+                expression = expression.replaceVariables(ScssStylesheet
+                        .getVariables());
                 expression = expression.evaluateFunctionsAndExpressions(true);
+
                 if (BinaryOperator.isTrue(expression)) {
-                    replaceDefNodeWithCorrectChild(node, node.getParentNode(),
-                            child);
+                    replaceDefNodeWithCorrectChild(node, child);
                     break;
                 }
             } else {
@@ -46,22 +49,21 @@ public class IfElseNodeHandler {
                     throw new ParseException(
                             "Invalid @if/@else in scss file for " + node);
                 } else {
-                    replaceDefNodeWithCorrectChild(node, node.getParentNode(),
-                            child);
+                    replaceDefNodeWithCorrectChild(node, child);
                     break;
                 }
             }
         }
-
-        node.getParentNode().removeChild(node);
+        // in case the node hasn't been removed already
+        node.removeFromParent();
     }
 
-    private static void replaceDefNodeWithCorrectChild(IfElseDefNode defNode,
-            Node parent, final Node child) {
-        Node previous = defNode;
-        for (final Node n : new ArrayList<Node>(child.getChildren())) {
-            parent.appendChild(n, previous);
-            previous = n;
+    private static void replaceDefNodeWithCorrectChild(
+            IfElseDefNode ifElseNode, final Node child) {
+        List<Node> nodesToAdd = new ArrayList<Node>(child.getChildren());
+        ifElseNode.getParentNode().replaceNode(ifElseNode, nodesToAdd);
+        for (Node node : nodesToAdd) {
+            node.traverse();
         }
     }
 }

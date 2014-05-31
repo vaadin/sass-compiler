@@ -19,7 +19,13 @@ package com.vaadin.sass.internal.tree;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
+import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.ActualArgumentList;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.util.DeepCopy;
@@ -36,33 +42,37 @@ public abstract class Node implements Serializable {
 
     protected Node parentNode;
 
+    // used to keep track of where to append nodes moved to parent
+    // map from node after which you want to add a node to the last node added
+    // to it
+    // TODO it would be better if this can be eliminated and replaceNode() used
+    private Map<Node, Node> lastAdded = null;
+
     public Node() {
         children = new ArrayList<Node>();
     }
 
-    public void appendAll(Collection<Node> nodes) {
-        if (nodes != null && !nodes.isEmpty()) {
-            children.addAll(nodes);
-
-            for (final Node n : nodes) {
-                if (n.getParentNode() != null) {
-                    n.getParentNode().removeChild(n);
-                }
-                n.setParentNode(this);
-            }
-
-        }
+    /**
+     * Replace the child oldNode with a collection of nodes.
+     * 
+     * @param oldChild
+     *            child to replace
+     * @param newNodes
+     *            replacing nodes, can be an empty collection
+     */
+    public void replaceNode(Node oldChild, Collection<? extends Node> newNodes) {
+        appendChildrenAfter(newNodes, oldChild);
+        oldChild.removeFromParent();
     }
 
-    public void appendChildrenAfter(Collection<Node> childrenNodes, Node after) {
+    private void appendChildrenAfter(
+            Collection<? extends Node> childrenNodes, Node after) {
         if (childrenNodes != null && !childrenNodes.isEmpty()) {
             int index = children.indexOf(after);
             if (index != -1) {
                 children.addAll(index + 1, childrenNodes);
                 for (final Node child : childrenNodes) {
-                    if (child.getParentNode() != null) {
-                        child.getParentNode().removeChild(child);
-                    }
+                    child.removeFromParent();
                     child.setParentNode(this);
                 }
             } else {
@@ -71,46 +81,80 @@ public abstract class Node implements Serializable {
         }
     }
 
+    /**
+     * Append a new child node to the end of the child list. This method should
+     * only be used when constructing the Node tree, not when modifying it.
+     * 
+     * @param node
+     *            new child to append
+     */
     public void appendChild(Node node) {
         if (node != null) {
             children.add(node);
-            if (node.getParentNode() != null) {
-                node.getParentNode().removeChild(node);
-            }
+            node.removeFromParent();
             node.setParentNode(this);
         }
     }
 
-    public void appendChild(Node node, Node after) {
-        if (node != null) {
-            int index = children.indexOf(after);
-            if (index != -1) {
-                children.add(index + 1, node);
-                if (node.getParentNode() != null) {
-                    node.getParentNode().removeChild(node);
-                }
-                node.setParentNode(this);
+    /**
+     * Remove this node from its parent (if any).
+     */
+    public void removeFromParent() {
+        if (getParentNode() != null) {
+            getParentNode().children.remove(this);
+            setParentNode(null);
+        }
+    }
+
+    /**
+     * Move the grand child node grandChild to be a direct child of this node,
+     * adding it after its old parent and keeping track of other nodes added
+     * after the same child.
+     * 
+     * This method should be avoided if possible, use
+     * {@link #replaceNode(Node, Collection)} instead.
+     * 
+     * @param grandChild
+     */
+    public void adoptGrandChild(Node grandChild) {
+        Node oldParent = grandChild.getParentNode();
+        appendChildrenAfter(Collections.singleton(grandChild),
+                getLastAdded(oldParent));
+        setLastAdded(grandChild, oldParent);
+    }
+
+    private Node getLastAdded(Node after) {
+        if (lastAdded == null) {
+            return after;
+        } else {
+            Node node = lastAdded.get(after);
+            if (node != null) {
+                return node;
             } else {
-                throw new NullPointerException("after-node was not found");
+                return after;
             }
         }
     }
 
-    public void removeChild(Node node) {
-        if (node != null) {
-            boolean removed = children.remove(node);
-            if (removed) {
-                node.setParentNode(null);
+    private void setLastAdded(Node added, Node after) {
+        if (lastAdded == null) {
+            lastAdded = new HashMap<Node, Node>();
+        }
+        // update the insert points also when doing multi-level un-nesting
+        List<Node> nodesToUpdate = new ArrayList<Node>();
+        nodesToUpdate.add(after);
+        for (Entry<Node, Node> entry : lastAdded.entrySet()) {
+            if (entry.getValue() == after) {
+                nodesToUpdate.add(entry.getKey());
             }
+        }
+        for (Node node : nodesToUpdate) {
+            lastAdded.put(node, added);
         }
     }
 
     public ArrayList<Node> getChildren() {
         return children;
-    }
-
-    public void setChildren(ArrayList<Node> children) {
-        this.children = children;
     }
 
     public boolean hasChildren() {
@@ -145,6 +189,9 @@ public abstract class Node implements Serializable {
 
     private void setParentNode(Node parentNode) {
         this.parentNode = parentNode;
+        // clear map when node is moved
+        // this shouldn't happen in the middle of handling children
+        lastAdded = null;
     }
 
     public Node copy() {
@@ -154,6 +201,17 @@ public abstract class Node implements Serializable {
         copy.parentNode = oldParent;
         parentNode = oldParent;
         return copy;
+    }
+
+    public void traverseChildren() {
+        Map<String, VariableNode> variableScope = ScssStylesheet.openVariableScope();
+        try {
+            for (Node child : new ArrayList<Node>(getChildren())) {
+                child.traverse();
+            }
+        } finally {
+            ScssStylesheet.closeVariableScope(variableScope);
+        }
     }
 
     public static interface BuildStringStrategy {

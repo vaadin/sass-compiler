@@ -63,5 +63,6 @@ public class MicrosoftRuleNode extends Node implements IVariableNode {
     @Override
     public void traverse() {
         replaceVariables(ScssStylesheet.getVariables());
+        traverseChildren();
     }
 }

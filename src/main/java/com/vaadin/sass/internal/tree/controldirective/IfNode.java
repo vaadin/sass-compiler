@@ -51,16 +51,7 @@ public class IfNode extends Node implements IfElseNode, IVariableNode {
 
     @Override
     public void traverse() {
-        /*
-         * "replaceVariables(ScssStylesheet.getVariables());" seems duplicated
-         * and can be extracted out of if, but it is not.
-         * containsArithmeticalOperator must be called before replaceVariables.
-         * Because for the "/" operator, it needs to see if its predecessor or
-         * successor is a Variable or not, to determine it is an arithmetic
-         * operator.
-         */
-        boolean hasOperator = expression.containsArithmeticalOperator();
         replaceVariables(ScssStylesheet.getVariables());
-        expression = expression.evaluateFunctionsAndExpressions(hasOperator);
+        expression = expression.evaluateFunctionsAndExpressions(true);
     }
 }

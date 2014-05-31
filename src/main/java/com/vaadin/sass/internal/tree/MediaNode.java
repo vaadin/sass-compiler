@@ -48,7 +48,7 @@ public class MediaNode extends Node {
 
     @Override
     public void traverse() {
-
+        traverseChildren();
     }
 
     private String buildString(BuildStringStrategy strategy, boolean indent) {

@@ -216,10 +216,15 @@ public class SassList implements SassListItem, Iterable<SassListItem>,
     public String buildString(BuildStringStrategy strategy) {
         String result = "";
         for (int i = 0; i < size(); i++) {
-            result += get(i).buildString(strategy);
-            if (i < size() - 1) {
+            String item = get(i).buildString(strategy);
+            if ("".equals(item.trim())) {
+                // skip empty items
+                continue;
+            }
+            if (!"".equals(result)) {
                 result += separator;
             }
+            result += item;
         }
         return result;
     }
