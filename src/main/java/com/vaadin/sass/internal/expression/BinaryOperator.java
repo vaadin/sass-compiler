@@ -47,16 +47,16 @@ public enum BinaryOperator {
     EQUALS(LexicalUnitImpl.SCSS_OPERATOR_EQUALS, 3) {
         @Override
         public SassListItem eval(SassListItem leftValue, SassListItem rightValue) {
-            boolean value = leftValue.printState().equals(
-                    rightValue.printState());
+            boolean value = leftValue.unquotedString().equals(
+                    rightValue.unquotedString());
             return createBooleanUnit(value);
         }
     },
     NOT_EQUAL(LexicalUnitImpl.SCSS_OPERATOR_NOT_EQUAL, 3) {
         @Override
         public SassListItem eval(SassListItem leftValue, SassListItem rightValue) {
-            boolean value = !leftValue.printState().equals(
-                    rightValue.printState());
+            boolean value = !leftValue.unquotedString().equals(
+                    rightValue.unquotedString());
             return createBooleanUnit(value);
         }
     },

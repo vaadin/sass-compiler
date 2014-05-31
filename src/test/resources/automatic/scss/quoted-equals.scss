@@ -1,0 +1,9 @@
+a {
+  $b: 1 2;
+  @if type-of($b) == 'list' {
+    quoted: $b is a list;
+  }
+  @if type-of($b) == list {
+    unquoted: $b is a list;
+  }
+}
