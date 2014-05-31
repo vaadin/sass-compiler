@@ -728,7 +728,8 @@ TOKEN :
 <DEFAULT>
 TOKEN :
 {
- < FUNCTION : <IDENT>(< S >)* "(" >
+   < NOT_FUNCTION : "not" (< S >)* "(" >
+ | < FUNCTION : <IDENT>(< S >)* "(" >
 }
 
 <DEFAULT, IN_MULTI_LINE_COMMENT>
@@ -1085,6 +1086,7 @@ void skipUnknownRule() :
 | n=<DASHMATCH>
 | n=<FONT_FACE_SYM>
 | n=<FUNCTION>
+| n=<NOT_FUNCTION>
 | n=<IMPORTANT_SYM>
 | n=<IMPORT_SYM>
 | n=<INCLUDES>
@@ -1150,6 +1152,7 @@ void microsoftExtension() :
 	| (n = < COMMA > { value += n.image; })
 	| (n = < INTERPOLATION > { value += n.image; })
 	| (n = < COLON > { value += n.image; })
+	| (n = < NOT_FUNCTION > { value += n.image; })
 	| (n = < FUNCTION > { value += n.image; })
 	| (n = < RPARAN > { value += n.image; })
 	| (n = < EQ > { value += n.image; })
@@ -1366,7 +1369,9 @@ SimpleSelector pseudo_selector():
 {
     Token n;
     String id;
+    Token t;
     String arg = null;
+    Selector sel;
 }
 {
     ":" (
@@ -1374,9 +1379,26 @@ SimpleSelector pseudo_selector():
             { return new PseudoElementSelector(id); }
         | (id=ident_interpolation_seq())
             { return new PseudoClassSelector(id); }
-        | ( id=functionName() arg=skipStatementUntilMatchingRightParan() <RPARAN> )
+        | ( t=<NOT_FUNCTION> sel=selector() <RPARAN> )
+            { id = t.image.toString(); return new PseudoClassSelector(id.substring(0, id.length()-1), sel.toString()); }
+        | ( id=functionName() arg=pseudo_params() <RPARAN> )
             { return new PseudoClassSelector(id,arg); }
     )
+}
+
+String pseudo_params():
+{
+  String params = "";
+  Token t;
+}
+{
+    (
+        ( t = <NUMBER> | t = <DIMEN> | t = <PLUS> | t = <MINUS> | t = <IDENT> ) { params = params + t.image; }
+        ( t = <S> { params = params + t.image; } )*
+    )*
+    {
+        return params;
+    }
 }
 
 IdSelector id_selector() :
@@ -2510,7 +2532,7 @@ LexicalUnitImpl function(char operator) :
  ActualArgumentList params;
 }
 {
-    n=<FUNCTION> ( <S> )*  
+    ( n=<FUNCTION> | n=<NOT_FUNCTION> ) ( <S> )*  
     {
         String fname = convertIdent(n.image);
         if ("filename(".equals(fname)) {
@@ -2623,7 +2645,7 @@ String skipStatementUntilLeftBrace(){
 
 JAVACODE
 String skipStatementUntilMatchingRightParan(){
-    int[] leftTokens = {LPARAN, FUNCTION}; // a FUNCTION also contains "("
+    int[] leftTokens = {LPARAN, FUNCTION, NOT_FUNCTION}; // a FUNCTION also contains "("
     int[] rightTokens = {RPARAN};
     StringBuffer s = new StringBuffer();
     int difference = 1;
