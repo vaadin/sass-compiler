@@ -1,0 +1,28 @@
+.x {
+  min1: min(1);
+  min12: min(1, 2);
+  min123: min(1, 2, 3);
+  max1: max(1);
+  max12: max(1, 2);
+  max123: max(1, 2, 3);
+  
+  minfloatint: min(1.0, 2);
+  minfloatint: min(1, 2.0);
+  minfloatfloat: min(1.0, 2.0);
+
+  minhalf: min(0.5, 0.55);
+
+  minneg: min(-1, -2);
+}
+
+.foo {
+min1: min(1,2,4px);
+min2: min(-1,2,-3);
+min3: min(45%,60,50%);
+min4: min(45,60,50%);
+
+max1: max(1,2,4px);
+max2: max(-1,2,-3);
+max3: max(45%,60,50%);
+max4: max(45,60,50%);
+}

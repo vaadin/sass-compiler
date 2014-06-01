@@ -49,6 +49,7 @@ import com.vaadin.sass.internal.parser.function.ListAppendFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.ListJoinFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.ListLengthFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.ListNthFunctionGenerator;
+import com.vaadin.sass.internal.parser.function.MinMaxFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.PercentageFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.RGBComponentFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.RGBFunctionGenerator;
@@ -815,6 +816,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         list.add(new ListJoinFunctionGenerator());
         list.add(new ListLengthFunctionGenerator());
         list.add(new ListNthFunctionGenerator());
+        list.add(new MinMaxFunctionGenerator());
         list.add(new PercentageFunctionGenerator());
         list.add(new RectFunctionGenerator());
         list.add(new RGBFunctionGenerator());

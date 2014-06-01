@@ -1,0 +1,25 @@
+.x {
+  min1: 1;
+  min12: 1;
+  min123: 1;
+  max1: 1;
+  max12: 2;
+  max123: 3;
+  
+  minfloatint: 1;
+  minfloatint: 1;
+  minfloatfloat: 1;
+
+  minhalf: 0.5;
+
+  minneg: -2;
+}
+.foo {
+  min1: 1;
+  min2: -3;
+  min3: 45%;
+  min4: 45;
+  max1: 4px;
+  max2: 2;
+  max3: 60;
+  max4: 60; }
