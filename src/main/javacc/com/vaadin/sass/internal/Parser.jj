@@ -2188,22 +2188,32 @@ SassListItem expr():
 
 void addExpressionTerm(List<SassListItem> items):
 {
+    char op = ' ';
     SassListItem term;
     List<SassListItem> terms;
 }
 {
-    terms = term(){ items.addAll(terms); }
-    | term = parenthesizedExpression() {items.add(term); }
+    ( LOOKAHEAD(2) terms = term(){ items.addAll(terms); }
+        | ( op = unaryOperator() )?
+          term = parenthesizedExpression(op) {items.add(term); }
+    )
 }
 
-SassListItem parenthesizedExpression():
+SassListItem parenthesizedExpression(char op):
 {
     SassList list;
 }
 {
     ("(" (<S>)* list = expressionList() ")" (<S>)*)
    {
-       return list.flatten();
+       SassListItem result = list.flatten();
+       if(op == '-'){
+           result = SassExpression.createExpression(
+              LexicalUnitImpl.createNumber(token.beginLine, token.beginColumn, -1),
+              LexicalUnitImpl.createMultiply(token.beginLine, token.beginColumn),
+              result);
+       }
+       return result;
    } 
 }
 

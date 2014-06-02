@@ -46,3 +46,8 @@ $mul1: 2 * 4;	//valid multiply in variable
 	$tmp: 2 + 3;
 	bar: -$tmp * 4;
 }
+
+$a: 1;
+.x {
+    a: -($a + 1);
+}
