@@ -2492,6 +2492,7 @@ List<SassListItem> stringTerm(char op) :
 	  if (op != ' ') { s = "" + op + s; }
 	  result = LexicalUnitImpl.createString(n.beginLine, n.beginColumn, s);}
   | (< DOT >{ s+="."; })?(s = identInterpolationString()){
+    if(op != ' ') { s = "" + op + s; }
 	if ("inherit".equals(s)) {
 	    result = LexicalUnitImpl.createInherit(beginLine, beginColumn);
 	} else {
