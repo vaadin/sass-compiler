@@ -475,7 +475,7 @@ PARSER_END(Parser)
  * The tokenizer 
  */
 
-<DEFAULT,ELSE_STATE>
+<DEFAULT,ELSE_STATE, PARSE_FUNCTIONNAME_WHITESPACE_ALLOWED_STATE>
 TOKEN :
 {
     < S : ( [ " ", "\t" , "\n" , "\r", "\f" ] )+ > 
@@ -560,10 +560,10 @@ TOKEN :
   < COLON     : ":" >
 }
 
-< DEFAULT >
+< DEFAULT, PARSE_FUNCTIONNAME_WHITESPACE_ALLOWED_STATE >
 TOKEN :
 {
-	< INTERPOLATION : "#{"< VARIABLE > "}">
+	< INTERPOLATION : "#{"< VARIABLE > "}"> : DEFAULT
 }
 
 <DEFAULT>
@@ -599,9 +599,9 @@ TOKEN :
 <DEFAULT>
 TOKEN :
 {
-    <MIXIN_SYM          : "@mixin">
-  | <INCLUDE_SYM        : "@include">
-  | <FUNCTION_SYM       : "@function">
+    <MIXIN_SYM          : "@mixin"> : PARSE_FUNCTIONNAME_WHITESPACE_ALLOWED_STATE
+  | <INCLUDE_SYM        : "@include"> : PARSE_FUNCTIONNAME_WHITESPACE_ALLOWED_STATE
+  | <FUNCTION_SYM       : "@function"> : PARSE_FUNCTIONNAME_WHITESPACE_ALLOWED_STATE
   | <RETURN_SYM         : "@return">
   | <DEBUG_SYM          : "@debug">
   | <WARN_SYM           : "@warn">
@@ -646,17 +646,22 @@ TOKEN :
 {
   < STRING      : ( "\"" ( <STRINGCHAR> | "'" )* "\"" ) | 
                   ( "'" ( <STRINGCHAR> | "\"" )* "'" ) >
-  | < IDENT         : <NMSTART> ( <NMCHAR> )* >
   | < NUMBER	  : ( <D> )+ | ( <D> )* "." ( <D> )+ > 
   | < #_URL       : [ "!","#","$","%","&","*"-"~" ] | <NONASCII> | <ESCAPE> >
   | < URL         : "url(" ( <S> )*
                     ( <STRING> | ( <_URL> )* ) ( <S> )* ")" >            
 }
 
-<DEFAULT>
+<DEFAULT, PARSE_FUNCTIONNAME_WHITESPACE_ALLOWED_STATE>
 TOKEN:
 {
-	< VARIABLE : "$" <IDENT>>
+   < IDENT         : <NMSTART> ( <NMCHAR> )* > : DEFAULT
+}
+
+<DEFAULT, PARSE_FUNCTIONNAME_WHITESPACE_ALLOWED_STATE>
+TOKEN:
+{
+	< VARIABLE : "$" <IDENT>> : DEFAULT
 }
 
 <DEFAULT>
@@ -729,7 +734,13 @@ TOKEN :
 TOKEN :
 {
    < NOT_FUNCTION : "not" (< S >)* "(" >
- | < FUNCTION : <IDENT>(< S >)* "(" >
+ | < FUNCTION : <IDENT> "(" >
+}
+
+<PARSE_FUNCTIONNAME_WHITESPACE_ALLOWED_STATE>
+TOKEN :
+{
+    <FUNCTION_WITH_WS : <NMSTART> ( <NMCHAR> )* (<S>)* "(" > : DEFAULT
 }
 
 <DEFAULT, IN_MULTI_LINE_COMMENT>
@@ -1198,6 +1209,13 @@ String functionName() :
 {
     n=<FUNCTION> ( <S> )* {return convertIdent(n.image.substring(0, n.image.length()-1));}
 }
+
+String functionNameWithWhitespace() :
+{Token n;}
+{
+    n=<FUNCTION_WITH_WS> ( <S> )* {return convertIdent(n.image.substring(0, n.image.length()-1).trim());}
+}
+
 /**
  * @exception ParseException exception during the parse
  */
@@ -1561,7 +1579,7 @@ void mixinDirective() :
     <MIXIN_SYM>
     (<S>)*
     (   name = property()
-       |(name = functionName() args = arglist()
+       |(name = functionNameWithWhitespace() args = arglist()
           (<ELLIPSIS> {hasVariableArgs = true;} (<S>)*)? <RPARAN> (<S>)*)
     )
     <LBRACE> (<S>)*
@@ -1580,7 +1598,7 @@ void functionDirective() :
 {
     <FUNCTION_SYM>
     (<S>)*
-    ( name = functionName() args = arglist() (<ELLIPSIS> {hasVariableArgs = true;} (<S>)*)? <RPARAN> (<S>)*)
+    ( name = functionNameWithWhitespace() args = arglist() (<ELLIPSIS> {hasVariableArgs = true;} (<S>)*)? <RPARAN> (<S>)*)
     <LBRACE> (<S>)*
     {documentHandler.startFunctionDirective(name, args, hasVariableArgs);} 
     ( functionBlockStatement() )* 
@@ -1775,7 +1793,7 @@ void includeDirective() :
     <INCLUDE_SYM>
     (<S>)*
     (name = property() | name = variableName(){ name = "$"+name;} 
-     | (name = functionName() args = argValuelist()) ((<ELLIPSIS>){hasVariableArgs = true;}
+     | (name = functionNameWithWhitespace() args = argValuelist()) ((<ELLIPSIS>){hasVariableArgs = true;}
          (<S>)*)? <RPARAN>(<S>)*)
     {documentHandler.startInclude(name, args, hasVariableArgs);}
     (includeDirectiveBlockContents() | semicolonTerminator())
