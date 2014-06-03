@@ -1,0 +1,17 @@
+.x {
+    a: -1;
+}
+
+.rounded {
+    border-top: 0;
+}
+
+-border-top {
+    first: border-top;
+    second: -border-top;
+}
+
+border-top {
+    no-dashes: bordertop;
+    double-dashes: --border--top;
+}

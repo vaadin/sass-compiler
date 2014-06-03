@@ -1,0 +1,21 @@
+$a: 1;
+.x {
+  a: -#{$a};
+}
+
+$what: border;
+$side: top;
+
+.rounded {
+ 	#{$what}-#{$side}: 0;
+}
+
+-#{$what}-#{$side} {
+    first: #{$what}-#{$side};
+    second: -#{$what}-#{$side};
+}
+
+#{$what}-#{$side} {
+    no-dashes: #{$what}#{$side};
+    double-dashes: --#{$what}--#{$side};
+}

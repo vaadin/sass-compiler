@@ -943,7 +943,7 @@ void media() :
 void mediaDirective() :
 {}
 {
-  debuggingDirective() | styleRule() | skipUnknownRule() | contentDirective()
+  debuggingDirective() | LOOKAHEAD(2) styleRule() | skipUnknownRule() | contentDirective()
 }
 
 void mediaStatement(MediaListImpl ml) :
@@ -1183,7 +1183,7 @@ Token propertyIdent() :
     Token t;
 }
 {
-    ( t = < IDENT> | t = <AND> | t = <OR> | t = <NOT> | t = <EACH_IN> | t = <THROUGH>)
+    ( t = "-" | t = < IDENT> | t = <AND> | t = <OR> | t = <NOT> | t = <EACH_IN> | t = <THROUGH>)
     { return t; }
 }
 
@@ -2325,7 +2325,7 @@ List<SassListItem> term() :
   char op = ' ';
 }
 {
-  ( op = unaryOperator() )?
+  ( LOOKAHEAD(2) op = unaryOperator() )?
   ( res = nonVariableTerm(op) | res = variableTerm(op) )
   {
     return res;
@@ -2462,7 +2462,7 @@ String identInterpolationString() :
 {
     (   (n = <OR> | n = <AND> | n = <NOT> | n = <FROM> | n= <THROUGH> | n= <TO> | n = <EACH_IN> | 
          n = <MICROSOFT_RULE>) { s += convertIdent(n.image); }
-      | (LOOKAHEAD(1) ( n = <IDENT> | n = <INTERPOLATION>) {s += convertIdent(n.image); })+
+      | (LOOKAHEAD(1) ( n = <IDENT> | n = <INTERPOLATION> | n = "-") {s += convertIdent(n.image); } )+
     ) 
     { return s; }
 }
