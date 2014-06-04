@@ -25,6 +25,7 @@ import org.w3c.css.sac.SACMediaList;
 
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.SassListItem;
+import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 import com.vaadin.sass.internal.selector.Selector;
 import com.vaadin.sass.internal.tree.VariableNode;
 
@@ -54,14 +55,14 @@ public interface SCSSDocumentHandler extends DocumentHandler {
 
     void endWhileDirective();
 
-    void startNestedProperties(String name);
+    void startNestedProperties(StringInterpolationSequence name);
 
-    void endNestedProperties(String name);
+    void endNestedProperties(StringInterpolationSequence name);
 
     void importStyle(String uri, SACMediaList media, boolean isURL);
 
-    void property(String name, SassListItem value, boolean important,
-            String comment);
+    void property(StringInterpolationSequence name, SassListItem value,
+            boolean important, String comment);
 
     void startEachDirective(String variable, SassListItem list);
 
@@ -81,9 +82,10 @@ public interface SCSSDocumentHandler extends DocumentHandler {
 
     void extendDirective(List<Selector> list, boolean optional);
 
-    void microsoftDirective(String name, String value);
+    void microsoftDirective(String name, StringInterpolationSequence value);
 
-    void startKeyFrames(String keyframeName, String animationname);
+    void startKeyFrames(String keyframeName,
+            StringInterpolationSequence animationname);
 
     void endKeyFrames();
 

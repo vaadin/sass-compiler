@@ -17,16 +17,16 @@
 package com.vaadin.sass.internal.tree;
 
 import java.util.Collection;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 
 public class KeyframesNode extends Node implements IVariableNode {
     private String keyframeName;
-    private String animationName;
+    private StringInterpolationSequence animationName;
 
-    public KeyframesNode(String keyframeName, String animationName) {
+    public KeyframesNode(String keyframeName,
+            StringInterpolationSequence animationName) {
         this.keyframeName = keyframeName;
         this.animationName = animationName;
     }
@@ -48,16 +48,7 @@ public class KeyframesNode extends Node implements IVariableNode {
 
     @Override
     public void replaceVariables(Collection<VariableNode> variables) {
-        for (final VariableNode node : variables) {
-            String interpolation = "#{$" + node.getName() + "}";
-            if (animationName != null && animationName.contains(interpolation)) {
-                if (animationName.contains(interpolation)) {
-                    animationName = animationName.replaceAll(Pattern
-                            .quote(interpolation), Matcher
-                            .quoteReplacement(node.getExpr().unquotedString()));
-                }
-            }
-        }
+        animationName = animationName.replaceVariables(variables);
     }
 
     private String buildString(BuildStringStrategy strategy) {

@@ -229,9 +229,7 @@ public class Selector implements Serializable {
         for (SelectorSegment segment : parts) {
             if (segment instanceof SimpleSelectorSequence) {
                 SimpleSelectorSequence seq = (SimpleSelectorSequence) segment;
-                for (final VariableNode var : variables) {
-                    seq = seq.replaceVariable(var);
-                }
+                seq = seq.replaceVariables(variables);
                 sel.parts.add(seq);
             } else {
                 sel.parts.add(segment);

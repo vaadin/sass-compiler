@@ -275,4 +275,14 @@ public class SassExpression implements SassListItem, Serializable {
     public static boolean isWhitespace(SassListItem unit) {
         return unit.printState().matches("\\s+");
     }
+
+    @Override
+    public boolean containsVariable() {
+        for (SassListItem item : items) {
+            if (item.containsVariable()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

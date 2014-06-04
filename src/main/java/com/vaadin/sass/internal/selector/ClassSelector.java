@@ -15,6 +15,9 @@
  */
 package com.vaadin.sass.internal.selector;
 
+import java.util.Collection;
+
+import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
@@ -24,13 +27,13 @@ import com.vaadin.sass.internal.tree.VariableNode;
  */
 public class ClassSelector extends SimpleSelector {
 
-    private String classValue;
+    private StringInterpolationSequence classValue;
 
-    public ClassSelector(String classValue) {
+    public ClassSelector(StringInterpolationSequence classValue) {
         this.classValue = classValue;
     }
 
-    public String getClassValue() {
+    public StringInterpolationSequence getClassValue() {
         return classValue;
     }
 
@@ -40,8 +43,7 @@ public class ClassSelector extends SimpleSelector {
     }
 
     @Override
-    public ClassSelector replaceVariable(VariableNode var) {
-        return new ClassSelector(var.replaceInterpolation(classValue));
-
+    public ClassSelector replaceVariables(Collection<VariableNode> variables) {
+        return new ClassSelector(classValue.replaceVariables(variables));
     }
 }

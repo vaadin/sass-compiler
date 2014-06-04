@@ -15,6 +15,9 @@
  */
 package com.vaadin.sass.internal.selector;
 
+import java.util.Collection;
+
+import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
@@ -23,19 +26,20 @@ import com.vaadin.sass.internal.tree.VariableNode;
  * See also {@link SimpleSelectorSequence} and {@link Selector}.
  */
 public class PseudoClassSelector extends SimpleSelector {
-    private String pseudoClass;
+    private StringInterpolationSequence pseudoClass;
     private String argument = null;
 
-    public PseudoClassSelector(String pseudoClass) {
+    public PseudoClassSelector(StringInterpolationSequence pseudoClass) {
         this(pseudoClass, null);
     }
 
-    public PseudoClassSelector(String pseudoClass, String argument) {
+    public PseudoClassSelector(StringInterpolationSequence pseudoClass,
+            String argument) {
         this.pseudoClass = pseudoClass;
         this.argument = argument;
     }
 
-    public String getClassValue() {
+    public StringInterpolationSequence getClassValue() {
         return pseudoClass;
     }
 
@@ -49,15 +53,24 @@ public class PseudoClassSelector extends SimpleSelector {
     }
 
     @Override
-    public PseudoClassSelector replaceVariable(VariableNode var) {
+    public PseudoClassSelector replaceVariables(
+            Collection<VariableNode> variables) {
         if (argument == null) {
             return new PseudoClassSelector(
-                    var.replaceInterpolation(pseudoClass));
+                    pseudoClass.replaceVariables(variables));
         } else {
             return new PseudoClassSelector(
-                    var.replaceInterpolation(pseudoClass),
-                    var.replaceInterpolation(argument));
+                    pseudoClass.replaceVariables(variables),
+                    replaceInterpolation(argument, variables));
         }
     }
 
+    private String replaceInterpolation(String value,
+            Collection<VariableNode> variables) {
+        String result = value;
+        for (VariableNode var : variables) {
+            result = var.replaceInterpolation(result);
+        }
+        return result;
+    }
 }

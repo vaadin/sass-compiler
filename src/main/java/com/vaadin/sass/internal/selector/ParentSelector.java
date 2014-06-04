@@ -15,6 +15,9 @@
  */
 package com.vaadin.sass.internal.selector;
 
+import java.util.Collection;
+
+import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
@@ -30,11 +33,11 @@ public class ParentSelector extends TypeSelector {
     public static final ParentSelector it = new ParentSelector();
 
     private ParentSelector() {
-        super("&");
+        super(new StringInterpolationSequence("&"));
     }
 
     @Override
-    public ParentSelector replaceVariable(VariableNode var) {
+    public ParentSelector replaceVariables(Collection<VariableNode> variables) {
         return this;
     }
 }

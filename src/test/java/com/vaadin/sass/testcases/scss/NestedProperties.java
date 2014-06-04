@@ -50,16 +50,16 @@ public class NestedProperties extends AbstractTestBase {
 
         NestPropertiesNode nestPropertiesNode = (NestPropertiesNode) blockNode
                 .getChildren().get(0);
-        Assert.assertEquals("font", nestPropertiesNode.getName());
+        Assert.assertEquals("font", nestPropertiesNode.getName().toString());
         RuleNode nestedProperty0 = (RuleNode) nestPropertiesNode.getChildren()
                 .get(0);
         RuleNode nestedProperty1 = (RuleNode) nestPropertiesNode.getChildren()
                 .get(1);
         RuleNode nestedProperty2 = (RuleNode) nestPropertiesNode.getChildren()
                 .get(2);
-        Assert.assertEquals("family", nestedProperty0.getVariable());
-        Assert.assertEquals("weight", nestedProperty1.getVariable());
-        Assert.assertEquals("size", nestedProperty2.getVariable());
+        Assert.assertEquals("family", nestedProperty0.getVariable().toString());
+        Assert.assertEquals("weight", nestedProperty1.getVariable().toString());
+        Assert.assertEquals("size", nestedProperty2.getVariable().toString());
     }
 
     @Test

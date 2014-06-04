@@ -20,23 +20,24 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 import com.vaadin.sass.internal.visitor.NestedNodeHandler;
 
 public class NestPropertiesNode extends Node implements IVariableNode {
     private static final long serialVersionUID = 3671253315690598308L;
 
-    public NestPropertiesNode(String name) {
+    public NestPropertiesNode(StringInterpolationSequence name) {
         super();
         this.name = name;
     }
 
-    private String name;
+    private StringInterpolationSequence name;
 
-    public String getName() {
+    public StringInterpolationSequence getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(StringInterpolationSequence name) {
         this.name = name;
     }
 
@@ -55,15 +56,17 @@ public class NestPropertiesNode extends Node implements IVariableNode {
     }
 
     public RuleNode createNewRuleNodeFromChild(RuleNode child) {
-        StringBuilder builder = new StringBuilder(name);
-        builder.append("-").append(child.getVariable());
-        RuleNode newRuleNode = new RuleNode(builder.toString(),
-                child.getValue(), child.isImportant(), null);
+        StringInterpolationSequence newName = name
+                .append(new StringInterpolationSequence("-"));
+        newName = newName.append(child.getVariable());
+        RuleNode newRuleNode = new RuleNode(newName, child.getValue(),
+                child.isImportant(), null);
         return newRuleNode;
     }
 
     @Override
     public void replaceVariables(Collection<VariableNode> variables) {
+        name = name.replaceVariables(variables);
         for (Node child : getChildren()) {
             if (child instanceof RuleNode) {
                 ((RuleNode) child).replaceVariables(variables);

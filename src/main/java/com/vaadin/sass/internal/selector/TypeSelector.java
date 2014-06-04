@@ -15,6 +15,9 @@
  */
 package com.vaadin.sass.internal.selector;
 
+import java.util.Collection;
+
+import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
@@ -23,23 +26,23 @@ import com.vaadin.sass.internal.tree.VariableNode;
  * See also {@link SimpleSelectorSequence} and {@link Selector}.
  */
 public class TypeSelector extends SimpleSelector {
-    private String localName;
+    private StringInterpolationSequence localName;
 
-    public TypeSelector(String value) {
+    public TypeSelector(StringInterpolationSequence value) {
         localName = value;
     }
 
-    public String getValue() {
+    public StringInterpolationSequence getValue() {
         return localName;
     }
 
     @Override
     public String toString() {
-        return localName;
+        return localName.toString();
     }
 
     @Override
-    public TypeSelector replaceVariable(VariableNode var) {
-        return new TypeSelector(var.replaceInterpolation(localName));
+    public TypeSelector replaceVariables(Collection<VariableNode> variables) {
+        return new TypeSelector(localName.replaceVariables(variables));
     }
 }

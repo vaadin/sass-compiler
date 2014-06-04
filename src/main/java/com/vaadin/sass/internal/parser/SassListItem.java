@@ -43,6 +43,20 @@ public interface SassListItem {
     public int getColumnNumber();
 
     /**
+     * Checks whether this item contains a variable. This method is used to
+     * avoid the evaluation of expressions when unset variables remain. That
+     * situation can happen as a result of calling replaceVariables for the
+     * children of a @mixin node. The replaceVariables method in
+     * MixinNodeHandler then replaces the variables corresponding to the
+     * parameter list of the @mixin but other variables remain unset until the
+     * node is traversed again. The evaluation of interpolation and expressions
+     * should then be deferred until all variables of the SassListItem have a value.
+     * 
+     * @return Whether this expression contains variables.
+     */
+    public boolean containsVariable();
+
+    /**
      * Checks whether the item contains an arithmetic expression.
      */
     public boolean containsArithmeticalOperator();

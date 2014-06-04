@@ -4,3 +4,7 @@
   top-radius: 10px;
   no-interpolation: no-interpolation;
 }
+
+.nested-interpolation {
+    font-family: courier;
+}

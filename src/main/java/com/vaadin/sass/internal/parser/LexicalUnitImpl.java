@@ -95,7 +95,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     private float f;
     private short dimension;
     private String sdimension;
-    private String s;
+    private StringInterpolationSequence s;
     private String fname;
     private ActualArgumentList params;
 
@@ -123,6 +123,11 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     }
 
     LexicalUnitImpl(int line, int column, short type, String s) {
+        this(line, column, type, new StringInterpolationSequence(s));
+    }
+
+    LexicalUnitImpl(int line, int column, short type,
+            StringInterpolationSequence s) {
         this(type, line, column);
         this.s = s;
     }
@@ -279,11 +284,11 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     }
 
     public String getStringValue() {
-        return s;
+        return s == null ? null : s.toString();
     }
 
     private void setStringValue(String str) {
-        s = str;
+        s = new StringInterpolationSequence(str);
     }
 
     @Override
@@ -574,10 +579,14 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     }
 
     public static LexicalUnitImpl createIdent(int line, int column, String s) {
-        if ("null".equals(s)) {
+        return createIdent(line, column, new StringInterpolationSequence(s));
+    }
+
+    public static LexicalUnitImpl createIdent(int line, int column,
+            StringInterpolationSequence s) {
+        if ("null".equals(s.toString())) {
             return createNull(line, column);
         }
-
         return new LexicalUnitImpl(line, column, SAC_IDENT, s);
     }
 
@@ -709,7 +718,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     @Override
     public SassListItem replaceVariables(Collection<VariableNode> variables) {
         // TODO simplify
-        SassListItem result = this;
+        SassListItem result = replaceVariablesForStringValue(variables);
         Iterator<VariableNode> it = variables.iterator();
         while (it.hasNext() && result instanceof LexicalUnitImpl) {
             LexicalUnitImpl lui = (LexicalUnitImpl) result;
@@ -719,6 +728,17 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
             result = result.replaceVariables(variables);
         }
         return result;
+    }
+
+    private LexicalUnitImpl replaceVariablesForStringValue(
+            Collection<VariableNode> variables) {
+        if (s == null || !s.containsInterpolation()) {
+            return this;
+        } else {
+            LexicalUnitImpl copy = copy();
+            copy.s = s.replaceVariables(variables);
+            return copy;
+        }
     }
 
     private SassListItem replaceVariable(VariableNode node) {
@@ -1058,5 +1078,10 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     @Override
     public LexicalUnitImpl getContainedValue() {
         return this;
+    }
+
+    @Override
+    public boolean containsVariable() {
+        return getLexicalUnitType() == SCSS_VARIABLE;
     }
 }

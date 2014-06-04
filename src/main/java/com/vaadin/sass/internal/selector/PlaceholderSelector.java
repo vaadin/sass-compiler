@@ -15,6 +15,9 @@
  */
 package com.vaadin.sass.internal.selector;
 
+import java.util.Collection;
+
+import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
@@ -22,13 +25,13 @@ import com.vaadin.sass.internal.tree.VariableNode;
  * output as-is but only when used via "@extend".
  */
 public class PlaceholderSelector extends SimpleSelector {
-    private String value;
+    private StringInterpolationSequence value;
 
-    public PlaceholderSelector(String value) {
+    public PlaceholderSelector(StringInterpolationSequence value) {
         this.value = value;
     }
 
-    public String getValue() {
+    public StringInterpolationSequence getValue() {
         return value;
     }
 
@@ -38,7 +41,8 @@ public class PlaceholderSelector extends SimpleSelector {
     }
 
     @Override
-    public PlaceholderSelector replaceVariable(VariableNode var) {
-        return new PlaceholderSelector(var.replaceInterpolation(value));
+    public PlaceholderSelector replaceVariables(
+            Collection<VariableNode> variables) {
+        return new PlaceholderSelector(value.replaceVariables(variables));
     }
 }

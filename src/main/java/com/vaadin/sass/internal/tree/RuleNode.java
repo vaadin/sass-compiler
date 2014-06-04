@@ -20,28 +20,30 @@ import java.util.Collection;
 
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.SassListItem;
+import com.vaadin.sass.internal.parser.StringInterpolationSequence;
+import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
 
 public class RuleNode extends Node implements IVariableNode {
     private static final long serialVersionUID = 6653493127869037022L;
 
-    String variable;
+    StringInterpolationSequence variable;
     SassListItem value = null;
     String comment;
     private boolean important;
 
-    public RuleNode(String variable, SassListItem value, boolean important,
-            String comment) {
+    public RuleNode(StringInterpolationSequence variable, SassListItem value,
+            boolean important, String comment) {
         this.variable = variable;
         setValue(value);
         this.important = important;
         this.comment = comment;
     }
 
-    public String getVariable() {
+    public StringInterpolationSequence getVariable() {
         return variable;
     }
 
-    public void setVariable(String variable) {
+    public void setVariable(StringInterpolationSequence variable) {
         this.variable = variable;
     }
 
@@ -81,11 +83,7 @@ public class RuleNode extends Node implements IVariableNode {
 
     @Override
     public void replaceVariables(Collection<VariableNode> variables) {
-        for (final VariableNode node : variables) {
-            if (variable != null) {
-                variable = node.replaceInterpolation(variable);
-            }
-        }
+        variable = variable.replaceVariables(variables);
         value = value.replaceVariables(variables);
     }
 

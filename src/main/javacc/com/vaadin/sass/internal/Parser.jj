@@ -563,7 +563,7 @@ TOKEN :
 < DEFAULT, PARSE_FUNCTIONNAME_WHITESPACE_ALLOWED_STATE >
 TOKEN :
 {
-	< INTERPOLATION : "#{"< VARIABLE > "}"> : DEFAULT
+    < START_INTERPOLATION : "#{" > : DEFAULT
 }
 
 <DEFAULT>
@@ -692,7 +692,7 @@ TOKEN :
 <DEFAULT>
 TOKEN :
 {
-  < HASH : "#" <NAME> >
+  < HASH : "#" (<NAME>)? >
 }
 
 /* RESERVED ATRULE WORDS */
@@ -867,15 +867,20 @@ void importDeclaration() :
 void keyframes() :
 {
     Token n;
+    ArrayList<SassListItem> items = new ArrayList<SassListItem>();
+    Interpolation i;
     boolean start = false;
     String keyframeName = null;
-    String animationname = "";
 }
 {
  try {
   n=<KEY_FRAME_SYM> ( <S> )* {keyframeName = n.image;}
-  (n = ident() {animationname += n.image; }|n = < INTERPOLATION >{ animationname += n.image; })+(<S>)*
-   {start = true; documentHandler.startKeyFrames(keyframeName, animationname); }
+  (n = ident() {items.add(new StringItem(n.image)); } | i = interpolation() { items.add(i); })+(<S>)*
+   {
+      start = true;
+      StringInterpolationSequence animationName = new StringInterpolationSequence(items);
+      documentHandler.startKeyFrames(keyframeName, animationName);
+   }
    <LBRACE> ( <S> )* ( keyframeSelector() | contentDirective() )* <RBRACE> ( <S> )*
  } catch (ParseException e) {
      reportError(getLocator(), e);
@@ -1149,45 +1154,53 @@ Combinator combinatorChar() :
 
 void microsoftExtension() :
 {
+  ArrayList<SassListItem> items = new ArrayList<SassListItem>();
+  boolean lastIsSpace = true;
+  Interpolation i;
   Token n;
   String name = "";
-  String value = "";
+  String s;
 }
 
 {
   // This is not really taking the syntax of filter rules into account
   n = < MICROSOFT_RULE > (< S >)* { name = n.image; }
-	< COLON >
-	((n = ident() { value += n.image; })
-	| (n = < NUMBER > { value += n.image; }) 
-	| (n = < STRING > { value += n.image; })
-	| (n = < COMMA > { value += n.image; })
-	| (n = < INTERPOLATION > { value += n.image; })
-	| (n = < COLON > { value += n.image; })
-	| (n = < NOT_FUNCTION > { value += n.image; })
-	| (n = < FUNCTION > { value += n.image; })
-	| (n = < RPARAN > { value += n.image; })
-	| (n = < EQ > { value += n.image; })
-	| (n = < DOT > { value += n.image; })
-	| (n = < S > { if(value.lastIndexOf(' ') != value.length()-1)
-	{ value += n.image; } }
-	) )+
-	< SEMICOLON >
-	(< S >)*
-  	{ documentHandler.microsoftDirective(name, value); 	}
+    < COLON >
+    ((n = ident() { items.add(new StringItem(n.image)); lastIsSpace = false; })
+    | (n = < NUMBER > { items.add(new StringItem(n.image)); lastIsSpace = false; })
+    | (n = < STRING > { items.add(new StringItem(n.image)); lastIsSpace = false; })
+    | (n = < COMMA > { items.add(new StringItem(n.image)); lastIsSpace = false; })
+    | (i = interpolation() { items.add(i); lastIsSpace = false; })
+    | (n = < COLON > { items.add(new StringItem(n.image)); lastIsSpace = false; })
+    | (n = < NOT_FUNCTION > { items.add(new StringItem(n.image)); lastIsSpace = false; })
+    | (n = < FUNCTION > { items.add(new StringItem(n.image)); lastIsSpace = false; })
+    | (n = < RPARAN > { items.add(new StringItem(n.image)); lastIsSpace = false; })
+    | (n = < EQ > { items.add(new StringItem(n.image)); lastIsSpace = false; })
+    | (n = < DOT > { items.add(new StringItem(n.image)); lastIsSpace = false; })
+    | (n = < S > { if(!lastIsSpace) { items.add(new StringItem(n.image)); } lastIsSpace = true;}) 
+    )+
+    < SEMICOLON >
+    (< S >)*
+    {
+        StringInterpolationSequence value = new StringInterpolationSequence(items);
+        documentHandler.microsoftDirective(name, value);
+    }
 }
 
-/**
- * @exception ParseException exception during the parse
- */
-String property() :
-{Token t;String s = "";
+StringInterpolationSequence property() :
+{
+    StringInterpolationSequence sis;
 }
 {
-    (t = propertyIdent(){s += t.image; }|t = < INTERPOLATION >{ s += t.image; })+(< S >)*
-    {
-        return s;
-    }
+    sis = ident_interpolation_seq() ( <S> )* { return sis; }
+}
+
+String identString() :
+{
+    Token t;
+}
+{
+    t = propertyIdent() (<S>)* { return t.image; }
 }
 
 Token propertyIdent() :
@@ -1314,20 +1327,23 @@ SimpleSelector simple_nontype_selector() :
 }
 
 
-String ident_interpolation_seq() :
+StringInterpolationSequence ident_interpolation_seq() :
 {
   Token t;
-  String s = "";
+  List<SassListItem> items = new ArrayList<SassListItem>();
+  Interpolation interp;
 }
 {
-  (t=propertyIdent() {s+=t.image;} | t=<INTERPOLATION> {s+=t.image;})+
-  { return convertIdent(s); }
+  (t=propertyIdent() {items.add(new StringItem(t.image));} | interp=interpolation() {items.add(interp);})+
+  {
+    return new StringInterpolationSequence(items);
+  }
 }
 
 
 SimpleSelector class_selector() :
 {
-  String s;
+  StringInterpolationSequence s;
 }
 {
   "." s=ident_interpolation_seq() { return new ClassSelector(s); }
@@ -1336,7 +1352,7 @@ SimpleSelector class_selector() :
 
 SimpleSelector placeholder_selector() :
 {
-  String s;
+  StringInterpolationSequence s;
 }
 {
   "%" s=ident_interpolation_seq() { return new PlaceholderSelector(s); }
@@ -1345,7 +1361,7 @@ SimpleSelector placeholder_selector() :
 
 TypeSelector type_selector() :
 {
-  String s;
+  StringInterpolationSequence s;
 }
 {
   s=ident_interpolation_seq() { return new TypeSelector(s); }
@@ -1360,9 +1376,9 @@ TypeSelector type_selector() :
 AttributeSelector attribute_selector():
 {
     int cases = 0;
-    String att = null;
+    StringInterpolationSequence att = null;
     Token val = null;
-    String attValue = null;
+    StringInterpolationSequence attValue = null;
     AttributeSelector.MatchRelation matchRelation = null;
 }
 {
@@ -1374,7 +1390,7 @@ AttributeSelector attribute_selector():
       | <SUFFIXMATCH> { matchRelation = AttributeSelector.MatchRelation.SUFFIXMATCH; }
       | <SUBSTRINGMATCH> { matchRelation = AttributeSelector.MatchRelation.SUBSTRINGMATCH; } ) ( <S> )*
     ( attValue=ident_interpolation_seq()
-      | val=<STRING> { attValue = val.image; }
+      | val=<STRING> { attValue = new StringInterpolationSequence(val.image); }
     )
     ( <S> )* )?
   "]"
@@ -1387,7 +1403,8 @@ AttributeSelector attribute_selector():
 SimpleSelector pseudo_selector():
 {
     Token n;
-    String id;
+    StringInterpolationSequence id;
+    String s;
     Token t;
     String arg = null;
     Selector sel;
@@ -1399,9 +1416,12 @@ SimpleSelector pseudo_selector():
         | (id=ident_interpolation_seq())
             { return new PseudoClassSelector(id); }
         | ( t=<NOT_FUNCTION> sel=selector() <RPARAN> )
-            { id = t.image.toString(); return new PseudoClassSelector(id.substring(0, id.length()-1), sel.toString()); }
-        | ( id=functionName() arg=pseudo_params() <RPARAN> )
-            { return new PseudoClassSelector(id,arg); }
+            { s = t.image;
+              s = s.substring(0, s.length() - 1);
+              id = new StringInterpolationSequence(s);
+              return new PseudoClassSelector(id, sel.toString()); }
+        | ( s=functionName() arg=pseudo_params() <RPARAN> )
+            { return new PseudoClassSelector(new StringInterpolationSequence(s),arg); }
     )
 }
 
@@ -1422,10 +1442,17 @@ String pseudo_params():
 
 IdSelector id_selector() :
 {
+  ArrayList<SassListItem> items = new ArrayList<SassListItem>();
+  ArrayList<SassListItem> iis;
   Token t;
 }
 {
-  t=<HASH> { return new IdSelector(t.image.substring(1)); }
+  ( t=<HASH> { items.add(new StringItem(t.image.substring(1))); }
+    (iis = identInterpolationString() {items.addAll(iis); })?
+  )
+  {
+    return new IdSelector(new StringInterpolationSequence(items));
+  }
 }
 
 void variable() :
@@ -1580,7 +1607,7 @@ void mixinDirective() :
 {
     <MIXIN_SYM>
     (<S>)*
-    (   name = property()
+    (   name = identString() // Interpolation is not allowed in a @mixin.
        |(name = functionNameWithWhitespace() args = arglist()
           (<ELLIPSIS> {hasVariableArgs = true;} (<S>)*)? <RPARAN> (<S>)*)
     )
@@ -1809,7 +1836,8 @@ void includeDirective() :
 {
     <INCLUDE_SYM>
     (<S>)*
-    (name = property() | name = variableName(){ name = "$"+name;} 
+    // Interpolation is not allowed in an @include.
+    (name = identString() | name = variableName(){ name = "$"+name;} 
      | (name = functionNameWithWhitespace() args = argValuelist()) ((<ELLIPSIS>){hasVariableArgs = true;}
          (<S>)*)? <RPARAN>(<S>)*)
     {documentHandler.startInclude(name, args, hasVariableArgs);}
@@ -1845,16 +1873,17 @@ void includeDirectiveBlockContents():
  <RBRACE> (<S>)* 
 }
 
-
-String interpolation() :
+Interpolation interpolation() :
 {
-  Token n;
+    Token n;
+    int line, column;
+    SassListItem expression;
 }
 {
-  n = < INTERPOLATION >
-  {
-    return n.image;
-  }
+    n = < START_INTERPOLATION> { line = n.beginLine; column = n.beginColumn; } expression = expr() <RBRACE>
+    {
+        return new Interpolation(expression, line, column);
+    }
 }
 
 void debuggingDirective() :
@@ -1970,7 +1999,7 @@ Node supportsDirective(){
 
 
 void nestedProperties():
-{String name;
+{StringInterpolationSequence name;
 LexicalUnit exp;}
 {
     name=property()
@@ -2029,17 +2058,21 @@ void styleRuleOrDeclarationOrNestedProperties() :
 void declarationOrNestedProperties() :
 { boolean important = false;
   String s = "";
-  String name;
+  StringInterpolationSequence name;
   SassListItem exp;
   String comment = null;
 }
 {
  try {
      ( <ANY> { s = "*"; })?
-     name=property() { name = s + name; }
+     name=property()
      ":" ( <S> )* 
      (exp=expressionList() ( important=prio() )?
      {
+         if(!"".equals(s)){
+             StringInterpolationSequence temp = new StringInterpolationSequence(s);
+             name = temp.append(name);
+         }
          exp = ((SassList) exp).flatten();
          Token next = getToken(1);
          if(next.kind == SEMICOLON || next.kind == RBRACE){
@@ -2104,14 +2137,12 @@ void declarationOrNestedProperties() :
  */
 void declaration() :
 { boolean important = false;
-  String name;
+  StringInterpolationSequence name;
   SassListItem exp;
-  Token save;
 }
 {
  try {
      name=property()
-     { save = token; }
      ":" ( <S> )* exp=expressionList() ( important=prio() )?
      {
         exp = ((SassList) exp).flatten();
@@ -2508,17 +2539,22 @@ List<SassListItem> numberTerm(char op) :
 	}
 }
 
-String identInterpolationString() :
+ArrayList<SassListItem> identInterpolationString() :
 {
     Token n;
     String s = "";
+    ArrayList<SassListItem> items = new ArrayList<SassListItem>();
+    Interpolation interp;
 }
 {
-    (   (n = <OR> | n = <AND> | n = <NOT> | n = <FROM> | n= <THROUGH> | n= <TO> | n = <EACH_IN> | 
-         n = <MICROSOFT_RULE>) { s += convertIdent(n.image); }
-      | (LOOKAHEAD(1) ( n = <IDENT> | n = <INTERPOLATION> | n = "-") {s += convertIdent(n.image); } )+
-    ) 
-    { return s; }
+    (   (n = <OR> | n = <AND> | n = <NOT> | n = <FROM> | n= <THROUGH> | n= <TO> | n = <EACH_IN>
+         | n = <MICROSOFT_RULE>) { items.add(new StringItem(convertIdent(n.image))); }
+      | (LOOKAHEAD(1) ( n = <IDENT> {items.add(new StringItem(convertIdent(n.image))); }
+          | interp = interpolation() {items.add(interp); } | n = "-" {items.add(new StringItem(convertIdent(n.image))); }) )+
+    )
+    {
+        return items;
+    }
 }
 
 Token ident() :
@@ -2531,12 +2567,13 @@ Token ident() :
     { return n; }
 }
 
-List<SassListItem> stringTerm(char op) : 
+List<SassListItem> stringTerm(char op) :
 {
     boolean spaceAfter = false;
     int beginLine = getToken(1).beginLine, beginColumn = getToken(1).beginColumn;
     Token n = null;
     LexicalUnitImpl result = null;
+    ArrayList<SassListItem> iis;
     String s = "";
 }
 {
@@ -2545,13 +2582,15 @@ List<SassListItem> stringTerm(char op) :
 	  s = convertStringIndex(n.image, 1, n.image.length() -1);
 	  if (op != ' ') { s = "" + op + s; }
 	  result = LexicalUnitImpl.createString(n.beginLine, n.beginColumn, s);}
-  | (< DOT >{ s+="."; })?(s = identInterpolationString()){
-    if(op != ' ') { s = "" + op + s; }
-	if ("inherit".equals(s)) {
-	    result = LexicalUnitImpl.createInherit(beginLine, beginColumn);
-	} else {
-	    result = LexicalUnitImpl.createIdent(beginLine, beginColumn, s);
-	}
+  | (< DOT >{ s="."; })?(iis = identInterpolationString()){
+        if(op != ' ') { s = "" + op + s; }
+        if(!"".equals(s)) { iis.add(0, new StringItem(s)); }
+        StringInterpolationSequence sis = new StringInterpolationSequence(iis);
+	    if ("inherit".equals(sis.toString())) {
+	        result = LexicalUnitImpl.createInherit(beginLine, beginColumn);
+	    } else {
+	        result = LexicalUnitImpl.createIdent(beginLine, beginColumn, sis);
+	    }
 
     // TODO fix this - no prev
 	  /* /

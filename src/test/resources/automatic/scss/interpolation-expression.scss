@@ -1,0 +1,20 @@
+.interpolation {
+    $x: 5;
+    $y: 2;
+    $z: -3;
+    $w: 1.25;
+    arithmetic: #{$x + $y + $z};
+    function-call: #{abs($z)};
+    both: #{-(floor($w) + ceil($w)) * abs($z * ceil($w))};
+    ident-interpolation: -first-#{$x + $y + $z}-second-#{-(floor($w) + ceil($w)) * abs($z * ceil($w))};
+    slash-not-as-division: #{10/5};
+    slash-as-division: #{10/$x};
+}
+
+$sel: "Sel";
+$i: -5;
+$j: 6;
+
+#id#{$sel}ector-#{$i + $j} {
+    color: blue;
+}

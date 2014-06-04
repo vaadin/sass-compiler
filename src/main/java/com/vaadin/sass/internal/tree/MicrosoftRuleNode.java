@@ -15,39 +15,49 @@
  */
 package com.vaadin.sass.internal.tree;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.parser.SassListItem;
+import com.vaadin.sass.internal.parser.StringInterpolationSequence;
+import com.vaadin.sass.internal.parser.StringItem;
 import com.vaadin.sass.internal.util.StringUtil;
 
 public class MicrosoftRuleNode extends Node implements IVariableNode {
 
     private final String name;
-    private String value;
+    private StringInterpolationSequence value;
 
-    public MicrosoftRuleNode(String name, String value) {
+    public MicrosoftRuleNode(String name, StringInterpolationSequence value) {
         this.name = name;
         this.value = value;
     }
 
     @Override
     public void replaceVariables(Collection<VariableNode> variables) {
-        replaceInterpolation(variables);
-        for (final VariableNode var : variables) {
-            if (StringUtil.containsVariable(value, var.getName())) {
-                value = StringUtil.replaceVariable(value, var.getName(), var
-                        .getExpr().printState());
+        boolean variableReplaced = false;
+        value = value.replaceVariables(variables);
+        // Replace variables occurring in quoted strings
+        ArrayList<SassListItem> items = new ArrayList<SassListItem>();
+        for (SassListItem item : value.getItems()) {
+            if (!(item instanceof StringItem)) {
+                items.add(item);
+                continue;
             }
+            String stringValue = item.printState();
+            for (final VariableNode var : variables) {
+                if (StringUtil.containsVariable(stringValue, var.getName())) {
+                    variableReplaced = true;
+                    stringValue = StringUtil.replaceVariable(stringValue,
+                            var.getName(), var.getExpr().printState());
+                }
+            }
+            items.add(new StringItem(stringValue));
         }
-    }
-
-    public String replaceInterpolation(Collection<VariableNode> variables) {
-        for (final VariableNode var : variables) {
-            String interpolation = "#{$" + var.getName() + "}";
-                value = value.replace(interpolation, var.getExpr()
-                        .unquotedString());
+        if (variableReplaced) {
+            value = new StringInterpolationSequence(items);
         }
-        return value;
     }
 
     @Override

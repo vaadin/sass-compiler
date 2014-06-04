@@ -15,6 +15,9 @@
  */
 package com.vaadin.sass.internal.selector;
 
+import java.util.Collection;
+
+import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
@@ -24,13 +27,13 @@ import com.vaadin.sass.internal.tree.VariableNode;
  */
 public class PseudoElementSelector extends SimpleSelector {
 
-    private String pseudoElement;
+    private StringInterpolationSequence pseudoElement;
 
-    public PseudoElementSelector(String pseudoElement) {
+    public PseudoElementSelector(StringInterpolationSequence pseudoElement) {
         this.pseudoElement = pseudoElement;
     }
 
-    public String getPseudoElement() {
+    public StringInterpolationSequence getPseudoElement() {
         return pseudoElement;
     }
 
@@ -40,8 +43,9 @@ public class PseudoElementSelector extends SimpleSelector {
     }
 
     @Override
-    public PseudoElementSelector replaceVariable(VariableNode var) {
+    public PseudoElementSelector replaceVariables(
+            Collection<VariableNode> variables) {
         return new PseudoElementSelector(
-                var.replaceInterpolation(pseudoElement));
+                pseudoElement.replaceVariables(variables));
     }
 }

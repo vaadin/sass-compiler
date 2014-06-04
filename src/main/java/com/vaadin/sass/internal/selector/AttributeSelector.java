@@ -15,6 +15,9 @@
  */
 package com.vaadin.sass.internal.selector;
 
+import java.util.Collection;
+
+import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
@@ -40,9 +43,9 @@ public class AttributeSelector extends SimpleSelector {
         }
     }
 
-    private String attribute;
+    private StringInterpolationSequence attribute;
     private MatchRelation matchRelation;
-    private String value;
+    private StringInterpolationSequence value;
 
     /**
      * Constructs an attribute selector with an attribute name and optional
@@ -56,22 +59,22 @@ public class AttributeSelector extends SimpleSelector {
      * @param value
      *            string value to compare against
      */
-    public AttributeSelector(String attribute, MatchRelation matchRelation,
-            String value) {
+    public AttributeSelector(StringInterpolationSequence attribute,
+            MatchRelation matchRelation, StringInterpolationSequence value) {
         this.attribute = attribute;
         this.matchRelation = matchRelation;
         this.value = value;
     }
 
     public String getAttribute() {
-        return attribute;
+        return attribute.toString();
     }
 
     public MatchRelation getMatchRelation() {
         return matchRelation;
     }
 
-    private String getValue() {
+    private StringInterpolationSequence getValue() {
         return value;
     }
 
@@ -85,11 +88,13 @@ public class AttributeSelector extends SimpleSelector {
     }
 
     @Override
-    public AttributeSelector replaceVariable(VariableNode var) {
-        String newAttribute = var.replaceInterpolation(attribute);
-        String newValue = (value == null) ? null : var
-                .replaceInterpolation(value);
+    public AttributeSelector replaceVariables(Collection<VariableNode> variables) {
+        StringInterpolationSequence newAttribute = attribute
+                .replaceVariables(variables);
+        StringInterpolationSequence newValue = null;
+        if (value != null) {
+            newValue = value.replaceVariables(variables);
+        }
         return new AttributeSelector(newAttribute, matchRelation, newValue);
     }
-
 }

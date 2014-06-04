@@ -7,3 +7,12 @@ $radius: 10px;
   #{$side}-radius: $radius;
   no-interpolation: no-interpolation;
 }
+
+$a: font;
+$fam: fam;
+$il: il;
+.nested-interpolation {
+    #{$a}: {
+        #{$fam}#{$il}y: courier;
+    }
+}

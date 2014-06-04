@@ -30,6 +30,7 @@ import org.w3c.css.sac.SelectorList;
 
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.SassListItem;
+import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 import com.vaadin.sass.internal.selector.Selector;
 import com.vaadin.sass.internal.tree.BlockNode;
 import com.vaadin.sass.internal.tree.CommentNode;
@@ -203,14 +204,14 @@ public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
         nodeStack.pop();
     }
 
-    public void property(String name, SassListItem value, boolean important)
-            throws CSSException {
+    public void property(StringInterpolationSequence name, SassListItem value,
+            boolean important) throws CSSException {
         property(name, value, important, null);
     }
 
     @Override
-    public void property(String name, SassListItem value, boolean important,
-            String comment) {
+    public void property(StringInterpolationSequence name, SassListItem value,
+            boolean important, String comment) {
         RuleNode node = new RuleNode(name, value, important, comment);
         nodeStack.peek().appendChild(node);
     }
@@ -222,14 +223,14 @@ public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
     }
 
     @Override
-    public void startNestedProperties(String name) {
+    public void startNestedProperties(StringInterpolationSequence name) {
         NestPropertiesNode node = new NestPropertiesNode(name);
         nodeStack.peek().appendChild(node);
         nodeStack.push(node);
     }
 
     @Override
-    public void endNestedProperties(String name) {
+    public void endNestedProperties(StringInterpolationSequence name) {
         nodeStack.pop();
     }
 
@@ -303,7 +304,8 @@ public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
     }
 
     @Override
-    public void microsoftDirective(String name, String value) {
+    public void microsoftDirective(String name,
+            StringInterpolationSequence value) {
         MicrosoftRuleNode node = new MicrosoftRuleNode(name, value);
         nodeStack.peek().appendChild(node);
     }
@@ -328,7 +330,8 @@ public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
     }
 
     @Override
-    public void startKeyFrames(String keyframeName, String animationName) {
+    public void startKeyFrames(String keyframeName,
+            StringInterpolationSequence animationName) {
         KeyframesNode node = new KeyframesNode(keyframeName, animationName);
         nodeStack.peek().appendChild(node);
         nodeStack.push(node);

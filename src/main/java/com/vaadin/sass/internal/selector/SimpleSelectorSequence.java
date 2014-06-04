@@ -198,10 +198,11 @@ public class SimpleSelectorSequence extends ArrayList<SimpleSelector> implements
         return that.containsAll(this);
     }
 
-    public SimpleSelectorSequence replaceVariable(VariableNode var) {
+    public SimpleSelectorSequence replaceVariables(
+            Collection<VariableNode> variables) {
         SimpleSelectorSequence newSeq = new SimpleSelectorSequence();
         for (SimpleSelector s : this) {
-            newSeq.add(s.replaceVariable(var));
+            newSeq.add(s.replaceVariables(variables));
         }
         return newSeq;
     }

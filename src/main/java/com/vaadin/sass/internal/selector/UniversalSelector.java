@@ -15,6 +15,9 @@
  */
 package com.vaadin.sass.internal.selector;
 
+import java.util.Collection;
+
+import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
@@ -27,11 +30,11 @@ public class UniversalSelector extends TypeSelector {
     public static final UniversalSelector it = new UniversalSelector();
 
     private UniversalSelector() {
-        super("*");
+        super(new StringInterpolationSequence("*"));
     }
 
     @Override
-    public UniversalSelector replaceVariable(VariableNode var) {
+    public UniversalSelector replaceVariables(Collection<VariableNode> variables) {
         return this;
     }
 

@@ -1,0 +1,12 @@
+.interpolation {
+    arithmetic: 4;
+    function-call: 3;
+    both: -18;
+    ident-interpolation: -first-4-second--18;
+    slash-not-as-division: 10/5;
+    slash-as-division: 2;
+}
+
+#idSelector-1 {
+    color: blue;
+}
