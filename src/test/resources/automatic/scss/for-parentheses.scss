@@ -1,0 +1,13 @@
+.parentheses-in-for {
+    $lower: 10;
+    $items: 5;
+    @for $i from $lower through ($lower + $items - 1) {
+        item-#{$i}: 1;
+    }
+    $a: 2;
+    $b: 3;
+    $c: 5;
+    @for $i from -(-$lower + $items) + 10 through (($c - $a) * abs($a - $b) + $a * ($c - $a)) + 10 {
+        item-#{$i}: 1;
+    }
+}

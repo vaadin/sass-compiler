@@ -2364,10 +2364,29 @@ List<SassListItem> numericTerm() :
   ( op = unaryOperator() )?
   (  ( res = numberTerm(op) )
    | ( current = function(op) { res = createList(current, false); } ( <S> )* )
-   | res = variableTerm(op) )
+   | res = variableTerm(op) 
+   | current = parenthesizedNumericExpr(op) { res = createList(current, false); }
+  )
       {
 	      return res;
       }
+}
+
+SassListItem parenthesizedNumericExpr(char op):
+{
+    SassListItem result;
+}
+{
+    ("(" (<S>)* result = numericExpr() ")" (<S>)*)
+   {
+       if(op == '-'){
+           result = SassExpression.createExpression(
+              LexicalUnitImpl.createNumber(token.beginLine, token.beginColumn, -1),
+              LexicalUnitImpl.createMultiply(token.beginLine, token.beginColumn),
+              result);
+       }
+       return result;
+   } 
 }
 
 List<SassListItem> variableTerm(char op) :

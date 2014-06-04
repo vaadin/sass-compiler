@@ -18,6 +18,7 @@ package com.vaadin.sass.internal.visitor;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassListItem;
@@ -49,6 +50,7 @@ public class ForNodeHandler extends LoopNodeHandler {
     }
 
     private static int getInt(SassListItem item) {
+        item = item.replaceVariables(ScssStylesheet.getVariables());
         SassListItem value = item.evaluateFunctionsAndExpressions(true);
         if (value instanceof LexicalUnitImpl
                 && ((LexicalUnitImpl) value).isNumber()) {
