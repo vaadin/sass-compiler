@@ -104,7 +104,7 @@ public class BlockNode extends Node implements IVariableNode {
             i++;
         }
         string.append(" {\n");
-        for (Node child : children) {
+        for (Node child : getChildren()) {
             if (indent) {
                 string.append("\t");
             }

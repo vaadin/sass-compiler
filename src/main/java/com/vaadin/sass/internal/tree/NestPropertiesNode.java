@@ -45,9 +45,9 @@ public class NestPropertiesNode extends Node implements IVariableNode {
         return "Nest properties node [ name = " + name + " ]";
     }
 
-    public Collection<RuleNode> unNesting() {
+    public List<RuleNode> unNesting() {
         List<RuleNode> result = new ArrayList<RuleNode>();
-        for (Node child : children) {
+        for (Node child : getChildren()) {
             RuleNode createNewRuleNodeFromChild = createNewRuleNodeFromChild((RuleNode) child);
             result.add(createNewRuleNodeFromChild);
         }

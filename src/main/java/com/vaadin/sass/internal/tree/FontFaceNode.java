@@ -36,7 +36,7 @@ public class FontFaceNode extends Node {
         StringBuilder builder = new StringBuilder();
         builder.append("@font-face {\n");
 
-        for (final Node child : children) {
+        for (final Node child : getChildren()) {
             builder.append("\t" + strategy.build(child) + "\n");
         }
 

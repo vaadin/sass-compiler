@@ -16,7 +16,6 @@
 
 package com.vaadin.sass.internal.tree;
 
-import java.util.ArrayList;
 import java.util.Collections;
 
 import com.vaadin.sass.internal.ScssStylesheet;
@@ -33,6 +32,7 @@ public class FunctionNode extends NodeWithVariableArguments {
     private static final long serialVersionUID = -5383104165955523923L;
 
     private FunctionDefNode def;
+    private SassListItem value = null;
 
     public FunctionNode(FunctionDefNode def, LexicalUnitImpl invocation) {
         super(invocation.getFunctionName(), invocation.getParameterList());
@@ -50,20 +50,11 @@ public class FunctionNode extends NodeWithVariableArguments {
     public SassListItem evaluate() {
         traverse();
         // already evaluated
-        return getReturnNode(getChildren()).getExpr();
-    }
-
-    private ReturnNode getReturnNode(ArrayList<Node> defChildren) {
-        // one or more return nodes, the first one should be used
-        if (defChildren.size() == 0
-                || !(defChildren.get(0) instanceof ReturnNode)) {
-            throw new ParseException(
-                    "Function "
-                            + getName()
-                            + " evaluation failed - did not result in a return statement",
-                    this);
+        if (value == null) {
+            throw new ParseException("Function " + getName()
+                    + " did not return a value", this);
         }
-        return (ReturnNode) defChildren.get(0);
+        return value;
     }
 
     @Override
@@ -84,18 +75,13 @@ public class FunctionNode extends NodeWithVariableArguments {
         while (defCopy.getChildren().size() > 0) {
             defCopy.getChildren().get(0).traverse();
             if (defCopy.getChildren().get(0) instanceof ReturnNode) {
+                ReturnNode returnNode = ((ReturnNode) defCopy.getChildren()
+                        .get(0));
+                value = returnNode.evaluate(Collections
+                        .<VariableNode> emptyList());
                 break;
             }
         }
-
-        ReturnNode returnNode = getReturnNode(defCopy.getChildren());
-        // parameters are already in the scope
-        SassListItem result = returnNode.evaluate(Collections
-                .<VariableNode> emptyList());
-
-        // now modify this node
-        getChildren().clear();
-        getChildren().add(new ReturnNode(result));
     }
 
 }

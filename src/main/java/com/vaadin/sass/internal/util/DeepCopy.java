@@ -77,7 +77,7 @@ public class DeepCopy {
         }
     }
 
-    public static <T extends Node> Collection<T> copy(Collection<T> objects) {
+    public static <T extends Node> List<T> copy(Collection<T> objects) {
         List<T> copies = new LinkedList<T>();
         for (T object : objects) {
             copies.add((T) object.copy());

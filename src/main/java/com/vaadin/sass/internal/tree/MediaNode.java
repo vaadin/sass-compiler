@@ -62,7 +62,7 @@ public class MediaNode extends Node {
             }
         }
         builder.append(" {\n");
-        for (Node child : children) {
+        for (Node child : getChildren()) {
             builder.append('\t');
             if (child instanceof BlockNode) {
                 if (PRINT_STRATEGY.equals(strategy)) {

@@ -38,9 +38,9 @@ public abstract class Node implements Serializable {
 
     private static final long serialVersionUID = 5914711715839294816L;
 
-    protected ArrayList<Node> children;
+    private ArrayList<Node> children;
 
-    protected Node parentNode;
+    private Node parentNode;
 
     // used to keep track of where to append nodes moved to parent
     // map from node after which you want to add a node to the last node added
@@ -153,12 +153,10 @@ public abstract class Node implements Serializable {
         }
     }
 
-    public ArrayList<Node> getChildren() {
+    // users should avoid relying on this being mutable - currently
+    // ExtendNodeHandler does
+    public List<Node> getChildren() {
         return children;
-    }
-
-    public boolean hasChildren() {
-        return !children.isEmpty();
     }
 
     /**

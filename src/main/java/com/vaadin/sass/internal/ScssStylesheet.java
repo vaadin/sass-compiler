@@ -290,12 +290,6 @@ public class ScssStylesheet extends Node {
         return "Stylesheet node [" + buildString(TO_STRING_STRATEGY) + "]";
     }
 
-    public void addChild(int index, VariableNode node) {
-        if (node != null) {
-            children.add(index, node);
-        }
-    }
-
     public static ScssStylesheet get() {
         return mainStyleSheet;
     }
@@ -346,7 +340,7 @@ public class ScssStylesheet extends Node {
         for (Node child : new ArrayList<Node>(node.getChildren())) {
             removeEmptyBlocks(child);
         }
-        if (node instanceof BlockNode && !node.hasChildren()) {
+        if (node instanceof BlockNode && node.getChildren().isEmpty()) {
             // remove empty block
             node.removeFromParent();
         }
@@ -414,6 +408,7 @@ public class ScssStylesheet extends Node {
             string.append("@charset \"").append(getCharset()).append("\";")
                     .append(delimeter);
         }
+        List<Node> children = getChildren();
         if (children.size() > 0) {
             string.append(strategy.build(children.get(0)));
         }

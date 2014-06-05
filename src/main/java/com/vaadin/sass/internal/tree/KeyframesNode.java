@@ -64,7 +64,7 @@ public class KeyframesNode extends Node implements IVariableNode {
         StringBuilder string = new StringBuilder();
         string.append(keyframeName).append(" ").append(animationName)
                 .append(" {\n");
-        for (Node child : children) {
+        for (Node child : getChildren()) {
             string.append("\t\t").append(strategy.build(child)).append("\n");
         }
         string.append("\t}");

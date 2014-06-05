@@ -42,7 +42,7 @@ public class KeyframeSelectorNode extends Node {
     public String buildString(BuildStringStrategy strategy) {
         StringBuilder string = new StringBuilder();
         string.append(selector).append(" {\n");
-        for (Node child : children) {
+        for (Node child : getChildren()) {
             string.append("\t\t").append(strategy.build(child)).append("\n");
         }
         string.append("\t}");

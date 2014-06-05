@@ -17,7 +17,7 @@
 package com.vaadin.sass.testcases.scss;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 
 import junit.framework.Assert;
 
@@ -36,7 +36,6 @@ import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.controldirective.EachDefNode;
 import com.vaadin.sass.internal.tree.controldirective.ForNode;
 import com.vaadin.sass.internal.tree.controldirective.IfElseDefNode;
-import com.vaadin.sass.internal.tree.controldirective.WhileNode;
 
 public class ControlDirectives extends AbstractTestBase {
 
@@ -52,7 +51,7 @@ public class ControlDirectives extends AbstractTestBase {
         ScssStylesheet root = handler.getStyleSheet();
         Assert.assertNotNull(root);
 
-        ArrayList<Node> children = root.getChildren();
+        List<Node> children = root.getChildren();
         Assert.assertEquals(10, root.getChildren().size());
 
         Assert.assertTrue(children.get(1) instanceof MixinDefNode);
