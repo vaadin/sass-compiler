@@ -1615,8 +1615,7 @@ void functionBlockStatement() :
 void functionControlDirective() :
 {}
 {
-  // TODO functionWhileDirective()
-  functionIfDirective() | functionEachDirective() | functionForDirective()
+  functionIfDirective() | functionEachDirective() | functionForDirective() | functionWhileDirective()
 }
 
 void functionIfDirective() :
@@ -1690,6 +1689,21 @@ void functionForDirective() :
   ( functionBlockStatement() )*
   < RBRACE >(< S >)*
   { documentHandler.endForDirective(); }
+}
+
+void functionWhileDirective() :
+{
+  SassList list;
+  SassListItem evaluator;
+}
+{
+  < WHILE_SYM >(< S >)*
+  ( list = expressionSubList() { evaluator = list.flatten(); }  )
+  < LBRACE >(< S >)*    
+  { documentHandler.startWhileDirective(evaluator); }
+  ( functionBlockStatement() )*
+  < RBRACE >(< S >)*
+  { documentHandler.endWhileDirective(); }
 }
 
 ArrayList<VariableNode> arglist() :

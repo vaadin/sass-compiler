@@ -17,6 +17,7 @@
 package com.vaadin.sass.internal.visitor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.selector.Selector;
@@ -91,6 +92,7 @@ public class BlockNodeHandler {
 
         node.setSelectorList(newSelectors);
 
-        parentBlock.getParentNode().adoptGrandChild(node);
+        parentBlock.getParentNode().appendAfterNode(parentBlock,
+                Collections.singleton(node));
     }
 }

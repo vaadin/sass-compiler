@@ -15,14 +15,68 @@
  */
 package com.vaadin.sass.internal.visitor;
 
+import java.util.ArrayList;
+
+import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.expression.BinaryOperator;
 import com.vaadin.sass.internal.parser.ParseException;
+import com.vaadin.sass.internal.parser.SassListItem;
+import com.vaadin.sass.internal.tree.IVariableNode;
+import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.controldirective.WhileNode;
 
 public class WhileNodeHandler {
 
-    public static void traverse(WhileNode node) {
-        throw new ParseException(
-                "@while is not supported by the current version of the SASS compiler");
+    /**
+     * Replace a WhileNode with the expanded set of nodes.
+     * 
+     * @param whileNode
+     *            node to replace
+     */
+    public static void traverse(WhileNode whileNode) {
+        Node parent = whileNode.getParentNode();
+        while (evaluateCondition(whileNode)) {
+            ArrayList<Node> nodes = iteration(whileNode);
+            if (nodes.size() == 0) {
+                throw new ParseException(
+                        "@while loop iteration did nothing, infinite loop",
+                        whileNode);
+            }
+            parent.appendAfterNode(whileNode, nodes);
+
+            for (Node node : nodes) {
+                node.traverse();
+            }
+        }
+        whileNode.removeFromParent();
+    }
+
+    private static boolean evaluateCondition(WhileNode whileNode) {
+        SassListItem condition = whileNode.getCondition();
+        condition = condition.replaceVariables(ScssStylesheet.getVariables());
+        condition = condition.evaluateFunctionsAndExpressions(true);
+        return BinaryOperator.isTrue(condition);
+    }
+
+    private static ArrayList<Node> iteration(WhileNode whileNode) {
+        ArrayList<Node> nodes = new ArrayList<Node>();
+        for (final Node child : whileNode.getChildren()) {
+            Node copy = child.copy();
+            replaceVariables(copy);
+            nodes.add(copy);
+        }
+        return nodes;
+    }
+
+    private static void replaceVariables(Node copy) {
+        if (copy instanceof IVariableNode) {
+            IVariableNode n = (IVariableNode) copy;
+            n.replaceVariables(ScssStylesheet.getVariables());
+        }
+
+        for (Node c : copy.getChildren()) {
+            replaceVariables(c);
+        }
     }
 
 }

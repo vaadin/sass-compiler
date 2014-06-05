@@ -20,13 +20,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.ActualArgumentList;
+import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.util.DeepCopy;
 
@@ -42,11 +41,13 @@ public abstract class Node implements Serializable {
 
     private Node parentNode;
 
-    // used to keep track of where to append nodes moved to parent
-    // map from node after which you want to add a node to the last node added
-    // to it
-    // TODO it would be better if this can be eliminated and replaceNode() used
-    private Map<Node, Node> lastAdded = null;
+    /**
+     * Nodes based on which this node was generated - either replacing them or
+     * appended after them. This is used to append new nodes after all already
+     * appended nodes based on the same node.
+     */
+    private Collection<Node> originalNodes = new ArrayList<Node>(
+            Collections.singleton(this));
 
     public Node() {
         children = new ArrayList<Node>();
@@ -61,23 +62,27 @@ public abstract class Node implements Serializable {
      *            replacing nodes, can be an empty collection
      */
     public void replaceNode(Node oldChild, Collection<? extends Node> newNodes) {
-        appendChildrenAfter(newNodes, oldChild);
+        appendAfterNode(oldChild, newNodes);
         oldChild.removeFromParent();
     }
 
-    private void appendChildrenAfter(
-            Collection<? extends Node> childrenNodes, Node after) {
-        if (childrenNodes != null && !childrenNodes.isEmpty()) {
-            int index = children.indexOf(after);
-            if (index != -1) {
-                children.addAll(index + 1, childrenNodes);
-                for (final Node child : childrenNodes) {
-                    child.removeFromParent();
-                    child.setParentNode(this);
+    public void appendAfterNode(Node after, Collection<? extends Node> newNodes) {
+        if (newNodes != null && !newNodes.isEmpty()) {
+            // try to find last node with "after" as its original node and
+            // append after it
+            for (int i = children.size() - 1; i >= 0; --i) {
+                Node node = children.get(i);
+                if (node == after || node.originalNodes.contains(after)) {
+                    children.addAll(i + 1, newNodes);
+                    for (final Node child : newNodes) {
+                        child.removeFromParent();
+                        child.setParentNode(this);
+                        child.originalNodes.addAll(after.originalNodes);
+                    }
+                    return;
                 }
-            } else {
-                throw new NullPointerException("after-node was not found");
             }
+            throw new ParseException("after-node was not found", after);
         }
     }
 
@@ -103,53 +108,6 @@ public abstract class Node implements Serializable {
         if (getParentNode() != null) {
             getParentNode().children.remove(this);
             setParentNode(null);
-        }
-    }
-
-    /**
-     * Move the grand child node grandChild to be a direct child of this node,
-     * adding it after its old parent and keeping track of other nodes added
-     * after the same child.
-     * 
-     * This method should be avoided if possible, use
-     * {@link #replaceNode(Node, Collection)} instead.
-     * 
-     * @param grandChild
-     */
-    public void adoptGrandChild(Node grandChild) {
-        Node oldParent = grandChild.getParentNode();
-        appendChildrenAfter(Collections.singleton(grandChild),
-                getLastAdded(oldParent));
-        setLastAdded(grandChild, oldParent);
-    }
-
-    private Node getLastAdded(Node after) {
-        if (lastAdded == null) {
-            return after;
-        } else {
-            Node node = lastAdded.get(after);
-            if (node != null) {
-                return node;
-            } else {
-                return after;
-            }
-        }
-    }
-
-    private void setLastAdded(Node added, Node after) {
-        if (lastAdded == null) {
-            lastAdded = new HashMap<Node, Node>();
-        }
-        // update the insert points also when doing multi-level un-nesting
-        List<Node> nodesToUpdate = new ArrayList<Node>();
-        nodesToUpdate.add(after);
-        for (Entry<Node, Node> entry : lastAdded.entrySet()) {
-            if (entry.getValue() == after) {
-                nodesToUpdate.add(entry.getKey());
-            }
-        }
-        for (Node node : nodesToUpdate) {
-            lastAdded.put(node, added);
         }
     }
 
@@ -187,17 +145,20 @@ public abstract class Node implements Serializable {
 
     private void setParentNode(Node parentNode) {
         this.parentNode = parentNode;
-        // clear map when node is moved
-        // this shouldn't happen in the middle of handling children
-        lastAdded = null;
     }
 
     public Node copy() {
+        // these do not need to be copied
         Node oldParent = parentNode;
+        Collection<Node> oldOriginalNodes = originalNodes;
         parentNode = null;
+        originalNodes.clear();
+
         Node copy = (Node) DeepCopy.copy(this);
         copy.parentNode = oldParent;
+
         parentNode = oldParent;
+        originalNodes = oldOriginalNodes;
         return copy;
     }
 

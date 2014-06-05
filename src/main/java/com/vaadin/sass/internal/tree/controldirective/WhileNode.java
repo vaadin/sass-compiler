@@ -33,6 +33,10 @@ public class WhileNode extends Node {
         return "While Node: { condition: " + condition + "}";
     }
 
+    public SassListItem getCondition() {
+        return condition;
+    }
+
     @Override
     public void traverse() {
         WhileNodeHandler.traverse(this);
