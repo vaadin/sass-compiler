@@ -24,6 +24,7 @@
 package com.vaadin.sass.internal.parser;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,6 +42,7 @@ import com.vaadin.sass.internal.expression.exception.IncompatibleUnitsException;
 import com.vaadin.sass.internal.parser.function.AbsFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.AlphaFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.CeilFunctionGenerator;
+import com.vaadin.sass.internal.parser.function.ColorComponentFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.DarkenFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.DefaultFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.FloorFunctionGenerator;
@@ -51,7 +53,6 @@ import com.vaadin.sass.internal.parser.function.ListLengthFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.ListNthFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.MinMaxFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.PercentageFunctionGenerator;
-import com.vaadin.sass.internal.parser.function.RGBComponentFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.RGBFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.RectFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.RoundFunctionGenerator;
@@ -77,6 +78,9 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     private static final long serialVersionUID = -6649833716809789399L;
 
     public static final long PRECISION = 100000L;
+
+    private static final DecimalFormat CSS_FLOAT_FORMAT = new DecimalFormat(
+            "0.0####");
 
     private short type;
     private int line;
@@ -211,7 +215,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         if ((i) == f) {
             return i + "";
         } else {
-            return f + "";
+            return CSS_FLOAT_FORMAT.format(f);
         }
     }
 
@@ -505,7 +509,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         return new LexicalUnitImpl(line, column, SAC_PICA, null, v);
     }
 
-    static LexicalUnitImpl createDEG(int line, int column, float v) {
+    public static LexicalUnitImpl createDEG(int line, int column, float v) {
         return new LexicalUnitImpl(line, column, SAC_DEGREE, null, v);
     }
 
@@ -824,7 +828,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         list.add(new TypeOfFunctionGenerator());
         list.add(new AlphaFunctionGenerator());
         list.add(new TransparencyModificationFunctionGenerator());
-        list.add(new RGBComponentFunctionGenerator());
+        list.add(new ColorComponentFunctionGenerator());
         return list;
     }
 

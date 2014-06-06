@@ -153,12 +153,28 @@ public class ColorUtil {
     /**
      * Converts a color into an array of its RGB components.
      * 
+     * In the case of an RGBA value, the alpha channel is ignored.
+     * 
      * @param color
      *            a lexical unit that represents a color
      * @return RGB components or null if not a color
      */
     public static int[] colorToRgb(LexicalUnitImpl color) {
-        if (isHexColor(color)) {
+        if (isRgba(color)) {
+            if (color.getParameterList().size() == 2
+                    && color.getParameterList().get(0) instanceof LexicalUnitImpl) {
+                return colorToRgb((LexicalUnitImpl) color.getParameterList()
+                        .get(0));
+            } else {
+                int red = color.getParameterList().get(0).getContainedValue()
+                        .getIntegerValue();
+                int green = color.getParameterList().get(1).getContainedValue()
+                        .getIntegerValue();
+                int blue = color.getParameterList().get(2).getContainedValue()
+                        .getIntegerValue();
+                return new int[] { red, green, blue };
+            }
+        } else if (isHexColor(color)) {
             return hexColorToRgb(color);
         } else if (isHslColor(color)) {
             return hslToRgb(color);
@@ -193,7 +209,16 @@ public class ColorUtil {
      *            a lexical unit that represents a color
      * @return HSL components or null if not a color
      */
-    private static int[] colorToHsl(LexicalUnitImpl color) {
+    public static float[] colorToHsl(LexicalUnitImpl color) {
+        if (isHslColor(color)) {
+            float hue = color.getParameterList().get(0).getContainedValue()
+                    .getFloatValue();
+            float saturation = color.getParameterList().get(1)
+                    .getContainedValue().getFloatValue();
+            float lightness = color.getParameterList().get(2)
+                    .getContainedValue().getFloatValue();
+            return new float[] { hue, saturation, lightness };
+        }
         // TODO shortcut path for hsl()? need to take percent vs. integer vs.
         // real into account
         // TODO int[] loses precision
@@ -201,7 +226,7 @@ public class ColorUtil {
         if (rgb == null) {
             return null;
         }
-        int hsl[] = calculateHsl(rgb[0], rgb[1], rgb[2]);
+        float hsl[] = calculateHsl(rgb[0], rgb[1], rgb[2]);
         return hsl;
     }
 
@@ -315,7 +340,7 @@ public class ColorUtil {
     }
 
     private static LexicalUnitImpl colorToHslUnit(LexicalUnitImpl color) {
-        int[] hsl = colorToHsl(color);
+        float[] hsl = colorToHsl(color);
 
         return createHslFunction(hsl[0], hsl[1], hsl[2], color.getLineNumber(),
                 color.getColumnNumber());
@@ -345,8 +370,8 @@ public class ColorUtil {
         return rgb;
     }
 
-    private static int[] calculateHsl(int red, int green, int blue) {
-        int[] hsl = new int[3];
+    private static float[] calculateHsl(int red, int green, int blue) {
+        float[] hsl = new float[3];
 
         float r = red / 255f;
         float g = green / 255f;
@@ -379,9 +404,9 @@ public class ColorUtil {
             s = d / (2 - 2 * l);
         }
 
-        hsl[0] = Math.round(h % 360);
-        hsl[1] = Math.round(s * 100);
-        hsl[2] = Math.round(l * 100);
+        hsl[0] = h % 360;
+        hsl[1] = s * 100;
+        hsl[2] = l * 100;
 
         return hsl;
     }
@@ -405,9 +430,9 @@ public class ColorUtil {
         return m1;
     }
 
-    private static LexicalUnitImpl createHslFunction(int hue, int saturation,
-            int lightness, int ln, int cn) {
-        LexicalUnitImpl hueUnit = LexicalUnitImpl.createInteger(ln, cn, hue);
+    private static LexicalUnitImpl createHslFunction(float hue,
+            float saturation, float lightness, int ln, int cn) {
+        LexicalUnitImpl hueUnit = LexicalUnitImpl.createNumber(ln, cn, hue);
         LexicalUnitImpl saturationUnit = LexicalUnitImpl.createPercentage(ln,
                 cn, saturation);
         LexicalUnitImpl lightnessUnit = LexicalUnitImpl.createPercentage(ln,

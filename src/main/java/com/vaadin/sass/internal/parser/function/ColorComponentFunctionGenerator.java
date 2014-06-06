@@ -21,41 +21,50 @@ import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.util.ColorUtil;
 
-public class RGBComponentFunctionGenerator extends AbstractFunctionGenerator {
+public class ColorComponentFunctionGenerator extends AbstractFunctionGenerator {
 
-    public RGBComponentFunctionGenerator() {
-        super("red", "green", "blue");
+    public ColorComponentFunctionGenerator() {
+        super("red", "green", "blue", "hue", "saturation", "lightness");
     }
 
     @Override
     public SassListItem compute(LexicalUnitImpl function) {
-        int componentNumber; // the index of the wanted component in an RGB
-                             // array
+        boolean hslComponent = false;
+        int componentNumber = 0; // the index of the wanted component in an RGB
+                                 // array
         if ("red".equals(function.getFunctionName())) {
             componentNumber = 0;
         } else if ("green".equals(function.getFunctionName())) {
             componentNumber = 1;
-        } else {
+        } else if ("blue".equals(function.getFunctionName())) {
             componentNumber = 2;
+        } else if ("hue".equals(function.getFunctionName())) {
+            componentNumber = 0;
+            hslComponent = true;
+        } else if ("saturation".equals(function.getFunctionName())) {
+            componentNumber = 1;
+            hslComponent = true;
+        } else if ("lightness".equals(function.getFunctionName())) {
+            componentNumber = 2;
+            hslComponent = true;
         }
         checkParameters(function);
         LexicalUnitImpl color = function.getParameterList().get(0)
                 .getContainedValue();
-        int[] rgb;
-        if (ColorUtil.isRgba(color)) {
-            ActualArgumentList rgbaComponents = color.getParameterList();
-            if (rgbaComponents.size() == 2) { // the first component is a hex
-                                              // color
-                rgb = ColorUtil.colorToRgb((LexicalUnitImpl) rgbaComponents
-                        .get(0));
-            } else { // the components are red, green, blue, alpha
-                return rgbaComponents.get(componentNumber);
+        if (hslComponent) {
+            float[] components = ColorUtil.colorToHsl(color);
+            if (componentNumber == 0) {
+                return LexicalUnitImpl.createDEG(color.getLineNumber(),
+                        color.getColumnNumber(), components[componentNumber]);
+            } else {
+                return LexicalUnitImpl.createPercentage(color.getLineNumber(),
+                        color.getColumnNumber(), components[componentNumber]);
             }
-        } else { // handle a non-rgba color
-            rgb = ColorUtil.colorToRgb(color);
+        } else {
+            int[] components = ColorUtil.colorToRgb(color);
+            return LexicalUnitImpl.createInteger(color.getLineNumber(),
+                    color.getColumnNumber(), components[componentNumber]);
         }
-        return LexicalUnitImpl.createInteger(color.getLineNumber(),
-                color.getColumnNumber(), rgb[componentNumber]);
     }
 
     private void checkParameters(LexicalUnitImpl function) {

@@ -16,9 +16,11 @@ $blue:3;
 	color: darken(#800, 20%);
 	color: lighten(#880000, 20%);
 	color: lighten(#800, 20%);
+	color: lighten(#114422, 30%);
 	color : $base-color;
 	color : $app-bg-color;
 	color: rgb($red, $green, $blue);
 	percents: percentage(-0.2);
 	percents: percentage(0.3333);
 }
+
