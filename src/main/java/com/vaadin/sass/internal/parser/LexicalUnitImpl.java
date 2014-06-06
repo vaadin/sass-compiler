@@ -25,6 +25,7 @@ package com.vaadin.sass.internal.parser;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -993,6 +994,9 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     }
 
     static {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+        symbols.setDecimalSeparator('.');
+        CSS_FLOAT_FORMAT.setDecimalFormatSymbols(symbols);
         for (SCSSFunctionGenerator serializer : initSerializers()) {
             for (String functionName : serializer.getFunctionNames()) {
                 SERIALIZERS.put(functionName, serializer);
