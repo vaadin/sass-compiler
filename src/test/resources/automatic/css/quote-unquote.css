@@ -1,0 +1,14 @@
+.foo {
+  unq1: abc;
+  unq2: abc;
+  unq3: abc;
+  unq4: abc;
+  q1: "abc";
+  q2: "abc";
+  q3: "abc";
+  q4: "abc";
+  qu1: "def";
+  qu2: "def";
+  uq1: def;
+  uq2: def;
+}

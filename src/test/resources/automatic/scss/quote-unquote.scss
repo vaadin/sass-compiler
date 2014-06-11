@@ -1,0 +1,19 @@
+$str: 'abc';
+$un: abc;
+
+.foo {
+    unq1: unquote($str);
+    unq2: unquote('abc');
+    unq3: unquote("abc");
+    unq4: unquote(abc);
+
+    q1: quote(abc);
+    q2: quote("abc");
+    q3: quote('abc');
+    q4: quote($un);
+
+    qu1: quote(unquote('def'));
+    qu2: quote(unquote(def));
+    uq1: unquote(quote(def));
+    uq2: unquote(quote("def"));
+}
