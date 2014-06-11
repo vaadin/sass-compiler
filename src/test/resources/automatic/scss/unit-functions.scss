@@ -1,0 +1,13 @@
+.unitless {
+    t1: unitless(100);
+    f1: unitless(100px);
+    f2: unitless(3em);
+    f3: unitless(10px * 5);
+    f4: unitless(12 + 12px);
+}
+
+.unit {
+    none1: unit(100);
+    px1: unit(100px);
+    em1: unit(3em);
+}

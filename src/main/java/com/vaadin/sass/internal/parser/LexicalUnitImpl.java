@@ -61,6 +61,8 @@ import com.vaadin.sass.internal.parser.function.RoundFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.SCSSFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.TransparencyModificationFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.TypeOfFunctionGenerator;
+import com.vaadin.sass.internal.parser.function.UnitFunctionGenerator;
+import com.vaadin.sass.internal.parser.function.UnitlessFunctionGenerator;
 import com.vaadin.sass.internal.tree.FunctionDefNode;
 import com.vaadin.sass.internal.tree.FunctionNode;
 import com.vaadin.sass.internal.tree.Node;
@@ -229,6 +231,9 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     @Override
     public String getDimensionUnitText() {
         switch (type) {
+        case SAC_INTEGER:
+        case SAC_REAL:
+            return "";
         case SAC_PERCENTAGE:
             return "%";
         case SAC_EM:
@@ -579,7 +584,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         return new LexicalUnitImpl(0, 0, SAC_STRING_VALUE, s);
     }
 
-    static LexicalUnitImpl createString(int line, int column, String s) {
+    public static LexicalUnitImpl createString(int line, int column, String s) {
         return new LexicalUnitImpl(line, column, SAC_STRING_VALUE, s);
     }
 
@@ -835,6 +840,8 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         list.add(new AlphaFunctionGenerator());
         list.add(new TransparencyModificationFunctionGenerator());
         list.add(new ColorComponentFunctionGenerator());
+        list.add(new UnitFunctionGenerator());
+        list.add(new UnitlessFunctionGenerator());
         return list;
     }
 
