@@ -610,6 +610,7 @@ TOKEN :
   | <WHILE_SYM          : "@while">
   | <IF_SYM             : "@if">
   | <ELSE_SYM           : "@else"> : ELSE_STATE
+  | <ELSEIF_SYM         : "@elseif">
   | <EXTEND_SYM         : "@extend">
   | <MOZ_DOCUMENT_SYM   : "@-moz-document">
   | <SUPPORTS_SYM       : "@supports">
@@ -1543,8 +1544,9 @@ void elseDirective() :
   SassListItem evaluator = null;
 }
 {
-  < ELSE_SYM >(< S >)*
-  ( < IF > (< S >)* ( list = expressionSubList() { evaluator = list.flatten(); } ) )?
+  (<ELSEIF_SYM>(< S >)* list = expressionSubList() { evaluator = list.flatten(); }
+  | < ELSE_SYM >(< S >)*
+  ( < IF > (< S >)* ( list = expressionSubList() { evaluator = list.flatten(); } ) )?)
   < LBRACE >(< S >)*
   { if(evaluator != null){ documentHandler.ifDirective(evaluator); }
     else{ documentHandler.elseDirective(); }  
@@ -1642,8 +1644,9 @@ void functionElseDirective() :
   SassListItem condition = null;
 }
 {
-  < ELSE_SYM >(< S >)* 
-  ( < IF >(< S >)* ( list = expressionSubList() { condition = list.flatten(); } ) )?
+  (<ELSEIF_SYM>(< S >)* list = expressionSubList() { condition = list.flatten(); }
+  | < ELSE_SYM >(< S >)* 
+  ( < IF >(< S >)* ( list = expressionSubList() { condition = list.flatten(); } ) )?)
   < LBRACE >(< S >)*
   { if(condition != null){ documentHandler.ifDirective(condition); }
     else{ documentHandler.elseDirective(); }  

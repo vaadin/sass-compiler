@@ -1,0 +1,61 @@
+$a: 1;
+$b: 4;
+$c: 4;
+
+@function different($first, $second){
+    @if $first < $second {
+        @return true;
+    }
+    @elseif $first > $second {
+        @return true;
+    }
+    @return false;
+}
+
+.elseif-function {
+    $a: 1;
+    $b: 4;
+    $c: 4;
+    different-a-b: different($a, $b);
+    different-b-c: different($b, $c);
+}
+
+.elseif-nofunction {
+    $result: null;
+    @if $a < $b {
+        $result: true;
+    }
+    @elseif $a > $b {
+        $result: true;
+    }
+    @else {
+        $result: false;
+    }   
+    different-a-b: $result;
+    
+    $a: 4;
+    $result: null;
+    @if $a < $b {
+        $result: true;
+    }
+    @elseif $a > $b {
+        $result: true;
+    }
+    @else {
+        $result: false;
+    }   
+    different-4-4: $result;
+    
+    $a: 5;
+    $result: null;
+    @if $a < $b {
+        $result: true;
+    }
+    @elseif $a > $b {
+        $result: true;
+    }
+    @else {
+        $result: false;
+    }
+    different-5-4: $result;
+}

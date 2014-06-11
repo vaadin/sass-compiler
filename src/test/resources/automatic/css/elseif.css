@@ -1,0 +1,10 @@
+.elseif-function {
+  different-a-b: true;
+  different-b-c: false;
+}
+
+.elseif-nofunction {
+  different-a-b: true;
+  different-4-4: false;
+  different-5-4: true;
+}
