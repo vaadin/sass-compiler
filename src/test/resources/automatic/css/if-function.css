@@ -1,0 +1,25 @@
+.simple {
+  a: 1px;
+  b: 2px;
+}
+
+.variables {
+  first: a b c;
+  second: d, e, f;
+}
+
+.expressions {
+  smaller: 5;
+  greater: 10;
+  first-expression: 13;
+  second-expression: 5;
+}
+
+.expressions-and-variables {
+  first: rgba(170, 170, 170, 0.5);
+  second: rgba(119, 119, 119, 0.5);
+  five: 5;
+  ten: 10;
+  value-3: 3;
+  value-8: 8;
+}

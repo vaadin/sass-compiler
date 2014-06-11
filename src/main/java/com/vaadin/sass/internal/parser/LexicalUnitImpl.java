@@ -47,6 +47,7 @@ import com.vaadin.sass.internal.parser.function.ColorComponentFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.DarkenFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.DefaultFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.FloorFunctionGenerator;
+import com.vaadin.sass.internal.parser.function.IfFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.LightenFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.ListAppendFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.ListJoinFunctionGenerator;
@@ -779,8 +780,11 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
             boolean evaluateArithmetics) {
         if (params != null) {
             SCSSFunctionGenerator generator = getGenerator(getFunctionName());
-            LexicalUnitImpl copy = createFunction(line, column, fname,
-                    params.evaluateFunctionsAndExpressions(true));
+            LexicalUnitImpl copy = this;
+            if (!"if".equals(getFunctionName())) {
+                copy = createFunction(line, column, fname,
+                        params.evaluateFunctionsAndExpressions(true));
+            }
             if (generator == null) {
                 SassListItem result = copy.replaceCustomFunctions();
                 if (result != null) {
@@ -816,6 +820,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         list.add(new CeilFunctionGenerator());
         list.add(new DarkenFunctionGenerator());
         list.add(new FloorFunctionGenerator());
+        list.add(new IfFunctionGenerator());
         list.add(new LightenFunctionGenerator());
         list.add(new ListAppendFunctionGenerator());
         list.add(new ListJoinFunctionGenerator());

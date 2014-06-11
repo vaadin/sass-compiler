@@ -1,0 +1,35 @@
+.simple {
+    a: if(true, 1px, 2px);
+    b: if(false, 1px, 2px);
+}
+
+.variables {
+    $a: true;
+    $b: false;
+    $c: (a b c);
+    $d: (d, e, f);
+    first: if($a, $c, $d);
+    second: if($b, $c, $d);
+}
+
+.expressions {
+    smaller: if(5 < 10, 5, 10);
+    greater: if(5 > 10, 5, 10);
+    first-expression: if(true, 10 / 2 + 8, floor(2.4) + ceil(2.4));
+    second-expression: if(false, 10 / 2 + 5, floor(2.4) + ceil(2.4));
+}
+
+.expressions-and-variables {
+    $first: #aaaaaa;
+    $second: #777777;
+    $val1: 5;
+    $val2: 10;
+    $list1: a b c;
+    $list2: a b;
+    first: if($val1 < $val2, transparentize($first, 0.5), transparentize($second, 0.5));
+    second: if($val1 > $val2, transparentize($first, 0.5), transparentize($second, 0.5));
+    five: if(length($list2) < length($list1), $val1, $val2);
+    ten: if(length($list1) < length($list2), $val1, $val2);
+    value-3: if( if($val1 < $val2, true, false), abs(floor(($val1 - $val2) / 2)), round(($val1 + $val2) / 2));
+    value-8: if( if($val1 < $val2, false, true), abs(floor(($val1 - $val2) / 2)), round(($val1 + $val2) / 2));
+}
