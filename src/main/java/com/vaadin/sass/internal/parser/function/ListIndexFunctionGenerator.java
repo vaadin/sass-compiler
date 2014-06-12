@@ -15,28 +15,24 @@
  */
 package com.vaadin.sass.internal.parser.function;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.vaadin.sass.internal.parser.ActualArgumentList;
+import com.vaadin.sass.internal.parser.FormalArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
-import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassListItem;
-import com.vaadin.sass.internal.tree.VariableNode;
 
 public class ListIndexFunctionGenerator extends AbstractFunctionGenerator {
 
+    private static String[] argumentNames = { "list", "value" };
+
     public ListIndexFunctionGenerator() {
-        super("index");
+        super(createArgumentList(argumentNames, false), "index");
     }
 
     @Override
-    public SassListItem compute(LexicalUnitImpl function) {
-        ActualArgumentList params = function.getParameterList();
-        checkArguments(function, params);
-        SassListItem listItem = getArgument(params, 0, "list");
-        SassListItem item = getArgument(params, 1, "value");
+    protected SassListItem computeForArgumentList(LexicalUnitImpl function,
+            FormalArgumentList actualArguments) {
+        SassListItem listItem = getParam(actualArguments, "list");
+        SassListItem item = getParam(actualArguments, "value");
         int index = -1;
         if (!(listItem instanceof SassList)) {
             index = listItem.equals(item) ? 1 : -1;
@@ -55,49 +51,6 @@ public class ListIndexFunctionGenerator extends AbstractFunctionGenerator {
         } else {
             return LexicalUnitImpl.createInteger(function.getLineNumber(),
                     function.getColumnNumber(), index);
-        }
-    }
-
-    /**
-     * Returns the unnamed parameter with the given index. If no such parameter
-     * exists, returns the named parameter with the given name. If neither of
-     * these exists, returns null.
-     * 
-     */
-    private SassListItem getArgument(ActualArgumentList args, int index,
-            String name) {
-        if (index < args.size()) {
-            return args.get(index);
-        }
-        for (VariableNode node : args.getNamedVariables()) {
-            if (node.getName().equals(name)) {
-                return node.getExpr();
-            }
-        }
-        return null;
-    }
-
-    private void checkArguments(LexicalUnitImpl function,
-            ActualArgumentList args) {
-        if (args.size() + args.getNamedVariables().size() != 2) {
-            throw new ParseException(
-                    "The function index() requires exactly two parameters",
-                    function);
-        }
-        List<String> parameterNames = new ArrayList<String>();
-        for (VariableNode node : args.getNamedVariables()) {
-            String name = node.getName();
-            if (!("list".equals(name)) && !("value".equals(name))) {
-                throw new ParseException(
-                        "The valid parameter names for index() are list and value",
-                        function);
-            }
-            if (parameterNames.contains(name)) {
-                throw new ParseException("The parameter " + name
-                        + " appears twice in the parameter list of index()",
-                        function);
-            }
-            parameterNames.add(name);
         }
     }
 }

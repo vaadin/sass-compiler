@@ -15,38 +15,40 @@
  */
 package com.vaadin.sass.internal.parser.function;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import com.vaadin.sass.internal.parser.ActualArgumentList;
+import com.vaadin.sass.internal.parser.FormalArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassListItem;
-import com.vaadin.sass.internal.tree.VariableNode;
 import com.vaadin.sass.internal.util.ColorUtil;
 
 public class AdjustColorFunctionGenerator extends AbstractFunctionGenerator {
 
-    private String[] optionalParams = { "red", "green", "blue", "hue",
-            "saturation", "lightness", "alpha" };
+    private static String[] argumentNames = { "color", "red", "green", "blue",
+            "hue", "saturation", "lightness", "alpha" };
+
+    @Override
+    protected boolean checkForUnsetParameters() {
+        return false;
+    }
 
     public AdjustColorFunctionGenerator() {
-        super("adjust-color", "scale-color");
+        super(createArgumentList(argumentNames, false), "adjust-color",
+                "scale-color");
     }
 
     @Override
-    public SassListItem compute(LexicalUnitImpl function) {
+    protected SassListItem computeForArgumentList(LexicalUnitImpl function,
+            FormalArgumentList actualArguments) {
         String functionName = function.getFunctionName();
-        checkParams(function);
-        LexicalUnitImpl color = getColor(function);
+        checkParams(function, actualArguments);
+        LexicalUnitImpl color = getColor(function, actualArguments);
         float alpha = 1;
         if (ColorUtil.isRgba(color) || ColorUtil.isHsla(color)) {
             int lastIndex = color.getParameterList().size() - 1;
             alpha = color.getParameterList().get(lastIndex).getContainedValue()
                     .getFloatValue();
         }
-        Float[] adjustBy = getAdjustments(function);
+        Float[] adjustBy = getAdjustments(function, actualArguments);
         if (adjustBy[6] != null) {
             if ("adjust-color".equals(functionName)) {
                 alpha += adjustBy[6];
@@ -133,19 +135,9 @@ public class AdjustColorFunctionGenerator extends AbstractFunctionGenerator {
         rgb[2] = Math.min(255, Math.max(0, rgb[2]));
     }
 
-    private LexicalUnitImpl getColor(LexicalUnitImpl function) {
-        ActualArgumentList params = function.getParameterList();
-        SassListItem resultItem = null;
-        if (params.size() > 0) {
-            resultItem = params.get(0);
-        } else {
-            for (VariableNode node : params.getNamedVariables()) {
-                if (node.getName().equals("color")) {
-                    resultItem = node.getExpr();
-                    break;
-                }
-            }
-        }
+    private LexicalUnitImpl getColor(LexicalUnitImpl function,
+            FormalArgumentList actualArguments) {
+        SassListItem resultItem = getParam(actualArguments, "color");
         if (!(resultItem instanceof LexicalUnitImpl)) {
             throw new ParseException(
                     "The color argument of adjust-color must represent a valid color",
@@ -162,60 +154,45 @@ public class AdjustColorFunctionGenerator extends AbstractFunctionGenerator {
     }
 
     /**
-     * Gets the adjustment amounts from the parameter list of function. Values
-     * that are not to be adjusted are represented as null. The value result[i]
-     * corresponds to the parameter with name optionalParams[i].
+     * Gets the adjustment amounts from the parameter list actualArguments.
+     * Values that are not to be adjusted are represented as null. The value
+     * result[i] corresponds to the parameter with name argumentNames[i + 1].
+     * 
+     * @param actualArguments
      * 
      */
-    private Float[] getAdjustments(LexicalUnitImpl function) {
-        ActualArgumentList parameters = function.getParameterList();
+    private Float[] getAdjustments(LexicalUnitImpl function,
+            FormalArgumentList actualArguments) {
         Float[] result = new Float[7];
-        for (VariableNode node : parameters.getNamedVariables()) {
-            String name = node.getName();
-            for (int i = 0; i < optionalParams.length; i++) {
-                if (name.equals(optionalParams[i])) {
-                    if (result[i] != null) {
-                        throw new ParseException("The parameter " + name
-                                + " was set more than once for adjust-color",
-                                function);
-                    }
-                    SassListItem valueItem = node.getExpr();
-                    if (!(valueItem instanceof LexicalUnitImpl)
-                            || !((LexicalUnitImpl) valueItem).isNumber()) {
-                        throw new ParseException(
-                                "The parameters of adjust-color must be numeric values",
-                                function);
-                    }
-                    float value = ((LexicalUnitImpl) valueItem).getFloatValue();
-                    result[i] = value;
-                }
+        for (int i = 0; i < 7; i++) {
+            SassListItem valueItem = getParam(actualArguments, i + 1);
+            if (valueItem == null) {
+                continue;
             }
+            if (!(valueItem instanceof LexicalUnitImpl)
+                    || !((LexicalUnitImpl) valueItem).isNumber()) {
+                throw new ParseException(
+                        "The parameters of adjust-color must be numeric values",
+                        function);
+            }
+            result[i] = ((LexicalUnitImpl) valueItem).getFloatValue();
         }
         return result;
     }
 
     /**
-     * Checks that there are no named parameters that are not supported by the
-     * function. If the function is scale-color, also checks that all values are
-     * percentages.
+     * For scale-color function, checks that all values are percentages and that
+     * there is no argument called hue.
+     * 
+     * @param actualArguments
      */
-    private void checkParams(LexicalUnitImpl function) {
-        List<String> optionalParamsList = new ArrayList<String>(
-                Arrays.asList(optionalParams));
-        optionalParamsList.add("color");
-        if ("scale-color".equals(function.getFunctionName())) {
-            optionalParamsList.remove("hue");
-        }
-        for (VariableNode node : function.getParameterList()
-                .getNamedVariables()) {
-            if (!optionalParamsList.contains(node.getName())) {
-                throw new ParseException("There is no parameter "
-                        + node.getName() + " for function "
-                        + function.getFunctionName(), function);
-            }
+    private void checkParams(LexicalUnitImpl function,
+            FormalArgumentList actualArguments) {
+
+        for (int i = 1; i < argumentNames.length; i++) {
+            SassListItem value = getParam(actualArguments, i);
             if ("scale-color".equals(function.getFunctionName())
-                    && !"color".equals(node.getName())) {
-                SassListItem value = node.getExpr();
+                    && value != null) {
                 if (!(value instanceof LexicalUnitImpl)
                         || !LexicalUnitImpl.checkLexicalUnitType(value,
                                 LexicalUnitImpl.SAC_PERCENTAGE)) {
@@ -224,6 +201,11 @@ public class AdjustColorFunctionGenerator extends AbstractFunctionGenerator {
                             function);
                 }
             }
+        }
+        if ("scale-color".equals(function.getFunctionName())
+                && getParam(actualArguments, "hue") != null) {
+            throw new ParseException(
+                    "There is no parameter hue for scale-color", function);
         }
     }
 

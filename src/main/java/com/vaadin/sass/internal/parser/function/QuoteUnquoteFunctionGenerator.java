@@ -20,8 +20,10 @@ import com.vaadin.sass.internal.parser.ParseException;
 
 public class QuoteUnquoteFunctionGenerator extends
         AbstractSingleParameterFunctionGenerator {
+    private static String[] argumentNames = { "string" };
+
     public QuoteUnquoteFunctionGenerator() {
-        super("quote", "unquote");
+        super(createArgumentList(argumentNames, false), "quote", "unquote");
     }
 
     @Override

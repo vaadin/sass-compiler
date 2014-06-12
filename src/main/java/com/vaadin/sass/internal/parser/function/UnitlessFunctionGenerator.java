@@ -21,8 +21,10 @@ import com.vaadin.sass.internal.parser.ParseException;
 public class UnitlessFunctionGenerator extends
         AbstractSingleParameterFunctionGenerator {
 
+    private static String[] argumentNames = { "number" };
+
     public UnitlessFunctionGenerator() {
-        super("unitless");
+        super(createArgumentList(argumentNames, false), "unitless");
     }
 
     @Override

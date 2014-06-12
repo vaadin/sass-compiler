@@ -15,26 +15,23 @@
  */
 package com.vaadin.sass.internal.parser.function;
 
-import com.vaadin.sass.internal.parser.ActualArgumentList;
+import com.vaadin.sass.internal.parser.FormalArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
-import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassListItem;
 
 public class TypeOfFunctionGenerator extends AbstractFunctionGenerator {
 
+    private static String[] argumentNames = { "value" };
+
     public TypeOfFunctionGenerator() {
-        super("type-of");
+        super(createArgumentList(argumentNames, false), "type-of");
     }
 
-    public SassListItem compute(LexicalUnitImpl function) {
-        ActualArgumentList params = function.getParameterList();
-        if (params.size() != 1) {
-            throw new ParseException("Function " + function.getFunctionName()
-                    + " must have exactly one parameter", function);
-        }
-
-        SassListItem param = params.get(0);
+    @Override
+    protected SassListItem computeForArgumentList(LexicalUnitImpl function,
+            FormalArgumentList actualArguments) {
+        SassListItem param = getParam(actualArguments, 0);
         String type = "string";
 
         if (param instanceof SassList) {

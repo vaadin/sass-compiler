@@ -1,0 +1,11 @@
+.named-arguments {
+  abs: 5;
+  nth-named: 3;
+  nth-named-and-unnamed: 4;
+  darken-named: #51683a;
+  darken-named-reverse-order: #51683a;
+  append: 1, 2, 3, 4;
+  append-reverse-order: 1, 2, 3, 4;
+  join: 1 2 3 4 5;
+  rgb: #1e4696;
+}

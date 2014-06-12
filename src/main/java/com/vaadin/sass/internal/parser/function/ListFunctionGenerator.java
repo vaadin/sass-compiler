@@ -15,6 +15,7 @@
  */
 package com.vaadin.sass.internal.parser.function;
 
+import com.vaadin.sass.internal.parser.FormalArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassList;
@@ -23,8 +24,9 @@ import com.vaadin.sass.internal.parser.SassListItem;
 
 public abstract class ListFunctionGenerator extends AbstractFunctionGenerator {
 
-    public ListFunctionGenerator(String... functionNames) {
-        super(functionNames);
+    public ListFunctionGenerator(FormalArgumentList formalArguments,
+            String... functionNames) {
+        super(formalArguments, functionNames);
     }
 
     protected SassList.Separator getAutoSeparator(SassList firstList,

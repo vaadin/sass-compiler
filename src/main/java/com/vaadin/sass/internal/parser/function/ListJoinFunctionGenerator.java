@@ -17,28 +17,26 @@ package com.vaadin.sass.internal.parser.function;
 
 import java.util.ArrayList;
 
-import com.vaadin.sass.internal.parser.ActualArgumentList;
+import com.vaadin.sass.internal.parser.FormalArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
-import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassListItem;
 
 public class ListJoinFunctionGenerator extends ListFunctionGenerator {
 
+    private static String[] argumentNames = { "list1", "list2", "separator" };
+    private static SassListItem[] defaultValues = { null, null,
+            LexicalUnitImpl.createIdent("auto") };
+
     public ListJoinFunctionGenerator() {
-        super("join");
+        super(createArgumentList(argumentNames, defaultValues, false), "join");
     }
 
     @Override
-    public SassListItem compute(LexicalUnitImpl function) {
-        ActualArgumentList params = function.getParameterList();
-        if (params == null || params.size() < 2 || params.size() > 3) {
-            throw new ParseException(
-                    "The function join() must have two or three parameters. Actual parameters: "
-                            + params);
-        }
-        SassListItem firstListAsItem = params.get(0);
-        SassListItem secondListAsItem = params.get(1);
+    protected SassListItem computeForArgumentList(LexicalUnitImpl function,
+            FormalArgumentList actualArguments) {
+        SassListItem firstListAsItem = getParam(actualArguments, "list1");
+        SassListItem secondListAsItem = getParam(actualArguments, "list2");
 
         SassList firstList = asList(firstListAsItem);
         SassList secondList = asList(secondListAsItem);
@@ -50,10 +48,8 @@ public class ListJoinFunctionGenerator extends ListFunctionGenerator {
             newList.add(secondItem);
         }
 
-        SassList.Separator sep = null; // this corresponds to "auto"
-        if (params.size() == 3) { // get the specified list separator
-            sep = getSeparator(params.get(2));
-        }
+        SassList.Separator sep = getSeparator(getParam(actualArguments,
+                "separator"));
         if (sep == null) { // determine the separator in "auto" mode
             sep = getAutoSeparator(firstList, secondList);
         }

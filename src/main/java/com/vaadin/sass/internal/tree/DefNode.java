@@ -57,7 +57,7 @@ public abstract class DefNode extends Node implements IVariableNode {
 
     public void replacePossibleArguments(ActualArgumentList actualArgumentList) {
         // TODO instead of modifying def, return a VariableArgumentList?
-        arglist = arglist.replaceFormalArguments(actualArgumentList);
+        arglist = arglist.replaceFormalArguments(actualArgumentList, true);
     }
 
     @Override

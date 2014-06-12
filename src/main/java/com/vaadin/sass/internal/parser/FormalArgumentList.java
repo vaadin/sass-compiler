@@ -110,16 +110,22 @@ public class FormalArgumentList implements Serializable, Iterable<VariableNode> 
      * 
      * @param actualArgumentList
      *            The actual arguments.
+     * @param checkForUnsetParameters
+     *            True if it should be checked that all arguments have been set.
+     *            The value false should only be used when there are optional
+     *            parameters without a default value and it is allowed that
+     *            unset parameters remain.
      * @return A FormalArgumentList with the values of the arguments taken from
      *         the actual argument list and from the default values.
      */
     public FormalArgumentList replaceFormalArguments(
-            ActualArgumentList actualArgumentList) {
+            ActualArgumentList actualArgumentList,
+            boolean checkForUnsetParameters) {
         ArrayList<VariableNode> result = initializeArgumentList(arglist);
         List<VariableNode> unusedNamedActual = replaceNamedArguments(result,
                 actualArgumentList);
         List<SassListItem> unusedUnnamedActual = replaceUnnamedAndDefaultArguments(
-                result, actualArgumentList);
+                result, actualArgumentList, checkForUnsetParameters);
         // Perform sanity checks and handle variable arguments
         if (hasVariableArguments()) {
             ArgumentList varArgContents = new ArgumentList(
@@ -216,12 +222,14 @@ public class FormalArgumentList implements Serializable, Iterable<VariableNode> 
      *            The formal arguments.
      * @param actualArguments
      *            The actual arguments.
+     * @param checkForUnsetParameters
+     *            True if it should be checked that all arguments have been set.
      * @return A list of unused unnamed parameters. This may be nonempty when
      *         variable arguments are used.
      */
     private List<SassListItem> replaceUnnamedAndDefaultArguments(
             ArrayList<VariableNode> formalArguments,
-            ActualArgumentList actualArguments) {
+            ActualArgumentList actualArguments, boolean checkForUnsetParameters) {
         // Replace unnamed arguments
         int formalIndex = getNextUnset(formalArguments, 0);
         int actualIndex = 0;
@@ -236,7 +244,8 @@ public class FormalArgumentList implements Serializable, Iterable<VariableNode> 
         }
         // Replace default values given in the definition node
         while (formalIndex < maxFormalIndex) {
-            if (arglist.get(formalIndex).getExpr() == null) {
+            if (arglist.get(formalIndex).getExpr() == null
+                    && checkForUnsetParameters) {
                 throw new ParseException(
                         "Argument substitution error: there is no value for the argument "
                                 + formalArguments.get(formalIndex).getName()

@@ -16,30 +16,30 @@
 package com.vaadin.sass.internal.parser.function;
 
 import com.vaadin.sass.internal.expression.BinaryOperator;
-import com.vaadin.sass.internal.parser.ActualArgumentList;
+import com.vaadin.sass.internal.parser.FormalArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
-import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassListItem;
 
 public class IfFunctionGenerator extends AbstractFunctionGenerator {
 
+    private static String[] argumentNames = { "condition", "if-true",
+            "if-false" };
+
     public IfFunctionGenerator() {
-        super("if");
+        super(createArgumentList(argumentNames, false), "if");
     }
 
     @Override
-    public SassListItem compute(LexicalUnitImpl function) {
-        ActualArgumentList params = function.getParameterList();
-        if (params.size() != 3) {
-            throw new ParseException(
-                    "Function if() requires exactly 3 parameters", function);
-        }
-        SassListItem firstParam = params.get(0)
+    protected SassListItem computeForArgumentList(LexicalUnitImpl function,
+            FormalArgumentList actualArguments) {
+        SassListItem firstParam = getParam(actualArguments, "condition")
                 .evaluateFunctionsAndExpressions(true);
         if (BinaryOperator.isTrue(firstParam)) {
-            return params.get(1).evaluateFunctionsAndExpressions(true);
+            return getParam(actualArguments, "if-true")
+                    .evaluateFunctionsAndExpressions(true);
         } else {
-            return params.get(2).evaluateFunctionsAndExpressions(true);
+            return getParam(actualArguments, "if-false")
+                    .evaluateFunctionsAndExpressions(true);
         }
     }
 }

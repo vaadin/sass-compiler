@@ -20,8 +20,10 @@ import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 public class FloorFunctionGenerator extends
         AbstractSingleParameterFunctionGenerator {
 
+    private static String[] argumentNames = { "value" };
+
     public FloorFunctionGenerator() {
-        super("floor");
+        super(createArgumentList(argumentNames, false), "floor");
     }
 
     @Override

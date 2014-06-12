@@ -20,8 +20,10 @@ import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 public class RoundFunctionGenerator extends
         AbstractSingleParameterFunctionGenerator {
 
+    private static String[] argumentNames = { "value" };
+
     public RoundFunctionGenerator() {
-        super("round");
+        super(createArgumentList(argumentNames, false), "round");
     }
 
     @Override

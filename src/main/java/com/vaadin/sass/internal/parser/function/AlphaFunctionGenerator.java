@@ -17,6 +17,7 @@
 package com.vaadin.sass.internal.parser.function;
 
 import com.vaadin.sass.internal.parser.ActualArgumentList;
+import com.vaadin.sass.internal.parser.FormalArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassListItem;
@@ -24,15 +25,18 @@ import com.vaadin.sass.internal.util.ColorUtil;
 
 public class AlphaFunctionGenerator extends AbstractFunctionGenerator {
 
+    private static String[] argumentNames = { "color" };
+
     public AlphaFunctionGenerator() {
-        super("alpha", "opacity");
+        super(createArgumentList(argumentNames, false), "alpha", "opacity");
     }
 
     @Override
-    public SassListItem compute(LexicalUnitImpl function) {
-        checkParameters(function);
-        LexicalUnitImpl color = (LexicalUnitImpl) function.getParameterList()
-                .get(0);
+    protected SassListItem computeForArgumentList(LexicalUnitImpl function,
+            FormalArgumentList actualArguments) {
+        checkParameters(function, actualArguments);
+        LexicalUnitImpl color = (LexicalUnitImpl) getParam(actualArguments,
+                "color");
         float opacity = 1.0f;
         if (ColorUtil.isRgba(color)) {
             ActualArgumentList parameterList = color.getParameterList();
@@ -43,14 +47,9 @@ public class AlphaFunctionGenerator extends AbstractFunctionGenerator {
                 function.getColumnNumber(), opacity);
     }
 
-    private void checkParameters(LexicalUnitImpl function) {
-        ActualArgumentList params = function.getParameterList();
-        if (params.size() != 1) {
-            throw new ParseException("The function "
-                    + function.getFunctionName()
-                    + " requires exactly one parameter", function);
-        }
-        LexicalUnitImpl color = (LexicalUnitImpl) params.get(0);
+    private void checkParameters(LexicalUnitImpl function,
+            FormalArgumentList args) {
+        LexicalUnitImpl color = (LexicalUnitImpl) getParam(args, "color");
         if (!(color instanceof LexicalUnitImpl)
                 || (!ColorUtil.isColor(color) && !ColorUtil.isRgba(color))) {
             throw new ParseException("The function "

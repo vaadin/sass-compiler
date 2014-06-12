@@ -15,7 +15,7 @@
  */
 package com.vaadin.sass.internal.parser.function;
 
-import com.vaadin.sass.internal.parser.ActualArgumentList;
+import com.vaadin.sass.internal.parser.FormalArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassListItem;
@@ -31,18 +31,20 @@ import com.vaadin.sass.internal.parser.SassListItem;
 public abstract class AbstractSingleParameterFunctionGenerator extends
         AbstractFunctionGenerator {
 
-    public AbstractSingleParameterFunctionGenerator(String... functionNames) {
-        super(functionNames);
+    public AbstractSingleParameterFunctionGenerator(FormalArgumentList args,
+            String... functionNames) {
+        super(args, functionNames);
     }
 
     @Override
-    public SassListItem compute(LexicalUnitImpl function) {
-        ActualArgumentList params = function.getParameterList();
-        if (params.size() != 1 || !(params.get(0) instanceof LexicalUnitImpl)) {
+    protected SassListItem computeForArgumentList(LexicalUnitImpl function,
+            FormalArgumentList arglist) {
+        SassListItem param = getParam(arglist, 0);
+        if (!(param instanceof LexicalUnitImpl)) {
             throw new ParseException("Function " + function.getFunctionName()
                     + " must have exactly one single value parameter", function);
         }
-        LexicalUnitImpl firstParam = (LexicalUnitImpl) params.get(0);
+        LexicalUnitImpl firstParam = (LexicalUnitImpl) param;
         return computeForParam(function.getFunctionName(), firstParam);
     }
 

@@ -24,29 +24,42 @@ import static org.w3c.css.sac.LexicalUnit.SAC_PICA;
 import static org.w3c.css.sac.LexicalUnit.SAC_PIXEL;
 import static org.w3c.css.sac.LexicalUnit.SAC_POINT;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.vaadin.sass.internal.parser.ActualArgumentList;
+import com.vaadin.sass.internal.parser.ArgumentList;
+import com.vaadin.sass.internal.parser.FormalArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SCSSLexicalUnit;
+import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassListItem;
 
 public class RectFunctionGenerator extends AbstractFunctionGenerator {
 
+    private static String[] argumentNames = { "value" }; // uses varargs, so
+                                                         // this name is not
+                                                         // actually used
+
     public RectFunctionGenerator() {
-        super("rect");
+        super(createArgumentList(argumentNames, true), "rect");
     }
 
     @Override
-    public SassListItem compute(LexicalUnitImpl function) {
+    protected SassListItem computeForArgumentList(LexicalUnitImpl function,
+            FormalArgumentList actualArguments) {
 
-        ActualArgumentList params = function.getParameterList();
-        for (int i = 0; i < params.size(); i++) {
+        ArgumentList actualParams = (ArgumentList) getParam(actualArguments, 0);
+        List<SassListItem> resultParams = new ArrayList<SassListItem>();
+
+        for (int i = 0; i < actualParams.size(); i++) {
             boolean paramOk = true;
-            SassListItem item = params.get(i);
+            SassListItem item = actualParams.get(i);
             if (!(item instanceof LexicalUnitImpl)) {
                 throw new ParseException(
                         "Only simple values are allowed as rect() parameters: "
-                                + params);
+                                + actualParams);
             }
             LexicalUnitImpl lui = (LexicalUnitImpl) item;
             if (lui.getLexicalUnitType() == SCSSLexicalUnit.SAC_INTEGER) {
@@ -67,7 +80,10 @@ public class RectFunctionGenerator extends AbstractFunctionGenerator {
                         "The following value is not accepted as a parameter for rect(): "
                                 + item);
             }
+            resultParams.add(item);
         }
+        ActualArgumentList params = new ActualArgumentList(
+                SassList.Separator.COMMA, resultParams);
         if (params.size() == 4) {
             return LexicalUnitImpl.createRect(function.getLineNumber(),
                     function.getColumnNumber(), params);

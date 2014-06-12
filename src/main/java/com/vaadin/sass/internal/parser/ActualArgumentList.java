@@ -192,7 +192,7 @@ public class ActualArgumentList implements Serializable {
             result += ", variable argument: " + variableArgument.toString();
         }
         result += "]";
-        return arglist.toString();
+        return result;
     }
 
     /**

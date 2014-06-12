@@ -16,20 +16,24 @@
 
 package com.vaadin.sass.internal.parser.function;
 
-import com.vaadin.sass.internal.parser.ActualArgumentList;
+import com.vaadin.sass.internal.parser.ArgumentList;
+import com.vaadin.sass.internal.parser.FormalArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassListItem;
 
 public class MinMaxFunctionGenerator extends AbstractFunctionGenerator {
 
+    private static String[] argumentNames = { "numbers" };
+
     public MinMaxFunctionGenerator() {
-        super("min", "max");
+        super(createArgumentList(argumentNames, true), "min", "max");
     }
 
     @Override
-    public SassListItem compute(LexicalUnitImpl function) {
-        ActualArgumentList params = function.getParameterList();
+    protected SassListItem computeForArgumentList(LexicalUnitImpl function,
+            FormalArgumentList actualArguments) {
+        ArgumentList params = (ArgumentList) getParam(actualArguments, 0);
         if (params.size() == 0) {
             throw new ParseException("The function "
                     + function.getFunctionName()

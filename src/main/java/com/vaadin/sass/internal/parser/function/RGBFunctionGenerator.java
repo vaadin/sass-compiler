@@ -16,29 +16,32 @@
 
 package com.vaadin.sass.internal.parser.function;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.vaadin.sass.internal.parser.ActualArgumentList;
+import com.vaadin.sass.internal.parser.FormalArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
+import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassListItem;
 
 public class RGBFunctionGenerator extends AbstractFunctionGenerator {
 
+    private static String[] argumentNames = { "red", "green", "blue" };
+
     public RGBFunctionGenerator() {
-        super("rgb");
+        super(createArgumentList(argumentNames, false), "rgb");
     }
 
     @Override
-    public SassListItem compute(LexicalUnitImpl function) {
-        ActualArgumentList params = function.getParameterList();
+    protected SassListItem computeForArgumentList(LexicalUnitImpl function,
+            FormalArgumentList actualArguments) {
+        List<SassListItem> components = new ArrayList<SassListItem>();
         int line = function.getLineNumber();
         int column = function.getColumnNumber();
-        if (params.size() != 3) {
-            throw new ParseException(
-                    "The function rgb() requires exactly 3 parameters", line,
-                    column);
-        }
         for (int i = 0; i < 3; ++i) {
-            SassListItem item = params.get(i);
+            SassListItem item = getParam(actualArguments, i);
             if (!LexicalUnitImpl
                     .checkLexicalUnitType(item, LexicalUnitImpl.SAC_INTEGER,
                             LexicalUnitImpl.SAC_PERCENTAGE)) {
@@ -46,8 +49,10 @@ public class RGBFunctionGenerator extends AbstractFunctionGenerator {
                         "Invalid parameter to the function rgb(): "
                                 + item.toString(), line, column);
             }
+            components.add(item);
         }
+        ActualArgumentList params = new ActualArgumentList(
+                SassList.Separator.COMMA, components);
         return LexicalUnitImpl.createRGBColor(line, column, params);
     }
-
 }

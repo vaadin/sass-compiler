@@ -20,8 +20,10 @@ import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 public class CeilFunctionGenerator extends
         AbstractSingleParameterFunctionGenerator {
 
+    private static String[] argumentNames = { "value" };
+
     public CeilFunctionGenerator() {
-        super("ceil");
+        super(createArgumentList(argumentNames, false), "ceil");
     }
 
     @Override

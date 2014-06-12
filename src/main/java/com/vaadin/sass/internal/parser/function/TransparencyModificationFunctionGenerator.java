@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.vaadin.sass.internal.parser.ActualArgumentList;
+import com.vaadin.sass.internal.parser.FormalArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassList;
@@ -28,21 +29,26 @@ import com.vaadin.sass.internal.util.ColorUtil;
 public class TransparencyModificationFunctionGenerator extends
         AbstractFunctionGenerator {
 
+    private static String[] argumentNames = { "color", "amount" };
+
     public TransparencyModificationFunctionGenerator() {
-        super("transparentize", "fade-out", "opacify", "fade-in");
+        super(createArgumentList(argumentNames, false), "transparentize",
+                "fade-out", "opacify", "fade-in");
     }
 
     @Override
-    public SassListItem compute(LexicalUnitImpl function) {
-        checkParameters(function);
+    protected SassListItem computeForArgumentList(LexicalUnitImpl function,
+            FormalArgumentList actualArguments) {
+        checkParameters(function, actualArguments);
         float factor = 1.0f; // for opacify/fade-in
         if ("fade-out".equals(function.getFunctionName())
                 || "transparentize".equals(function.getFunctionName())) {
             factor = -1.0f;
         }
-        ActualArgumentList params = function.getParameterList();
-        float amount = getFloat(params, 1);
-        LexicalUnitImpl color = (LexicalUnitImpl) params.get(0);
+        float amount = getParam(actualArguments, "amount").getContainedValue()
+                .getFloatValue();
+        LexicalUnitImpl color = (LexicalUnitImpl) getParam(actualArguments,
+                "color");
         int[] rgb = null;
         float opacity = 1.0f;
         if (ColorUtil.isRgba(color)) {
@@ -85,28 +91,26 @@ public class TransparencyModificationFunctionGenerator extends
 
     }
 
-    private void checkParameters(LexicalUnitImpl function) {
-        ActualArgumentList params = function.getParameterList();
-        if (params.size() != 2) {
-            throw new ParseException("The function "
-                    + function.getFunctionName()
-                    + "requires exactly two parameters", function);
-        }
-        if (!(params.get(0) instanceof LexicalUnitImpl)
-                || (!ColorUtil.isColor(params.get(0).getContainedValue()) && !ColorUtil
-                        .isRgba(params.get(0).getContainedValue()))) {
+    private void checkParameters(LexicalUnitImpl function,
+            FormalArgumentList args) {
+
+        SassListItem color = getParam(args, 0);
+        if (!(color instanceof LexicalUnitImpl)
+                || (!ColorUtil.isColor(color.getContainedValue()) && !ColorUtil
+                        .isRgba(color.getContainedValue()))) {
             throw new ParseException("The function "
                     + function.getFunctionName()
                     + "requires a valid color as its first parameter", function);
         }
-        if (!(params.get(1) instanceof LexicalUnitImpl)
-                || !LexicalUnitImpl.checkLexicalUnitType(params.get(1),
+        SassListItem amountItem = getParam(args, 1);
+        if (!(amountItem instanceof LexicalUnitImpl)
+                || !LexicalUnitImpl.checkLexicalUnitType(amountItem,
                         LexicalUnitImpl.SAC_INTEGER, LexicalUnitImpl.SAC_REAL)) {
             throw new ParseException("The function "
                     + function.getFunctionName()
                     + "requires a number as its second parameter", function);
         }
-        float amount = params.get(1).getContainedValue().getFloatValue();
+        float amount = amountItem.getContainedValue().getFloatValue();
         if (amount < 0.0 || amount > 1.0) {
             throw new ParseException(
                     "The function "

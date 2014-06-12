@@ -1,0 +1,11 @@
+.named-arguments{
+    abs: abs($value: -5);
+    nth-named: nth($n: 3, $list: (1 2 3 4 5));
+    nth-named-and-unnamed: nth((1 2 3 4 5), $n: 4);
+    darken-named: darken($color: #795, $amount: 15);
+    darken-named-reverse-order: darken($amount: 15, $color: #795);
+    append: append((1 2 3), $separator: comma, $val: 4);
+    append-reverse-order: append($val: 4, $separator: comma, $list: (1 2 3));
+    join: join($list2: 4 5, $list1: 1 2 3, $separator: space);
+    rgb: rgb($green: 70, $blue: 150, $red: 30);
+}

@@ -21,8 +21,10 @@ import com.vaadin.sass.internal.parser.ParseException;
 public class UnitFunctionGenerator extends
         AbstractSingleParameterFunctionGenerator {
 
+    private static String[] argumentNames = { "number" };
+
     public UnitFunctionGenerator() {
-        super("unit");
+        super(createArgumentList(argumentNames, false), "unit");
     }
 
     @Override

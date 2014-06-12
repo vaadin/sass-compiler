@@ -532,19 +532,11 @@ public class ColorUtil {
                 color.getColumnNumber(), color.getFunctionName(), newParams);
     }
 
-    public static LexicalUnitImpl darken(LexicalUnitImpl darkenFunc) {
-        ActualArgumentList params = darkenFunc.getParameterList();
-        LexicalUnitImpl color = params.get(0).getContainedValue();
-        float amount = getAmountValue(params);
-
+    public static LexicalUnitImpl darken(LexicalUnitImpl color, float amount) {
         return adjust(color, amount, ColorOperation.Darken);
     }
 
-    public static LexicalUnitImpl lighten(LexicalUnitImpl lightenFunc) {
-        ActualArgumentList params = lightenFunc.getParameterList();
-        LexicalUnitImpl color = params.get(0).getContainedValue();
-        float amount = getAmountValue(params);
-
+    public static LexicalUnitImpl lighten(LexicalUnitImpl color, float amount) {
         return adjust(color, amount, ColorOperation.Lighten);
     }
 
