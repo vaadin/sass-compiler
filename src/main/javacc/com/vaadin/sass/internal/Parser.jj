@@ -2025,15 +2025,15 @@ void styleRuleOrDeclarationOrNestedProperties() :
  */
 void declarationOrNestedProperties() :
 { boolean important = false;
+  String s = "";
   String name;
   SassListItem exp;
-  Token save;
   String comment = null;
 }
 {
  try {
-     name=property()
-     { save = token; }
+     ( <ANY> { s = "*"; })?
+     name=property() { name = s + name; }
      ":" ( <S> )* 
      (exp=expressionList() ( important=prio() )?
      {
