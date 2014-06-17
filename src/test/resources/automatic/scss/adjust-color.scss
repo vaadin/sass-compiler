@@ -1,0 +1,54 @@
+.hexcolor {
+    $color1: #111111;
+    r1: adjust-color($color1, $red:10);
+    r2: adjust-color($color1, $red:-10);
+
+    g1: adjust-color($color1, $green:10);
+    g2: adjust-color($color1, $green:-10);
+
+    b1: adjust-color($color1, $blue:10);
+    b2: adjust-color($color1, $blue:-10);
+
+    h1: adjust-color($color1, $hue:10);
+    h2: adjust-color($color1, $hue:-10);
+
+    s1: adjust-color($color1, $saturation:10%);
+    s2: adjust-color($color1, $saturation:-10%);
+
+    l1: adjust-color($color1, $lightness:5%);
+    l2: adjust-color($color1, $lightness:-5%);
+
+
+    hsl1: adjust-color($color1, $hue:10,$lightness:5%,  $saturation:10%);
+    hsl2: adjust-color($color1, $saturation:-10%, $hue:-10, $lightness: -5%);
+
+
+    rgba1: adjust-color($color1, $red:10, $green: -10, $blue: -20, $alpha:0.5);
+}
+
+.rgba {
+    $rgba: rgba(100, 20, 230, 0.75);
+    rgb: adjust-color(rgba(110, 30, 50, 0.5), $red: -25, $blue: 17, $green: 70);
+    rgba: adjust-color($rgba, $red: -170, $green: 30, $blue: 27, $alpha: -0.25);
+    alpha-lower-limit: adjust-color($rgba, $alpha: -0.8);
+    alpha-upper-limit: adjust-color($rgba, $alpha: 0.5);
+    h1: adjust-color($rgba, $hue: 70);
+    h2: adjust-color($rgba, $hue: -50);
+    hsla: adjust-color($rgba, $hue: 120, $saturation: -50%, $lightness: -25%, $alpha: -0.5);
+}
+
+.rgb-hsl {
+    $rgb: rgb(20, 70, 120);
+    rgb-gb: adjust-color($rgb, $blue: 50, $green: -30);
+    rgb-ra: adjust-color($rgb, $alpha: -0.5, $red: -15);
+    rgb-hla: adjust-color($rgb, $hue: 30, $lightness: 25%, $alpha: -0.5);
+    $hsl: hsl(180, 75%, 50%);
+    hsl-rba: adjust-color($hsl, $red: 130, $blue: -125, $alpha: -0.5);
+    hsl-h: adjust-color($hsl, $hue: -60);
+}
+
+.hsla {
+    $hsla: hsla(180, 75%, 25%, 0.5);
+    rb: adjust-color($hsla, $red: 25, $blue: 15);
+    sla: adjust-color($hsla, $saturation: -25%, $lightness: 10%, $alpha: -0.25);
+}

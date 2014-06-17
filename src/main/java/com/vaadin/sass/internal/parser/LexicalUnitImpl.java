@@ -41,6 +41,7 @@ import org.w3c.css.sac.LexicalUnit;
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.expression.exception.IncompatibleUnitsException;
 import com.vaadin.sass.internal.parser.function.AbsFunctionGenerator;
+import com.vaadin.sass.internal.parser.function.AdjustColorFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.AlphaFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.CeilFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.ColorComponentFunctionGenerator;
@@ -843,6 +844,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     private static List<SCSSFunctionGenerator> initSerializers() {
         List<SCSSFunctionGenerator> list = new LinkedList<SCSSFunctionGenerator>();
         list.add(new AbsFunctionGenerator());
+        list.add(new AdjustColorFunctionGenerator());
         list.add(new CeilFunctionGenerator());
         list.add(new DarkenFunctionGenerator());
         list.add(new FloorFunctionGenerator());
