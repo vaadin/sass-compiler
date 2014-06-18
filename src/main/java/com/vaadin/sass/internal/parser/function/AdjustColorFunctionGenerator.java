@@ -15,6 +15,10 @@
  */
 package com.vaadin.sass.internal.parser.function;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import com.vaadin.sass.internal.parser.ActualArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
@@ -28,11 +32,13 @@ public class AdjustColorFunctionGenerator extends AbstractFunctionGenerator {
             "saturation", "lightness", "alpha" };
 
     public AdjustColorFunctionGenerator() {
-        super("adjust-color");
+        super("adjust-color", "scale-color");
     }
 
     @Override
     public SassListItem compute(LexicalUnitImpl function) {
+        String functionName = function.getFunctionName();
+        checkParams(function);
         LexicalUnitImpl color = getColor(function);
         float alpha = 1;
         if (ColorUtil.isRgba(color) || ColorUtil.isHsla(color)) {
@@ -42,7 +48,13 @@ public class AdjustColorFunctionGenerator extends AbstractFunctionGenerator {
         }
         Float[] adjustBy = getAdjustments(function);
         if (adjustBy[6] != null) {
-            alpha += adjustBy[6];
+            if ("adjust-color".equals(functionName)) {
+                alpha += adjustBy[6];
+            } else {
+                float diff = adjustBy[6] > 0 ? 1 - alpha : alpha;
+                float adjustAmount = diff * adjustBy[6] / 100;
+                alpha = alpha + adjustAmount;
+            }
             alpha = Math.min(1, Math.max(0, alpha));
         }
         boolean adjustRGB = anySet(adjustBy, 0, 3);
@@ -54,20 +66,19 @@ public class AdjustColorFunctionGenerator extends AbstractFunctionGenerator {
         }
         int[] rgb = ColorUtil.colorToRgb(color);
         if (adjustRGB) {
-            rgb[0] += adjustBy[0] == null ? 0 : adjustBy[0];
-            rgb[0] = Math.min(255, Math.max(0, rgb[0]));
-            rgb[1] += adjustBy[1] == null ? 0 : adjustBy[1];
-            rgb[1] = Math.min(255, Math.max(0, rgb[1]));
-            rgb[2] += adjustBy[2] == null ? 0 : adjustBy[2];
-            rgb[2] = Math.min(255, Math.max(0, rgb[2]));
+            if ("adjust-color".equals(functionName)) {
+                adjustRgb(rgb, adjustBy);
+            } else {
+                scaleRgb(rgb, adjustBy);
+            }
         }
         if (adjustHsl) {
             float[] hsl = ColorUtil.colorToHsl(color);
-            hsl[0] += adjustBy[3] == null ? 0 : adjustBy[3];
-            hsl[1] += adjustBy[4] == null ? 0 : adjustBy[4];
-            hsl[1] = Math.min(100, Math.max(0, hsl[1]));
-            hsl[2] += adjustBy[5] == null ? 0 : adjustBy[5];
-            hsl[2] = Math.min(100, Math.max(0, hsl[2]));
+            if ("adjust-color".equals(functionName)) {
+                adjustHsl(hsl, adjustBy);
+            } else {
+                scaleHsl(hsl, adjustBy);
+            }
             rgb = ColorUtil.hslToRgb(hsl);
         }
         color = ColorUtil.createHexColor(rgb[0], rgb[1], rgb[2],
@@ -78,6 +89,48 @@ public class AdjustColorFunctionGenerator extends AbstractFunctionGenerator {
             return ColorUtil.createRgbaColor(rgb[0], rgb[1], rgb[2], alpha,
                     function.getLineNumber(), function.getColumnNumber());
         }
+    }
+
+    private void scaleHsl(float[] hsl, Float[] adjustBy) {
+        // Only saturation and lightness can be scaled
+        for (int i = 1; i < 3; i++) {
+            Float adjustment = adjustBy[3 + i];
+            if (adjustment != null) {
+                float diff = adjustment > 0 ? 100 - hsl[i] : hsl[i];
+                float adjustAmount = diff * adjustment / 100;
+                float newValue = hsl[i] + adjustAmount;
+                hsl[i] = newValue;
+            }
+        }
+    }
+
+    private void adjustHsl(float[] hsl, Float[] adjustBy) {
+        hsl[0] += adjustBy[3] == null ? 0 : adjustBy[3];
+        hsl[0] = ((hsl[0] % 360) + 360) % 360;
+        hsl[1] += adjustBy[4] == null ? 0 : adjustBy[4];
+        hsl[1] = Math.min(100, Math.max(0, hsl[1]));
+        hsl[2] += adjustBy[5] == null ? 0 : adjustBy[5];
+        hsl[2] = Math.min(100, Math.max(0, hsl[2]));
+    }
+
+    private void scaleRgb(int[] rgb, Float[] adjustBy) {
+        for (int i = 0; i < 3; i++) {
+            if (adjustBy[i] != null) {
+                int diff = (adjustBy[i] > 0 ? 255 - rgb[i] : rgb[i]);
+                float adjustAmount = diff * adjustBy[i] / 100;
+                float newValue = rgb[i] + adjustAmount;
+                rgb[i] = (int) newValue;
+            }
+        }
+    }
+
+    private void adjustRgb(int[] rgb, Float[] adjustBy) {
+        rgb[0] += adjustBy[0] == null ? 0 : adjustBy[0];
+        rgb[0] = Math.min(255, Math.max(0, rgb[0]));
+        rgb[1] += adjustBy[1] == null ? 0 : adjustBy[1];
+        rgb[1] = Math.min(255, Math.max(0, rgb[1]));
+        rgb[2] += adjustBy[2] == null ? 0 : adjustBy[2];
+        rgb[2] = Math.min(255, Math.max(0, rgb[2]));
     }
 
     private LexicalUnitImpl getColor(LexicalUnitImpl function) {
@@ -139,6 +192,39 @@ public class AdjustColorFunctionGenerator extends AbstractFunctionGenerator {
             }
         }
         return result;
+    }
+
+    /**
+     * Checks that there are no named parameters that are not supported by the
+     * function. If the function is scale-color, also checks that all values are
+     * percentages.
+     */
+    private void checkParams(LexicalUnitImpl function) {
+        List<String> optionalParamsList = new ArrayList<String>(
+                Arrays.asList(optionalParams));
+        optionalParamsList.add("color");
+        if ("scale-color".equals(function.getFunctionName())) {
+            optionalParamsList.remove("hue");
+        }
+        for (VariableNode node : function.getParameterList()
+                .getNamedVariables()) {
+            if (!optionalParamsList.contains(node.getName())) {
+                throw new ParseException("There is no parameter "
+                        + node.getName() + " for function "
+                        + function.getFunctionName(), function);
+            }
+            if ("scale-color".equals(function.getFunctionName())
+                    && !"color".equals(node.getName())) {
+                SassListItem value = node.getExpr();
+                if (!(value instanceof LexicalUnitImpl)
+                        || !LexicalUnitImpl.checkLexicalUnitType(value,
+                                LexicalUnitImpl.SAC_PERCENTAGE)) {
+                    throw new ParseException(
+                            "The parameters of scale-color must be percentage values",
+                            function);
+                }
+            }
+        }
     }
 
     /**

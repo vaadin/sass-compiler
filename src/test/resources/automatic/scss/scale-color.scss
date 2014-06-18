@@ -1,0 +1,47 @@
+.hexcolor {
+    $color1: #111111;
+    r1: scale-color($color1, $red:25%);
+    r2: scale-color($color1, $red:-25%);
+
+    g1: scale-color($color1, $green:25%);
+    g2: scale-color($color1, $green:-25%);
+
+    b1: scale-color($color1, $blue:25%);
+    b2: scale-color($color1, $blue:-25%);
+
+    s1: scale-color($color1, $saturation:25%);
+    s2: scale-color($color1, $saturation:-50%);
+
+    l1: scale-color($color1, $lightness:12%);
+    l2: scale-color($color1, $lightness:-12%);
+
+    hsl1: scale-color($color1, $lightness:12%,  $saturation:25%);
+    hsl2: scale-color($color1, $saturation:-25%,$lightness: -12%);
+
+    rgba1: scale-color($color1, $red:25%, $green: -25%, $blue: -10%, $alpha: -12%);
+}
+
+.rgba {
+    $rgba: rgba(100, 20, 230, 0.75);
+    rgb: scale-color(rgba(110, 30, 50, 0.5), $red: -25%, $blue: 17%, $green: 70%);
+    rgba: scale-color($rgba, $red: -70%, $green: 30%, $blue: 27%, $alpha: -25%);
+    alpha-decrease: scale-color($rgba, $alpha: -80%);
+    alpha-increase: scale-color($rgba, $alpha: 50%);
+    sla: scale-color($rgba, $saturation: -50%, $lightness: -25%, $alpha: -50%);
+}
+
+.rgb-hsl {
+    $rgb: rgb(20, 70, 120);
+    rgb-gb: scale-color($rgb, $blue: -50%, $green: -30%);
+    rgb-ra: scale-color($rgb, $alpha: -50%, $red: -15%);
+    rgb-la: scale-color($rgb, $lightness: 25%, $alpha: -25%);
+    $hsl: hsl(180, 75%, 50%);
+    hsl-rba: scale-color($hsl, $red: 30%, $blue: -25%, $alpha: -20%);
+}
+
+.hsla {
+    $hsla: hsla(180, 75%, 25%, 0.5);
+    rb: scale-color($hsla, $red: 25%, $blue: 15%);
+    sla: scale-color($hsla, $saturation: -25%, $lightness: 10%, $alpha: -25%);
+    ga: scale-color($color: $hsla, $green: -50%, $alpha: 50%);
+}
