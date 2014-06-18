@@ -285,4 +285,44 @@ public class SassExpression implements SassListItem, Serializable {
         }
         return false;
     }
+
+    /**
+     * Tests whether this and o are equal expressions. Two expressions are
+     * considered to be equal only if they have equal operands and operators in
+     * the same order.
+     * 
+     * In most cases the results of the expressions should be compared to each
+     * other instead of the expressions themselves. For this the expressions can
+     * be evaluated using evaluateFunctionsAndExpressions after replacing any
+     * variables occurring in the expressions.
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof SassExpression)) {
+            return false;
+        }
+        SassExpression other = (SassExpression) o;
+        if (items.size() != other.items.size()) {
+            return false;
+        }
+        for (int i = 0; i < items.size(); i++) {
+            if (!items.get(i).equals(other.items.get(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 1;
+        for (int i = 0; i < items.size(); i++) {
+            int currentHash = 0;
+            if (items.get(i) != null) {
+                currentHash = items.get(i).hashCode();
+            }
+            result = 41 * result + currentHash;
+        }
+        return result;
+    }
 }

@@ -25,3 +25,35 @@ $list3: 10,10%,abc;
     ll4: append($list3,bar,auto);
     ll5: append((a b, c),bar,auto);
 }
+
+.index-simple {
+    $list1: 10px;
+
+    i1: index($list1, "a");
+    i2: index($list1, "10px");
+    i3: index($list1, 10px);
+    i4: index($list1, 10);
+
+    i5: index((a b,c),a);
+    i6: index((a b,c),a b);
+    i7: index((a b,c),c);
+    i8: index(a, a);
+    i9: index(10, 10px);
+    i10: index(10px, 10cm);
+    $value: 10;
+    i11: index($value, 10mm);
+    i12: index($value, 20);
+    $list2: 10 10 10 20;
+    i13: index($list2, 10);
+}
+
+.index {
+    $list2: ( (10px, 25cm, 5), (1, (2, 3)), 30, 40);
+    i1: index($list2, (10px, 25cm, 5));
+    i2: index($list2, (10in, 25px, 5cm));
+    i3: index($list2, (10, 25, 5));
+    i4: index($list2, (1, (2, 3)));
+    i5: index($list2, (1 (2, 3)));
+    i6: index($list2, (30, 40));
+    i7: index($value: 40, $list: $list2);
+}

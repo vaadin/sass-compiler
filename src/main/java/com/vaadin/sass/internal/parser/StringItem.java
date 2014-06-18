@@ -106,4 +106,18 @@ public class StringItem implements SassListItem, Serializable {
     public boolean containsVariable() {
         return false;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof StringItem)) {
+            return false;
+        }
+        StringItem other = (StringItem) o;
+        return value.equals(other.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return value.hashCode();
+    }
 }

@@ -275,6 +275,9 @@ public class SassList implements SassListItem, Iterable<SassListItem>,
         if (size() != other.size()) {
             return false;
         }
+        if (size() > 1 && !getSeparator().equals(other.getSeparator())) {
+            return false;
+        }
         for (int i = 0; i < size(); i++) {
             if (!get(i).equals(other.get(i))) {
                 return false;

@@ -144,4 +144,30 @@ public class Interpolation implements SassListItem, Serializable {
     public boolean containsVariable() {
         return expression.containsVariable();
     }
+
+    /**
+     * Returns true if this and o are equal interpolation objects. Two
+     * interpolation objects are considered to be equal if their expressions are
+     * equal.
+     * 
+     * For comparing the results of the interpolation instead of the
+     * expressions, the objects should be expanded to SassListitems using
+     * replaceInterpolation() after replacing all variables occurring in the
+     * interpolation objects.
+     * 
+     * @return
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Interpolation)) {
+            return false;
+        }
+        Interpolation other = (Interpolation) o;
+        return expression.equals(other.expression);
+    }
+
+    @Override
+    public int hashCode() {
+        return expression.hashCode();
+    }
 }

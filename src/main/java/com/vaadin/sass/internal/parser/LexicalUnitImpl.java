@@ -51,6 +51,7 @@ import com.vaadin.sass.internal.parser.function.FloorFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.IfFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.LightenFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.ListAppendFunctionGenerator;
+import com.vaadin.sass.internal.parser.function.ListIndexFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.ListJoinFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.ListLengthFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.ListNthFunctionGenerator;
@@ -167,6 +168,16 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     @Deprecated
     public LexicalUnitImpl getPreviousLexicalUnit() {
         return null;
+    }
+
+    public boolean isUnitlessNumber() {
+        switch (type) {
+        case LexicalUnitImpl.SAC_INTEGER:
+        case LexicalUnitImpl.SAC_REAL:
+            return true;
+        default:
+            return false;
+        }
     }
 
     public boolean isNumber() {
@@ -851,6 +862,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         list.add(new IfFunctionGenerator());
         list.add(new LightenFunctionGenerator());
         list.add(new ListAppendFunctionGenerator());
+        list.add(new ListIndexFunctionGenerator());
         list.add(new ListJoinFunctionGenerator());
         list.add(new ListLengthFunctionGenerator());
         list.add(new ListNthFunctionGenerator());
@@ -1065,7 +1077,15 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
             return false;
         }
         LexicalUnitImpl other = (LexicalUnitImpl) o;
-        if (getLexicalUnitType() != other.getLexicalUnitType()) {
+        if (isNumber() && other.isNumber()) {
+            if (!isUnitlessNumber() && !other.isUnitlessNumber()) {
+                if (getLexicalUnitType() != other.getLexicalUnitType()) {
+                    return false;
+                }
+            }
+            return getFloatValue() == other.getFloatValue()
+                    && getIntegerValue() == other.getIntegerValue();
+        } else if (getLexicalUnitType() != other.getLexicalUnitType()) {
             return false;
         } else {
             return printState().equals(other.printState());

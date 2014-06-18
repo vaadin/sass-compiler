@@ -1,20 +1,46 @@
 .foo {
-    l1: 1;
-    l2: 2;
-    l3: 3;
-    n10: 10;
-    n20: 20;
-    nabc: abc;
-    nn: c;
-    nn2: b c;
-    nl1: 10px 10 20;
-    nl2: 10px, 10, 10%, abc;
-    nl3: 10px 10 20;
-    nl4: 10, 20, 10, 10%, abc;
-    l2c: 10, 20, comma;
-    ll1: 10, 10%, abc, foo;
-    ll2: 10 10% abc bar;
-    ll3: 10, 10%, abc, bar;
-    ll4: 10, 10%, abc, bar;
-    ll5: a b, c, bar;
+  l1: 1;
+  l2: 2;
+  l3: 3;
+  n10: 10;
+  n20: 20;
+  nabc: abc;
+  nn: c;
+  nn2: b c;
+  nl1: 10px 10 20;
+  nl2: 10px, 10, 10%, abc;
+  nl3: 10px 10 20;
+  nl4: 10, 20, 10, 10%, abc;
+  l2c: 10, 20, comma;
+  ll1: 10, 10%, abc, foo;
+  ll2: 10 10% abc bar;
+  ll3: 10, 10%, abc, bar;
+  ll4: 10, 10%, abc, bar;
+  ll5: a b, c, bar;
+}
+
+.index-simple {
+  i1: false;
+  i2: false;
+  i3: 1;
+  i4: 1;
+  i5: false;
+  i6: 1;
+  i7: 2;
+  i8: 1;
+  i9: 1;
+  i10: false;
+  i11: 1;
+  i12: false;
+  i13: 1;
+}
+
+.index {
+  i1: 1;
+  i2: false;
+  i3: 1;
+  i4: 2;
+  i5: false;
+  i6: false;
+  i7: 4;
 }
