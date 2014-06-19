@@ -49,12 +49,14 @@ public class RectFunctionGenerator extends AbstractFunctionGenerator {
                                 + params);
             }
             LexicalUnitImpl lui = (LexicalUnitImpl) item;
-            if (lui.getLexicalUnitType() == SCSSLexicalUnit.SAC_INTEGER
-                    && lui.getIntegerValue() != 0) {
-                paramOk = false;
-            } else if (lui.getLexicalUnitType() == SCSSLexicalUnit.SAC_IDENT
-                    && !"auto".equals(lui.getStringValue())) {
-                paramOk = false;
+            if (lui.getLexicalUnitType() == SCSSLexicalUnit.SAC_INTEGER) {
+                if (lui.getIntegerValue() != 0) {
+                    paramOk = false;
+                }
+            } else if (lui.getLexicalUnitType() == SCSSLexicalUnit.SAC_IDENT) {
+                if (!"auto".equals(lui.getStringValue())) {
+                    paramOk = false;
+                }
             } else if (!LexicalUnitImpl.checkLexicalUnitType(lui, SAC_EM,
                     SAC_EX, SAC_PIXEL, SAC_CENTIMETER, SAC_MILLIMETER,
                     SAC_INCH, SAC_POINT, SAC_PICA)) {
