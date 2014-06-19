@@ -15,8 +15,7 @@
  */
 package com.vaadin.sass.internal.selector;
 
-import java.util.Collection;
-
+import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 import com.vaadin.sass.internal.tree.VariableNode;
 
@@ -53,22 +52,18 @@ public class PseudoClassSelector extends SimpleSelector {
     }
 
     @Override
-    public PseudoClassSelector replaceVariables(
-            Collection<VariableNode> variables) {
+    public PseudoClassSelector replaceVariables() {
         if (argument == null) {
-            return new PseudoClassSelector(
-                    pseudoClass.replaceVariables(variables));
+            return new PseudoClassSelector(pseudoClass.replaceVariables());
         } else {
-            return new PseudoClassSelector(
-                    pseudoClass.replaceVariables(variables),
-                    replaceInterpolation(argument, variables));
+            return new PseudoClassSelector(pseudoClass.replaceVariables(),
+                    replaceInterpolation(argument));
         }
     }
 
-    private String replaceInterpolation(String value,
-            Collection<VariableNode> variables) {
+    private String replaceInterpolation(String value) {
         String result = value;
-        for (VariableNode var : variables) {
+        for (VariableNode var : ScssStylesheet.getVariables()) {
             result = var.replaceInterpolation(result);
         }
         return result;

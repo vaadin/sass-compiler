@@ -18,7 +18,6 @@ package com.vaadin.sass.internal.parser;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -26,7 +25,6 @@ import com.vaadin.sass.internal.expression.ArithmeticExpressionEvaluator;
 import com.vaadin.sass.internal.expression.BinaryOperator;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
-import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
  * SassExpressions are used for representing and evaluating arithmetic
@@ -216,10 +214,10 @@ public class SassExpression implements SassListItem, Serializable {
     }
 
     @Override
-    public SassExpression replaceVariables(Collection<VariableNode> variables) {
+    public SassExpression replaceVariables() {
         List<SassListItem> list = new ArrayList<SassListItem>();
         for (SassListItem item : items) {
-            list.add(item.replaceVariables(variables));
+            list.add(item.replaceVariables());
         }
         return new SassExpression(list);
     }

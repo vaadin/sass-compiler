@@ -17,7 +17,6 @@ package com.vaadin.sass.internal.visitor;
 
 import java.util.ArrayList;
 
-import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.expression.BinaryOperator;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassListItem;
@@ -53,7 +52,7 @@ public class WhileNodeHandler {
 
     private static boolean evaluateCondition(WhileNode whileNode) {
         SassListItem condition = whileNode.getCondition();
-        condition = condition.replaceVariables(ScssStylesheet.getVariables());
+        condition = condition.replaceVariables();
         condition = condition.evaluateFunctionsAndExpressions(true);
         return BinaryOperator.isTrue(condition);
     }
@@ -71,7 +70,7 @@ public class WhileNodeHandler {
     private static void replaceVariables(Node copy) {
         if (copy instanceof IVariableNode) {
             IVariableNode n = (IVariableNode) copy;
-            n.replaceVariables(ScssStylesheet.getVariables());
+            n.replaceVariables();
         }
 
         for (Node c : copy.getChildren()) {

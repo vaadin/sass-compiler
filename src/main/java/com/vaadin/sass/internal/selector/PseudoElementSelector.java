@@ -15,10 +15,7 @@
  */
 package com.vaadin.sass.internal.selector;
 
-import java.util.Collection;
-
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
-import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
  * Single CSS3 pseudo-element selector such as "::after" or "::first-letter".
@@ -43,9 +40,7 @@ public class PseudoElementSelector extends SimpleSelector {
     }
 
     @Override
-    public PseudoElementSelector replaceVariables(
-            Collection<VariableNode> variables) {
-        return new PseudoElementSelector(
-                pseudoElement.replaceVariables(variables));
+    public PseudoElementSelector replaceVariables() {
+        return new PseudoElementSelector(pseudoElement.replaceVariables());
     }
 }

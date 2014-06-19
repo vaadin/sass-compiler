@@ -16,8 +16,6 @@
 
 package com.vaadin.sass.internal.tree;
 
-import java.util.Collections;
-
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
@@ -77,8 +75,7 @@ public class FunctionNode extends NodeWithVariableArguments {
             if (defCopy.getChildren().get(0) instanceof ReturnNode) {
                 ReturnNode returnNode = ((ReturnNode) defCopy.getChildren()
                         .get(0));
-                value = returnNode.evaluate(Collections
-                        .<VariableNode> emptyList());
+                value = returnNode.evaluate();
                 break;
             }
         }

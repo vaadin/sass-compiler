@@ -15,10 +15,8 @@
  */
 package com.vaadin.sass.internal.tree;
 
-import java.util.Collection;
-
 public interface IVariableNode {
 
-    public void replaceVariables(Collection<VariableNode> variables);
+    public void replaceVariables();
 
 }

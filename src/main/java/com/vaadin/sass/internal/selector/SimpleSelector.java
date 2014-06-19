@@ -16,7 +16,6 @@
 package com.vaadin.sass.internal.selector;
 
 import java.io.Serializable;
-import java.util.Collection;
 
 import com.vaadin.sass.internal.tree.VariableNode;
 
@@ -33,7 +32,7 @@ import com.vaadin.sass.internal.tree.VariableNode;
  */
 public abstract class SimpleSelector implements Serializable {
 
-    public SimpleSelector replaceVariables(Collection<VariableNode> variables) {
+    public SimpleSelector replaceVariables() {
         return this;
     }
 

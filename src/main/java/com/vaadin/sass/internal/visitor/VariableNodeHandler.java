@@ -27,13 +27,13 @@ public class VariableNodeHandler {
     public static void traverse(VariableNode node) {
         VariableNode variable = ScssStylesheet.getVariable(node.getName());
         if (!node.isGuarded() || variable == null || variable.getExpr() == null) {
-            ScssStylesheet.addVariable(node);
+            ScssStylesheet.setVariable(node);
         } else { // Handle the case where a variable has the value SCSS_NULL
             SassListItem value = variable.getExpr();
             if (value instanceof LexicalUnitImpl) {
                 LexicalUnitImpl unit = (LexicalUnitImpl) value;
                 if (unit.getLexicalUnitType() == SCSSLexicalUnit.SCSS_NULL) {
-                    ScssStylesheet.addVariable(node);
+                    ScssStylesheet.setVariable(node);
                 }
             }
         }

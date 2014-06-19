@@ -15,10 +15,7 @@
  */
 package com.vaadin.sass.internal.selector;
 
-import java.util.Collection;
-
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
-import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
  * Single CSS3 attribute selector such as "[attribute]" or "[attribute~=value]".
@@ -88,12 +85,11 @@ public class AttributeSelector extends SimpleSelector {
     }
 
     @Override
-    public AttributeSelector replaceVariables(Collection<VariableNode> variables) {
-        StringInterpolationSequence newAttribute = attribute
-                .replaceVariables(variables);
+    public AttributeSelector replaceVariables() {
+        StringInterpolationSequence newAttribute = attribute.replaceVariables();
         StringInterpolationSequence newValue = null;
         if (value != null) {
-            newValue = value.replaceVariables(variables);
+            newValue = value.replaceVariables();
         }
         return new AttributeSelector(newAttribute, matchRelation, newValue);
     }

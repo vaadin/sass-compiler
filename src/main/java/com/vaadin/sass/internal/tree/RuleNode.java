@@ -16,12 +16,8 @@
 
 package com.vaadin.sass.internal.tree;
 
-import java.util.Collection;
-
-import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
-import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
 
 public class RuleNode extends Node implements IVariableNode {
     private static final long serialVersionUID = 6653493127869037022L;
@@ -82,9 +78,9 @@ public class RuleNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void replaceVariables(Collection<VariableNode> variables) {
-        variable = variable.replaceVariables(variables);
-        value = value.replaceVariables(variables);
+    public void replaceVariables() {
+        variable = variable.replaceVariables();
+        value = value.replaceVariables();
     }
 
     @Override
@@ -98,7 +94,7 @@ public class RuleNode extends Node implements IVariableNode {
          * operator.
          */
         boolean hasOperators = value.containsArithmeticalOperator();
-        replaceVariables(ScssStylesheet.getVariables());
+        replaceVariables();
         value = value.evaluateFunctionsAndExpressions(hasOperators);
     }
 

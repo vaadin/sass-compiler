@@ -16,7 +16,6 @@
 package com.vaadin.sass.internal.tree;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.SassListItem;
@@ -35,9 +34,9 @@ public class MicrosoftRuleNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void replaceVariables(Collection<VariableNode> variables) {
+    public void replaceVariables() {
         boolean variableReplaced = false;
-        value = value.replaceVariables(variables);
+        value = value.replaceVariables();
         // Replace variables occurring in quoted strings
         ArrayList<SassListItem> items = new ArrayList<SassListItem>();
         for (SassListItem item : value.getItems()) {
@@ -46,7 +45,7 @@ public class MicrosoftRuleNode extends Node implements IVariableNode {
                 continue;
             }
             String stringValue = item.printState();
-            for (final VariableNode var : variables) {
+            for (final VariableNode var : ScssStylesheet.getVariables()) {
                 if (StringUtil.containsVariable(stringValue, var.getName())) {
                     variableReplaced = true;
                     stringValue = StringUtil.replaceVariable(stringValue,
@@ -72,7 +71,7 @@ public class MicrosoftRuleNode extends Node implements IVariableNode {
 
     @Override
     public void traverse() {
-        replaceVariables(ScssStylesheet.getVariables());
+        replaceVariables();
         traverseChildren();
     }
 }

@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.ActualArgumentList;
@@ -163,13 +162,13 @@ public abstract class Node implements Serializable {
     }
 
     public void traverseChildren() {
-        Map<String, VariableNode> variableScope = ScssStylesheet.openVariableScope();
+        ScssStylesheet.openVariableScope();
         try {
             for (Node child : new ArrayList<Node>(getChildren())) {
                 child.traverse();
             }
         } finally {
-            ScssStylesheet.closeVariableScope(variableScope);
+            ScssStylesheet.closeVariableScope();
         }
     }
 

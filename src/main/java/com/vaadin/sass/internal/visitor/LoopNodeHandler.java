@@ -16,12 +16,12 @@
 package com.vaadin.sass.internal.visitor;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 
-import com.vaadin.sass.internal.tree.IVariableNode;
+import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.VariableNode;
+import com.vaadin.sass.internal.tree.controldirective.WhileNode;
 
 /**
  * Base class for handlers of all kinds of looping nodes (@for, @while, @each).
@@ -39,38 +39,29 @@ public abstract class LoopNodeHandler {
      */
     protected static void replaceLoopNode(Node loopNode,
             Iterable<VariableNode> loopVariables) {
-        ArrayList<Node> nodes = new ArrayList<Node>();
+        // the type of this node does not matter much as long as it can have
+        // children that can be traversed
+        Node tempParent = new WhileNode(null);
         for (final VariableNode var : loopVariables) {
-            nodes.addAll(iteration(loopNode, var));
+            iteration(loopNode.getChildren(), tempParent, var);
         }
-        loopNode.getParentNode().replaceNode(loopNode, nodes);
-
-        for (Node node : nodes) {
-            node.traverse();
-        }
+        // need to copy child list to avoid concurrent modifications
+        loopNode.getParentNode().replaceNode(loopNode,
+                new ArrayList<Node>(tempParent.getChildren()));
     }
 
-    private static ArrayList<Node> iteration(Node loopNode, VariableNode loopVar) {
-        Collection<VariableNode> variables = Collections.singleton(loopVar);
-
-        ArrayList<Node> nodes = new ArrayList<Node>();
-        for (final Node child : loopNode.getChildren()) {
-            Node copy = child.copy();
-            replaceLoopVariable(copy, variables);
-            nodes.add(copy);
-        }
-        return nodes;
-    }
-
-    private static void replaceLoopVariable(Node copy,
-            Collection<VariableNode> variables) {
-        if (copy instanceof IVariableNode) {
-            IVariableNode n = (IVariableNode) copy;
-            n.replaceVariables(variables);
-        }
-
-        for (Node c : copy.getChildren()) {
-            replaceLoopVariable(c, variables);
+    private static void iteration(List<Node> loopChildren, Node newParent,
+            VariableNode loopVar) {
+        ScssStylesheet.openVariableScope();
+        try {
+            ScssStylesheet.addVariable(loopVar);
+            for (final Node child : loopChildren) {
+                Node copy = child.copy();
+                newParent.appendChild(copy);
+                copy.traverse();
+            }
+        } finally {
+            ScssStylesheet.closeVariableScope();
         }
     }
 }

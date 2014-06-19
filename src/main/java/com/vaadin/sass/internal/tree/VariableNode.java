@@ -16,9 +16,6 @@
 
 package com.vaadin.sass.internal.tree;
 
-import java.util.Collection;
-
-import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.visitor.VariableNodeHandler;
 
@@ -71,8 +68,8 @@ public class VariableNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void replaceVariables(Collection<VariableNode> variables) {
-        expr = expr.replaceVariables(variables);
+    public void replaceVariables() {
+        expr = expr.replaceVariables();
     }
 
     /**
@@ -100,7 +97,7 @@ public class VariableNode extends Node implements IVariableNode {
          * operator.
          */
         boolean hasOperator = expr.containsArithmeticalOperator();
-        replaceVariables(ScssStylesheet.getVariables());
+        replaceVariables();
         expr = expr.evaluateFunctionsAndExpressions(hasOperator);
         VariableNodeHandler.traverse(this);
     }

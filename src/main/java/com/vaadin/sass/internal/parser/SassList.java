@@ -18,14 +18,12 @@ package com.vaadin.sass.internal.parser;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
-import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
  * SassList is a list that has a specified separator character (comma or space)
@@ -202,12 +200,12 @@ public class SassList implements SassListItem, Iterable<SassListItem>,
     }
 
     @Override
-    public SassList replaceVariables(Collection<VariableNode> variables) {
+    public SassList replaceVariables() {
         // The actual replacing happens in LexicalUnitImpl, which also
         // implements SassListItem.
         List<SassListItem> list = new ArrayList<SassListItem>();
         for (SassListItem item : this) {
-            list.add(item.replaceVariables(variables));
+            list.add(item.replaceVariables());
         }
         return new SassList(getSeparator(), list);
     }

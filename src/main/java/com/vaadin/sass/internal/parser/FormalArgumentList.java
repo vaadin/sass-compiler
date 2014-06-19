@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
@@ -59,12 +60,11 @@ public class FormalArgumentList implements Serializable, Iterable<VariableNode> 
         }
     }
 
-    public FormalArgumentList replaceVariables(
-            Collection<VariableNode> variables) {
+    public FormalArgumentList replaceVariables() {
         ArrayList<VariableNode> result = new ArrayList<VariableNode>();
         for (final VariableNode arg : arglist) {
             SassListItem expr = arg.getExpr();
-            for (final VariableNode var : variables) {
+            for (final VariableNode var : ScssStylesheet.getVariables()) {
                 if (arg.getName().equals(var.getName()) && expr == null) {
                     expr = var.getExpr();
                     break;

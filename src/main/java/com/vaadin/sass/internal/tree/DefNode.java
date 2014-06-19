@@ -17,7 +17,6 @@ package com.vaadin.sass.internal.tree;
 
 import java.util.Collection;
 
-import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.ActualArgumentList;
 import com.vaadin.sass.internal.parser.FormalArgumentList;
 
@@ -52,8 +51,8 @@ public abstract class DefNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void replaceVariables(Collection<VariableNode> variables) {
-        arglist = arglist.replaceVariables(variables);
+    public void replaceVariables() {
+        arglist = arglist.replaceVariables();
     }
 
     public void replacePossibleArguments(ActualArgumentList actualArgumentList) {
@@ -63,12 +62,7 @@ public abstract class DefNode extends Node implements IVariableNode {
 
     @Override
     public void traverse() {
-        if (!arglist.isEmpty()) {
-            for (final VariableNode arg : arglist) {
-                if (arg.getExpr() != null) {
-                    ScssStylesheet.addVariable(arg);
-                }
-            }
-        }
+        // this is not used for definition nodes
     }
+
 }

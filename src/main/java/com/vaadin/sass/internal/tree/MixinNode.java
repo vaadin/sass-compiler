@@ -19,7 +19,6 @@ package com.vaadin.sass.internal.tree;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.visitor.MixinNodeHandler;
 
 public class MixinNode extends NodeWithVariableArguments {
@@ -47,15 +46,14 @@ public class MixinNode extends NodeWithVariableArguments {
     protected void replaceVariablesForChildren() {
         for (Node child : getChildren()) {
             if (child instanceof IVariableNode) {
-                ((IVariableNode) child).replaceVariables(ScssStylesheet
-                        .getVariables());
+                ((IVariableNode) child).replaceVariables();
             }
         }
     }
 
     @Override
     public void doTraverse() throws Exception {
-        replaceVariables(ScssStylesheet.getVariables());
+        replaceVariables();
         expandVariableArguments();
         replaceVariablesForChildren();
         MixinNodeHandler.traverse(this);

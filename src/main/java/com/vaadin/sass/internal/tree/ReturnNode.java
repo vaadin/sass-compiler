@@ -15,10 +15,6 @@
  */
 package com.vaadin.sass.internal.tree;
 
-import java.util.Collection;
-import java.util.List;
-
-import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.SassListItem;
 
 public class ReturnNode extends Node implements IVariableNode {
@@ -30,8 +26,8 @@ public class ReturnNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void replaceVariables(Collection<VariableNode> variables) {
-        expr = expr.replaceVariables(variables);
+    public void replaceVariables() {
+        expr = expr.replaceVariables();
     }
 
     @Override
@@ -44,19 +40,16 @@ public class ReturnNode extends Node implements IVariableNode {
     }
 
     /**
-     * Evaluate the value of the return node in a context defined by the actual
-     * parameters and the state of ScssStylesheet (variables currently in scope,
-     * defined custom functions).
+     * Evaluate the value of the return node in a context defined by the state
+     * of ScssStylesheet (variables currently in scope, defined custom
+     * functions).
      * 
      * This method does not modify the ReturnNode itself.
      */
-    public SassListItem evaluate(List<VariableNode> actualParams) {
+    public SassListItem evaluate() {
         SassListItem expr = getExpr();
         boolean arith = expr.containsArithmeticalOperator();
-        if (!actualParams.isEmpty()) {
-            expr = expr.replaceVariables(actualParams);
-        }
-        expr = expr.replaceVariables(ScssStylesheet.getVariables());
+        expr = expr.replaceVariables();
         expr = expr.evaluateFunctionsAndExpressions(arith);
         return expr;
     }

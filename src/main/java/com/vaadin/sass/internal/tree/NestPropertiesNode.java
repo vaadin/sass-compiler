@@ -17,7 +17,6 @@
 package com.vaadin.sass.internal.tree;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
@@ -65,11 +64,11 @@ public class NestPropertiesNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void replaceVariables(Collection<VariableNode> variables) {
-        name = name.replaceVariables(variables);
+    public void replaceVariables() {
+        name = name.replaceVariables();
         for (Node child : getChildren()) {
             if (child instanceof RuleNode) {
-                ((RuleNode) child).replaceVariables(variables);
+                ((RuleNode) child).replaceVariables();
             }
         }
     }

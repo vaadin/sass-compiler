@@ -20,8 +20,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 
-import com.vaadin.sass.internal.tree.VariableNode;
-
 public class SimpleSelectorSequence extends ArrayList<SimpleSelector> implements
         SelectorSegment {
 
@@ -198,11 +196,10 @@ public class SimpleSelectorSequence extends ArrayList<SimpleSelector> implements
         return that.containsAll(this);
     }
 
-    public SimpleSelectorSequence replaceVariables(
-            Collection<VariableNode> variables) {
+    public SimpleSelectorSequence replaceVariables() {
         SimpleSelectorSequence newSeq = new SimpleSelectorSequence();
         for (SimpleSelector s : this) {
-            newSeq.add(s.replaceVariables(variables));
+            newSeq.add(s.replaceVariables());
         }
         return newSeq;
     }

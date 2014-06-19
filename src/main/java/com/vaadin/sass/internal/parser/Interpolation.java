@@ -16,10 +16,8 @@
 package com.vaadin.sass.internal.parser;
 
 import java.io.Serializable;
-import java.util.Collection;
 
 import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
-import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
  * Interpolation represents a single instance of interpolation. The string
@@ -85,8 +83,8 @@ public class Interpolation implements SassListItem, Serializable {
     }
 
     @Override
-    public Interpolation replaceVariables(Collection<VariableNode> variables) {
-        return new Interpolation(expression.replaceVariables(variables),
+    public Interpolation replaceVariables() {
+        return new Interpolation(expression.replaceVariables(),
                 getLineNumber(), getColumnNumber(), evaluateArithmetics);
     }
 

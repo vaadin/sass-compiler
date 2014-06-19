@@ -15,10 +15,10 @@
  */
 package com.vaadin.sass.internal.tree;
 
-import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.util.StringUtil;
 
 public class ConsoleMessageNode extends Node implements IVariableNode {
@@ -32,9 +32,9 @@ public class ConsoleMessageNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void replaceVariables(Collection<VariableNode> variables) {
+    public void replaceVariables() {
         // interpolation of variable names in the string
-        for (final VariableNode var : variables) {
+        for (final VariableNode var : ScssStylesheet.getVariables()) {
             if (StringUtil.containsVariable(message, var.getName())) {
                 message = StringUtil.replaceVariable(message, var.getName(),
                         var.getExpr().printState());

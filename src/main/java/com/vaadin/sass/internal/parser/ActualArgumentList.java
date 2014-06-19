@@ -152,12 +152,11 @@ public class ActualArgumentList implements Serializable {
         return this;
     }
 
-    public ActualArgumentList replaceVariables(
-            Collection<VariableNode> variables) {
-        ArgumentList newArgList = arglist.replaceVariables(variables);
+    public ActualArgumentList replaceVariables() {
+        ArgumentList newArgList = arglist.replaceVariables();
         SassListItem newVarArg = null;
         if (hasVariableArguments()) {
-            newVarArg = variableArgument.replaceVariables(variables);
+            newVarArg = variableArgument.replaceVariables();
         }
         return new ActualArgumentList(newArgList, newVarArg);
     }

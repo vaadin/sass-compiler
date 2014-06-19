@@ -15,10 +15,7 @@
  */
 package com.vaadin.sass.internal.selector;
 
-import java.util.Collection;
-
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
-import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
  * Single CSS3 universal selector "*".
@@ -34,7 +31,7 @@ public class UniversalSelector extends TypeSelector {
     }
 
     @Override
-    public UniversalSelector replaceVariables(Collection<VariableNode> variables) {
+    public UniversalSelector replaceVariables() {
         return this;
     }
 

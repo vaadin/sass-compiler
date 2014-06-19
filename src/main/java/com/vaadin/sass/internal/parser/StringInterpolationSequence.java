@@ -17,11 +17,8 @@ package com.vaadin.sass.internal.parser;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
-import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
  * StringInterpolationSequence is used for representing sequences consisting of
@@ -81,12 +78,11 @@ public class StringInterpolationSequence implements Serializable {
      * 
      * @return A new StringInterpolationSequence.
      */
-    public StringInterpolationSequence replaceVariables(
-            Collection<VariableNode> variables) {
+    public StringInterpolationSequence replaceVariables() {
         if (!containsInterpolation()) {
             return this;
         }
-        SassList resultList = items.replaceVariables(variables);
+        SassList resultList = items.replaceVariables();
         if (!resultList.containsVariable()) {
             resultList = resultList.evaluateFunctionsAndExpressions(false);
             resultList = replaceInterpolation(resultList);

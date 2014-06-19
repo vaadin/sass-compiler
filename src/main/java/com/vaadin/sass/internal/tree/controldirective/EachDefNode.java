@@ -16,14 +16,10 @@
 
 package com.vaadin.sass.internal.tree.controldirective;
 
-import java.util.Collection;
-
-import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.IVariableNode;
 import com.vaadin.sass.internal.tree.Node;
-import com.vaadin.sass.internal.tree.VariableNode;
 import com.vaadin.sass.internal.visitor.EachNodeHandler;
 
 public class EachDefNode extends Node implements IVariableNode {
@@ -57,13 +53,13 @@ public class EachDefNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void replaceVariables(Collection<VariableNode> variables) {
-        list = list.replaceVariables(variables);
+    public void replaceVariables() {
+        list = list.replaceVariables();
     }
 
     @Override
     public void traverse() {
-        replaceVariables(ScssStylesheet.getVariables());
+        replaceVariables();
         EachNodeHandler.traverse(this);
     }
 }

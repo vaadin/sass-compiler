@@ -15,10 +15,7 @@
  */
 package com.vaadin.sass.internal.selector;
 
-import java.util.Collection;
-
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
-import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
  * Single CSS3 class selector such as ".abc".
@@ -43,7 +40,7 @@ public class ClassSelector extends SimpleSelector {
     }
 
     @Override
-    public ClassSelector replaceVariables(Collection<VariableNode> variables) {
-        return new ClassSelector(classValue.replaceVariables(variables));
+    public ClassSelector replaceVariables() {
+        return new ClassSelector(classValue.replaceVariables());
     }
 }

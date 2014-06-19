@@ -15,10 +15,7 @@
  */
 package com.vaadin.sass.internal.selector;
 
-import java.util.Collection;
-
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
-import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
  * Simple placeholder selector of the form "%abc". Placeholder selectors are not
@@ -41,8 +38,7 @@ public class PlaceholderSelector extends SimpleSelector {
     }
 
     @Override
-    public PlaceholderSelector replaceVariables(
-            Collection<VariableNode> variables) {
-        return new PlaceholderSelector(value.replaceVariables(variables));
+    public PlaceholderSelector replaceVariables() {
+        return new PlaceholderSelector(value.replaceVariables());
     }
 }

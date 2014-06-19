@@ -17,7 +17,6 @@ package com.vaadin.sass.internal.parser;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -57,17 +56,17 @@ public class ArgumentList extends SassList implements Serializable {
     }
 
     @Override
-    public ArgumentList replaceVariables(Collection<VariableNode> variables) {
+    public ArgumentList replaceVariables() {
         // The actual replacing happens in LexicalUnitImpl, which also
         // implements SassListItem.
         List<SassListItem> list = new ArrayList<SassListItem>();
         for (SassListItem item : this) {
-            list.add(item.replaceVariables(variables));
+            list.add(item.replaceVariables());
         }
         List<VariableNode> named = new ArrayList<VariableNode>();
         for (VariableNode node : namedVariables) {
             named.add(new VariableNode(node.getName(), node.getExpr()
-                    .replaceVariables(variables), node.isGuarded()));
+                    .replaceVariables(), node.isGuarded()));
         }
         return new ArgumentList(getSeparator(), list, named);
     }

@@ -26,10 +26,7 @@ package com.vaadin.sass.internal.parser;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -728,89 +725,82 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     }
 
     @Override
-    public SassListItem replaceVariables(Collection<VariableNode> variables) {
-        // TODO simplify
-        SassListItem result = replaceVariablesForStringValue(variables);
-        Iterator<VariableNode> it = variables.iterator();
-        while (it.hasNext() && result instanceof LexicalUnitImpl) {
-            LexicalUnitImpl lui = (LexicalUnitImpl) result;
-            result = lui.replaceVariable(it.next());
+    public SassListItem replaceVariables() {
+        LexicalUnitImpl lui = this;
+
+        // replace function parameters (if any)
+        lui = lui.replaceParams();
+
+        // replace parameters in string value
+        if (lui.getLexicalUnitType() == LexicalUnitImpl.SCSS_VARIABLE) {
+            return lui.replaceSimpleVariable();
+        } else if (containsInterpolation()) {
+            return lui.replaceInterpolation();
         }
-        if (!(result instanceof LexicalUnitImpl)) {
-            result = result.replaceVariables(variables);
-        }
-        return result;
+        return lui;
     }
 
-    private LexicalUnitImpl replaceVariablesForStringValue(
-            Collection<VariableNode> variables) {
-        if (s == null || !s.containsInterpolation()) {
-            return this;
-        } else {
-            LexicalUnitImpl copy = copy();
-            copy.s = s.replaceVariables(variables);
-            return copy;
-        }
-    }
-
-    private SassListItem replaceVariable(VariableNode node) {
-        LexicalUnitImpl replacementUnit = this;
-        replacementUnit = replaceParams(replacementUnit, node);
-        SassListItem replacement = replaceVariable(replacementUnit, node);
-        replacement = replaceInterpolation(replacement, node);
-        return replacement;
-    }
-
-    private static SassListItem replaceVariable(LexicalUnitImpl unit,
-            VariableNode node) {
-        if (unit.getLexicalUnitType() == LexicalUnitImpl.SCSS_VARIABLE
-                && node.getName().equals(unit.getStringValue())) {
-            return node.getExpr();
-        } else {
-            return unit;
-        }
-    }
-
-    private static LexicalUnitImpl replaceParams(LexicalUnitImpl item,
-            VariableNode node) {
-        ActualArgumentList params = item.getParameterList();
+    private LexicalUnitImpl replaceParams() {
+        ActualArgumentList params = getParameterList();
         if (params != null) {
-            ActualArgumentList newParams = params.replaceVariables(Collections
-                    .singletonList(node));
-            // TODO both copy and setParameterList set the parameter list -
-            // could optimize
-            LexicalUnitImpl copy = item.copy();
-            copy.setParameterList(newParams);
+            LexicalUnitImpl copy = copy();
+            copy.setParameterList(params.replaceVariables());
             return copy;
         } else {
-            return item;
+            return this;
         }
     }
 
-    private static SassListItem replaceInterpolation(SassListItem item,
-            VariableNode node) {
-        if (item instanceof LexicalUnitImpl) {
-            LexicalUnitImpl unit = (LexicalUnitImpl) item;
-            String interpolation = "#{$" + node.getName() + "}";
-            String stringValue = unit.getStringValue();
-            if (stringValue != null) {
+    private SassListItem replaceSimpleVariable() {
+        if (getLexicalUnitType() == LexicalUnitImpl.SCSS_VARIABLE) {
+            // replace simple variable
+            String stringValue = getStringValue();
+            for (VariableNode node : ScssStylesheet.getVariables()) {
+                if (node.getName().equals(stringValue)) {
+                    return node.getExpr().replaceVariables();
+                }
+            }
+        }
+        return this;
+    }
+
+    private boolean containsInterpolation() {
+        return s != null && s.containsInterpolation();
+    }
+
+    private SassListItem replaceInterpolation() {
+        // replace interpolation
+        if (containsInterpolation()) {
+            StringInterpolationSequence sis = s.replaceVariables();
+            for (VariableNode node : ScssStylesheet.getVariables()) {
+                if (!sis.containsInterpolation()) {
+                    break;
+                }
+                String interpolation = "#{$" + node.getName() + "}";
+                String stringValue = sis.toString();
                 SassListItem expr = node.getExpr();
                 // strings should be unquoted
                 if (stringValue.equals(interpolation)
                         && !checkLexicalUnitType(expr,
                                 LexicalUnitImpl.SAC_STRING_VALUE)) {
                     // no more replacements needed, use data type of expr
-                    return expr;
+                    return expr.replaceVariables();
                 } else if (stringValue.contains(interpolation)) {
-                    LexicalUnitImpl copy = unit.copy();
-                    copy.setStringValue(stringValue.replaceAll(
-                            Pattern.quote(interpolation),
-                            Matcher.quoteReplacement(expr.unquotedString())));
-                    item = copy;
+                    String replacementString = expr.replaceVariables()
+                            .unquotedString();
+                    sis = new StringInterpolationSequence(
+                            stringValue.replaceAll(
+                                    Pattern.quote(interpolation),
+                                    Matcher.quoteReplacement(replacementString)));
                 }
             }
+            if (sis != s) {
+                LexicalUnitImpl copy = copy();
+                copy.s = sis;
+                return copy;
+            }
         }
-        return item;
+        return this;
     }
 
     @Override

@@ -15,10 +15,7 @@
  */
 package com.vaadin.sass.internal.selector;
 
-import java.util.Collection;
-
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
-import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
  * Single CSS3 id selector such as "#abc".
@@ -42,8 +39,8 @@ public class IdSelector extends SimpleSelector {
     }
 
     @Override
-    public IdSelector replaceVariables(Collection<VariableNode> variables) {
-        return new IdSelector(value.replaceVariables(variables));
+    public IdSelector replaceVariables() {
+        return new IdSelector(value.replaceVariables());
     }
 
 }

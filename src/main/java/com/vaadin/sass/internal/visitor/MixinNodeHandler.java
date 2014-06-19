@@ -23,6 +23,7 @@ import com.vaadin.sass.internal.tree.IVariableNode;
 import com.vaadin.sass.internal.tree.MixinDefNode;
 import com.vaadin.sass.internal.tree.MixinNode;
 import com.vaadin.sass.internal.tree.Node;
+import com.vaadin.sass.internal.tree.VariableNode;
 
 public class MixinNodeHandler {
 
@@ -43,15 +44,24 @@ public class MixinNodeHandler {
     private static void replaceMixinNode(MixinNode mixinNode,
             MixinDefNode mixinDef) {
         MixinDefNode defClone = mixinDef.copy();
-        defClone.traverse();
 
         defClone.replaceContentDirective(mixinNode);
 
         ArrayList<Node> children = new ArrayList<Node>(defClone.getChildren());
         if (!mixinDef.getArglist().isEmpty()) {
             defClone.replacePossibleArguments(mixinNode.getArglist());
-            for (final Node child : children) {
-                replaceChildVariables(defClone, child);
+
+            ScssStylesheet.openVariableScope();
+            try {
+                // add variables from argList
+                for (VariableNode var : defClone.getArglist().getArguments()) {
+                    ScssStylesheet.addVariable(var);
+                }
+                for (final Node child : children) {
+                    replaceChildVariables(child);
+                }
+            } finally {
+                ScssStylesheet.closeVariableScope();
             }
         }
         // might have changed
@@ -62,13 +72,12 @@ public class MixinNodeHandler {
         }
     }
 
-    private static void replaceChildVariables(MixinDefNode mixinDef, Node node) {
+    private static void replaceChildVariables(Node node) {
         for (final Node child : node.getChildren()) {
-            replaceChildVariables(mixinDef, child);
+            replaceChildVariables(child);
         }
         if (node instanceof IVariableNode) {
-            ((IVariableNode) node).replaceVariables(mixinDef.getArglist()
-                    .getArguments());
+            ((IVariableNode) node).replaceVariables();
         }
     }
 }

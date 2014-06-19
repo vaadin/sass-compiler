@@ -15,10 +15,7 @@
  */
 package com.vaadin.sass.internal.parser;
 
-import java.util.Collection;
-
 import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
-import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
  * SassListItem specifies the interface implemented by both list items
@@ -83,16 +80,13 @@ public interface SassListItem {
 
     /**
      * Returns a new item that is otherwise equal to this one but all
-     * occurrences of the given variables have been replaced by the values given
-     * in the VariableNodes. Does not modify this item.
+     * occurrences of variables have been replaced by the values in the current
+     * variable scope. Does not modify this item.
      * 
-     * @param variables
-     *            A list of nodes. The nodes contain the names and the current
-     *            values of the variables to be replaced.
      * @return A SassListItem where all occurrences of variables have been
      *         replaced by their values.
      */
-    public SassListItem replaceVariables(Collection<VariableNode> variable);
+    public SassListItem replaceVariables();
 
     /**
      * Updates all url's of this item by, e.g., adding the prefix to an url not

@@ -15,14 +15,10 @@
  */
 package com.vaadin.sass.internal.tree.controldirective;
 
-import java.util.Collection;
-
-import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.IVariableNode;
 import com.vaadin.sass.internal.tree.Node;
-import com.vaadin.sass.internal.tree.VariableNode;
 
 public class IfNode extends Node implements IfElseNode, IVariableNode {
     private SassListItem expression;
@@ -45,13 +41,13 @@ public class IfNode extends Node implements IfElseNode, IVariableNode {
     }
 
     @Override
-    public void replaceVariables(Collection<VariableNode> variables) {
-        expression = expression.replaceVariables(variables);
+    public void replaceVariables() {
+        expression = expression.replaceVariables();
     }
 
     @Override
     public void traverse() {
-        replaceVariables(ScssStylesheet.getVariables());
+        replaceVariables();
         expression = expression.evaluateFunctionsAndExpressions(true);
     }
 }

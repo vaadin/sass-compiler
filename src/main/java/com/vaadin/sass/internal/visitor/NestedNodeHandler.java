@@ -16,7 +16,6 @@
 
 package com.vaadin.sass.internal.visitor;
 
-import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.tree.NestPropertiesNode;
 
 /**
@@ -41,7 +40,7 @@ import com.vaadin.sass.internal.tree.NestPropertiesNode;
 public class NestedNodeHandler {
 
     public static void traverse(NestPropertiesNode node) {
-        node.replaceVariables(ScssStylesheet.getVariables());
+        node.replaceVariables();
         node.getParentNode().replaceNode(node, node.unNesting());
     }
 }

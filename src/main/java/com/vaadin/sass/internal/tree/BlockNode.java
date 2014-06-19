@@ -17,12 +17,10 @@
 package com.vaadin.sass.internal.tree;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.selector.Selector;
 import com.vaadin.sass.internal.visitor.BlockNodeHandler;
 
@@ -59,7 +57,7 @@ public class BlockNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void replaceVariables(Collection<VariableNode> variables) {
+    public void replaceVariables() {
 
         if (selectorList == null || selectorList.isEmpty()) {
             return;
@@ -67,7 +65,7 @@ public class BlockNode extends Node implements IVariableNode {
 
         ArrayList<Selector> newSelectorList = new ArrayList<Selector>();
         for (Selector s : selectorList) {
-            newSelectorList.add(s.replaceVariables(variables));
+            newSelectorList.add(s.replaceVariables());
         }
         selectorList = newSelectorList;
     }
@@ -84,7 +82,7 @@ public class BlockNode extends Node implements IVariableNode {
     @Override
     public void traverse() {
         try {
-            replaceVariables(ScssStylesheet.getVariables());
+            replaceVariables();
             BlockNodeHandler.traverse(this);
             traverseChildren();
         } catch (Exception e) {

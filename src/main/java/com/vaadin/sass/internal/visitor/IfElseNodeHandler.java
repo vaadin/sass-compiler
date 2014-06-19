@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.w3c.flute.parser.ParseException;
 
-import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.expression.BinaryOperator;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.Node;
@@ -34,8 +33,7 @@ public class IfElseNodeHandler {
         for (final Node child : node.getChildren()) {
             if (child instanceof IfNode) {
                 SassListItem expression = ((IfNode) child).getExpression();
-                expression = expression.replaceVariables(ScssStylesheet
-                        .getVariables());
+                expression = expression.replaceVariables();
                 expression = expression.evaluateFunctionsAndExpressions(true);
 
                 if (BinaryOperator.isTrue(expression)) {

@@ -17,11 +17,9 @@ package com.vaadin.sass.internal.selector;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import com.vaadin.sass.internal.parser.ParseException;
-import com.vaadin.sass.internal.tree.VariableNode;
 
 public class Selector implements Serializable {
 
@@ -223,13 +221,13 @@ public class Selector implements Serializable {
     /**
      * Replace variables with their values (textually) in subselectors
      */
-    public Selector replaceVariables(Collection<VariableNode> variables) {
+    public Selector replaceVariables() {
         // It would be sensible to rethink the whole handling of interpolations
         Selector sel = new Selector();
         for (SelectorSegment segment : parts) {
             if (segment instanceof SimpleSelectorSequence) {
                 SimpleSelectorSequence seq = (SimpleSelectorSequence) segment;
-                seq = seq.replaceVariables(variables);
+                seq = seq.replaceVariables();
                 sel.parts.add(seq);
             } else {
                 sel.parts.add(segment);

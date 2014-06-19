@@ -16,7 +16,6 @@
 package com.vaadin.sass.internal.tree;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -81,22 +80,21 @@ public abstract class NodeWithVariableArguments extends Node implements
      * name.
      */
     @Override
-    public void replaceVariables(Collection<VariableNode> variables) {
-        arglist = arglist.replaceVariables(variables);
+    public void replaceVariables() {
+        arglist = arglist.replaceVariables();
         arglist = arglist.evaluateFunctionsAndExpressions(true);
     }
 
     @Override
     public void traverse() {
         // limit variable scope
-        Map<String, VariableNode> variableScope = ScssStylesheet
-                .openVariableScope();
+        ScssStylesheet.openVariableScope();
         try {
             doTraverse();
         } catch (Exception e) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, e);
         } finally {
-            ScssStylesheet.closeVariableScope(variableScope);
+            ScssStylesheet.closeVariableScope();
         }
     }
 
