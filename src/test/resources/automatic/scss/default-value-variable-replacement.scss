@@ -1,0 +1,13 @@
+$a: 1.2;
+@function f($x: round($a*2)) {
+  @return $x;
+}
+@mixin m($y: round($a*2)) {
+  y: $y;
+}
+
+.x {
+  $a: 2.4;
+  x: f();
+  @include m;
+}

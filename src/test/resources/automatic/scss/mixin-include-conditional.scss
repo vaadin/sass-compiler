@@ -1,0 +1,30 @@
+$v-background-color               : hsl(210, 0%, 98%)                           !default;
+
+@function color-luminance ($color) {
+  @return 0.2126 * red($color) + 0.7152 * green($color) + 0.0722 * blue($color);
+}
+
+@function darkest-color($colors...) {
+  $darkest: nth($colors, 1);
+  @each $color in $colors {
+    @if color-luminance($color) < color-luminance($darkest) {
+      $darkest: $color;
+    }
+  }
+  @return $darkest;
+}
+
+@mixin valo-border-with-gradient($c) {
+}
+
+@mixin valo-button-style ($background-color : $v-background-color) {
+    @if false {
+      @include valo-border-with-gradient($color: darkest-color($background-color, $v-background-color));
+    }
+}
+
+.v-button-small {
+  @include valo-button-style($background-color: null);
+  single: darkest-color(#fafafa);
+  darkest: darkest-color(red, green, blue);
+}

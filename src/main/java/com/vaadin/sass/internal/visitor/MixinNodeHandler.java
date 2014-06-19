@@ -19,7 +19,6 @@ package com.vaadin.sass.internal.visitor;
 import java.util.ArrayList;
 
 import com.vaadin.sass.internal.ScssStylesheet;
-import com.vaadin.sass.internal.tree.IVariableNode;
 import com.vaadin.sass.internal.tree.MixinDefNode;
 import com.vaadin.sass.internal.tree.MixinNode;
 import com.vaadin.sass.internal.tree.Node;
@@ -47,37 +46,28 @@ public class MixinNodeHandler {
 
         defClone.replaceContentDirective(mixinNode);
 
-        ArrayList<Node> children = new ArrayList<Node>(defClone.getChildren());
         if (!mixinDef.getArglist().isEmpty()) {
             defClone.replacePossibleArguments(mixinNode.getArglist());
+            defClone.replaceVariables();
+        }
 
-            ScssStylesheet.openVariableScope();
-            try {
-                // add variables from argList
-                for (VariableNode var : defClone.getArglist().getArguments()) {
-                    ScssStylesheet.addVariable(var);
-                }
-                for (final Node child : children) {
-                    replaceChildVariables(child);
-                }
-            } finally {
-                ScssStylesheet.closeVariableScope();
+        ScssStylesheet.openVariableScope();
+        try {
+            // add variables from argList
+            for (VariableNode var : defClone.getArglist().getArguments()) {
+                VariableNode evaluated = new VariableNode(var.getName(), var
+                        .getExpr().evaluateFunctionsAndExpressions(true), false);
+                ScssStylesheet.addVariable(evaluated);
             }
-        }
-        // might have changed
-        children = new ArrayList<Node>(defClone.getChildren());
-        mixinNode.getParentNode().replaceNode(mixinNode, children);
-        for (Node child : children) {
-            child.traverse();
-        }
-    }
-
-    private static void replaceChildVariables(Node node) {
-        for (final Node child : node.getChildren()) {
-            replaceChildVariables(child);
-        }
-        if (node instanceof IVariableNode) {
-            ((IVariableNode) node).replaceVariables();
+            // traverse child nodes in this scope
+            ArrayList<Node> children = new ArrayList<Node>(
+                    defClone.getChildren());
+            mixinNode.getParentNode().replaceNode(mixinNode, children);
+            for (Node child : children) {
+                child.traverse();
+            }
+        } finally {
+            ScssStylesheet.closeVariableScope();
         }
     }
 }

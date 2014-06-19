@@ -64,6 +64,9 @@ public class FormalArgumentList implements Serializable, Iterable<VariableNode> 
         ArrayList<VariableNode> result = new ArrayList<VariableNode>();
         for (final VariableNode arg : arglist) {
             SassListItem expr = arg.getExpr();
+            if (expr != null) {
+                expr = expr.replaceVariables();
+            }
             for (final VariableNode var : ScssStylesheet.getVariables()) {
                 if (arg.getName().equals(var.getName()) && expr == null) {
                     expr = var.getExpr();

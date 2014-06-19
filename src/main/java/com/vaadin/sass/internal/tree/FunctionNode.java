@@ -64,6 +64,8 @@ public class FunctionNode extends NodeWithVariableArguments {
         // node
         FunctionDefNode defCopy = def.copy();
         defCopy.replacePossibleArguments(getArglist());
+        // replace variables in default values of parameters
+        defCopy.replaceVariables();
         for (VariableNode param : defCopy.getArglist()) {
             ScssStylesheet.addVariable(param);
         }
