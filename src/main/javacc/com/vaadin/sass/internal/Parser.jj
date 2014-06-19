@@ -1896,10 +1896,10 @@ void debugDirective() :
 {}
 {
     <DEBUG_SYM>
-    { 
-    String content = skipStatementUntil(new int[] {SEMICOLON,RBRACE,EOF});
-    // TODO should evaluate the content expression, call documentHandler.debugDirective() etc.
-    Logger.getLogger(Parser.class.getName()).log(Level.INFO, content);
+    {
+        // could use StringInterpolationSequence but that would require a new parser state 
+        String content = skipStatementUntil(new int[] {SEMICOLON,RBRACE,EOF});
+        documentHandler.debugDirective(content);
     }
     ( (";" (<S>)*) | acceptMissingSemicolon(RBRACE, EOF))
 }
@@ -1909,9 +1909,9 @@ void warnDirective() :
 {
     <WARN_SYM>
     { 
-    String content = skipStatementUntil(new int[] {SEMICOLON,RBRACE,EOF});
-    // TODO should evaluate the content expression, call documentHandler.warnDirective() etc.
-    Logger.getLogger(Parser.class.getName()).log(Level.SEVERE, content);
+        // could use StringInterpolationSequence but that would require a new parser state 
+        String content = skipStatementUntil(new int[] {SEMICOLON,RBRACE,EOF});
+        documentHandler.warnDirective(content);
     }
     ( (";" (<S>)*) | acceptMissingSemicolon(RBRACE, EOF))
 }

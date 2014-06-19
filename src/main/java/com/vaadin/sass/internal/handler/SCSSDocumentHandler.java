@@ -44,7 +44,9 @@ public interface SCSSDocumentHandler extends DocumentHandler {
 
     void endFunctionDirective();
 
-    void debugDirective();
+    void debugDirective(String message);
+
+    void warnDirective(String message);
 
     void startForDirective(String var, SassListItem from, SassListItem to,
             boolean exclusive);
