@@ -32,7 +32,8 @@ public class ReturnNode extends Node implements IVariableNode {
 
     @Override
     public void traverse() {
-        // nothing to do for now
+        // need to replace variables here to make sure all vars are in scope
+        expr = evaluate();
     }
 
     public SassListItem getExpr() {

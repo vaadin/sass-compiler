@@ -1,0 +1,18 @@
+@function first-string($list) {
+  @each $item in $list {
+    @if type-of($item) == string {
+      @return $item;
+    } @else if type-of($item) == list {
+      $ret: first-string($item);
+      @if $ret {
+        @return $ret;
+      }
+    }
+  }
+  @return null;
+}
+
+foo {
+  $shadow: 0 v-shade;
+  a: first-string($shadow);
+}
