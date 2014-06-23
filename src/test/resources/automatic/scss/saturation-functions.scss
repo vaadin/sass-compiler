@@ -1,0 +1,38 @@
+.hexcolor {
+    $color: #0a141e;
+    s1: saturate($color,0%);
+    s2: saturate($color,10%);
+    s3: saturate($color,100%);
+    d1:desaturate($color,0%);
+    d2: desaturate($color,10%);
+    d3: desaturate($color,100%);
+    c1: grayscale($color);
+}
+
+.rgb {
+    $color: rgb(170, 25, 75);
+    s: saturate($color, 25%);
+    d: desaturate($color, 50%);
+    g: grayscale($color);
+}
+
+.rgba {
+    $color: rgba(170, 25, 75, 0.1);
+    s: saturate($color, 25%);
+    d: desaturate($color, 50%);
+    g: grayscale($color);
+}
+
+.hsl {
+    $color: hsl(135, 30%, 50%);
+    s: saturate($color, 15%);
+    d: desaturate($color, 10%);
+    g: grayscale($color);
+}
+
+.hsla {
+    $color: hsla(160, 60%, 30%, 0.8);
+    s: saturate($color, 35%);
+    d: desaturate($color, 30%);
+    g: grayscale($color);
+}

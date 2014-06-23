@@ -166,6 +166,26 @@ public class ColorUtil {
     }
 
     /**
+     * Returns the alpha component of the color. For colors that do not have an
+     * explicit alpha component, returns 1.
+     * 
+     * @param color
+     *            An object representing a valid color.
+     * @return The alpha component of color.
+     */
+    public static float getAlpha(LexicalUnitImpl color) {
+        if (isHsla(color) || isRgba(color)) {
+            ActualArgumentList params = color.getParameterList();
+            return params.get(params.size() - 1).getContainedValue()
+                    .getFloatValue();
+        } else if (isColor(color)) {
+            return 1;
+        }
+        throw new ParseException("The parameter is not a valid color: "
+                + color.toString(), color);
+    }
+
+    /**
      * Converts a color into an array of its RGB components.
      * 
      * In the case of an RGBA value, the alpha channel is ignored.
@@ -469,6 +489,10 @@ public class ColorUtil {
                 rgbToColorString(new int[] { red, green, blue }));
     }
 
+    public static LexicalUnitImpl createHexColor(int[] rgb, int line, int column) {
+        return createHexColor(rgb[0], rgb[1], rgb[2], line, column);
+    }
+
     public static LexicalUnitImpl createRgbaColor(int red, int green, int blue,
             float alpha, int line, int column) {
         LexicalUnitImpl redUnit = LexicalUnitImpl.createNumber(line, column,
@@ -483,6 +507,21 @@ public class ColorUtil {
                 SassList.Separator.COMMA, redUnit, greenUnit, blueUnit,
                 alphaUnit);
         return LexicalUnitImpl.createFunction(line, column, "rgba", args);
+    }
+
+    /**
+     * Creates a hex color if alpha is equal to one. Otherwise creates an RGBA
+     * color.
+     * 
+     * @return An object representing a color.
+     */
+    public static LexicalUnitImpl createRgbaOrHexColor(int[] rgb, float alpha,
+            int line, int column) {
+        if (alpha < 1.0f) {
+            return createRgbaColor(rgb[0], rgb[1], rgb[2], alpha, line, column);
+        } else {
+            return createHexColor(rgb, line, column);
+        }
     }
 
     private static LexicalUnitImpl createHslFunction(float hue,
