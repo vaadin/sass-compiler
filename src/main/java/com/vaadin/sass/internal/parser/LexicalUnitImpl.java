@@ -413,7 +413,8 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     }
 
     public LexicalUnitImpl modulo(LexicalUnitImpl another) {
-        if (getLexicalUnitType() != another.getLexicalUnitType()) {
+        if (!checkLexicalUnitType(another, getLexicalUnitType(), SAC_INTEGER,
+                SAC_REAL)) {
             throw new IncompatibleUnitsException(printState());
         }
         LexicalUnitImpl copy = copy();

@@ -5,7 +5,8 @@
 }
 
 .foo {
-	size: 1;	
+	size: 1;
+	size-px: 3px;
 }
 
 .foo {

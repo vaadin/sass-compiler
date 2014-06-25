@@ -15,6 +15,7 @@ $div: 10px;
 
 .foo{
 	size: 5 % 2; // modular
+	size-px: 15px % 4;
 }
 
 $mul: 2*4;       //valid multiply in variable
