@@ -34,9 +34,7 @@ public class ListNthFunctionGenerator extends AbstractFunctionGenerator {
             FormalArgumentList actualArguments) {
         SassListItem listAsItem = getParam(actualArguments, "list");
         if (!(listAsItem instanceof SassList)) {
-            throw new ParseException(
-                    "The first parameter of nth() must be a list. Actual value: "
-                            + listAsItem);
+            listAsItem = new SassList(listAsItem);
         }
         SassListItem nAsItem = getParam(actualArguments, "n");
         if (!(nAsItem instanceof LexicalUnitImpl)
