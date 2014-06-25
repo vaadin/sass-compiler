@@ -1,0 +1,29 @@
+$a: 1;
+
+@function blend ($op) {
+  $opacity: $op;
+  $a: 2;
+  @return blended;
+}
+
+@mixin mx {
+  foo { x: outer; }
+};
+
+x {
+  // TODO currently not supported by the parser
+  // @mixin mx {
+  //   foo { x: inner; }
+  // };
+  @include mx;
+  
+  $opacity: 8%;
+
+  $end: blend($opacity/100%);
+  $end: blend($opacity/200%);
+  x: $end;
+  a: $a;
+  b: $opacity;
+}
+
+@include mx;

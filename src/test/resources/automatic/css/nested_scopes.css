@@ -1,0 +1,13 @@
+x {
+  x: blended;
+  a: 2;
+  b: 8%;
+}
+
+x foo {
+    x: outer;
+}
+
+foo {
+  x: outer;
+}

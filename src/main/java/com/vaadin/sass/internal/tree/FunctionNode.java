@@ -16,6 +16,10 @@
 
 package com.vaadin.sass.internal.tree;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import com.vaadin.sass.internal.Scope;
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
@@ -56,30 +60,41 @@ public class FunctionNode extends NodeWithVariableArguments {
     }
 
     @Override
-    public void doTraverse() {
-        // TODO should this be called?
-        // replaceVariables(ScssStylesheet.getVariables());
+    public void traverse() {
+        // only parameters are evaluated in current scope, body in
+        // top-level scope
+        try {
+            // copying is necessary as traversal modifies the parent of the
+            // node
+            FunctionDefNode defCopy = def.copy();
+            defCopy.replacePossibleArguments(getArglist());
+            // replace variables in default values of parameters
+            defCopy.replaceVariables();
 
-        // copying is necessary as traversal modifies the parent of the
-        // node
-        FunctionDefNode defCopy = def.copy();
-        defCopy.replacePossibleArguments(getArglist());
-        // replace variables in default values of parameters
-        defCopy.replaceVariables();
-        for (VariableNode param : defCopy.getArglist()) {
-            ScssStylesheet.addVariable(param);
-        }
+            // limit variable scope to the scope where the function was defined
+            Scope previousScope = ScssStylesheet.openVariableScope(defCopy
+                    .getDefinitionScope());
+            try {
+                for (VariableNode param : defCopy.getArglist()) {
+                    ScssStylesheet.addVariable(param);
+                }
 
-        // only contains variable nodes, return nodes and control
-        // structures
-        while (defCopy.getChildren().size() > 0) {
-            defCopy.getChildren().get(0).traverse();
-            if (defCopy.getChildren().get(0) instanceof ReturnNode) {
-                ReturnNode returnNode = ((ReturnNode) defCopy.getChildren()
-                        .get(0));
-                value = returnNode.evaluate();
-                break;
+                // only contains variable nodes, return nodes and control
+                // structures
+                while (defCopy.getChildren().size() > 0) {
+                    defCopy.getChildren().get(0).traverse();
+                    if (defCopy.getChildren().get(0) instanceof ReturnNode) {
+                        ReturnNode returnNode = ((ReturnNode) defCopy
+                                .getChildren().get(0));
+                        value = returnNode.evaluate();
+                        break;
+                    }
+                }
+            } finally {
+                ScssStylesheet.closeVariableScope(previousScope);
             }
+        } catch (Exception e) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, e);
         }
     }
 

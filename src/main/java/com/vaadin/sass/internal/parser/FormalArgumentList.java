@@ -140,7 +140,7 @@ public class FormalArgumentList implements Serializable, Iterable<VariableNode> 
         } else {
             if (!unusedNamedActual.isEmpty() || !unusedUnnamedActual.isEmpty()) {
                 throw new ParseException(
-                        "Substitution error: all actual parameters were not used. Formal parameters: "
+                        "Substitution error: some actual parameters were not used. Formal parameters: "
                                 + this + ", actual parameters: "
                                 + actualArgumentList, actualArgumentList);
             }

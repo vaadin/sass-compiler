@@ -67,7 +67,7 @@ public class Mixins extends AbstractTestBase {
 
         Assert.assertEquals(4, mixinDefNode1.getChildren().size());
 
-        BlockNode mainBlockNode = (BlockNode) root.getChildren().get(3);
+        BlockNode mainBlockNode = (BlockNode) root.getChildren().get(4);
         Assert.assertEquals(3, mainBlockNode.getChildren().size());
         MixinNode mixinNode0MainBlock = (MixinNode) mainBlockNode.getChildren()
                 .get(0);
@@ -90,7 +90,7 @@ public class Mixins extends AbstractTestBase {
                 .get(1);
         Assert.assertTrue(mixinNode1MainBlock.getArglist().size() == 0);
 
-        BlockNode footerBlockNode = (BlockNode) root.getChildren().get(3);
+        BlockNode footerBlockNode = (BlockNode) root.getChildren().get(4);
         MixinNode mixinNodeFooterBlock = (MixinNode) footerBlockNode
                 .getChildren().get(0);
         Assert.assertEquals("mixinVar", mixinNodeFooterBlock.getArglist()
@@ -98,10 +98,10 @@ public class Mixins extends AbstractTestBase {
 
         Assert.assertTrue(root.getChildren().get(0) instanceof MixinDefNode);
         Assert.assertTrue(root.getChildren().get(1) instanceof MixinDefNode);
-        Assert.assertTrue(root.getChildren().get(5) instanceof MixinDefNode);
+        Assert.assertTrue(root.getChildren().get(3) instanceof MixinDefNode);
         Assert.assertTrue(root.getChildren().get(6) instanceof MixinDefNode);
-        Assert.assertTrue(root.getChildren().get(8) instanceof MixinDefNode);
-        Assert.assertTrue(root.getChildren().get(9) instanceof MixinNode);
+        Assert.assertTrue(root.getChildren().get(7) instanceof MixinDefNode);
+        Assert.assertTrue(root.getChildren().get(10) instanceof MixinNode);
     }
 
     @Test

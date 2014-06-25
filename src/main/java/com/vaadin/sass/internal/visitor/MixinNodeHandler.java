@@ -18,7 +18,9 @@ package com.vaadin.sass.internal.visitor;
 
 import java.util.ArrayList;
 
+import com.vaadin.sass.internal.Scope;
 import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.tree.MixinDefNode;
 import com.vaadin.sass.internal.tree.MixinNode;
 import com.vaadin.sass.internal.tree.Node;
@@ -26,15 +28,15 @@ import com.vaadin.sass.internal.tree.VariableNode;
 
 public class MixinNodeHandler {
 
-    public static void traverse(MixinNode node) throws Exception {
+    public static void traverse(MixinNode node) throws ParseException {
         replaceMixins(node);
     }
 
-    private static void replaceMixins(MixinNode node) throws Exception {
+    private static void replaceMixins(MixinNode node) throws ParseException {
         MixinDefNode mixinDef = ScssStylesheet.getMixinDefinition(node
                 .getName());
         if (mixinDef == null) {
-            throw new Exception("Mixin Definition: " + node.getName()
+            throw new ParseException("Mixin Definition: " + node.getName()
                     + " not found");
         }
         replaceMixinNode(node, mixinDef);
@@ -51,7 +53,10 @@ public class MixinNodeHandler {
             defClone.replaceVariables();
         }
 
-        ScssStylesheet.openVariableScope();
+        // parameters have been evaluated in parent scope, rest should be
+        // in the scope where the mixin was defined
+        Scope previousScope = ScssStylesheet.openVariableScope(defClone
+                .getDefinitionScope());
         try {
             // add variables from argList
             for (VariableNode var : defClone.getArglist().getArguments()) {
@@ -67,7 +72,7 @@ public class MixinNodeHandler {
                 child.traverse();
             }
         } finally {
-            ScssStylesheet.closeVariableScope();
+            ScssStylesheet.closeVariableScope(previousScope);
         }
     }
 }

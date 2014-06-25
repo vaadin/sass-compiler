@@ -20,13 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
@@ -47,7 +41,6 @@ import com.vaadin.sass.internal.tree.FunctionDefNode;
 import com.vaadin.sass.internal.tree.MixinDefNode;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.VariableNode;
-import com.vaadin.sass.internal.tree.controldirective.IfElseDefNode;
 import com.vaadin.sass.internal.visitor.ExtendNodeHandler;
 import com.vaadin.sass.internal.visitor.ImportNodeHandler;
 
@@ -55,15 +48,10 @@ public class ScssStylesheet extends Node {
 
     private static final long serialVersionUID = 3849790204404961608L;
 
+    @Deprecated
     private static ScssStylesheet mainStyleSheet = null;
 
-    private static final LinkedList<HashMap<String, VariableNode>> variables = new LinkedList<HashMap<String, VariableNode>>();
-
-    private static final Map<String, MixinDefNode> mixinDefs = new HashMap<String, MixinDefNode>();
-
-    private static final Map<String, FunctionDefNode> functionDefs = new HashMap<String, FunctionDefNode>();
-
-    private static final HashSet<IfElseDefNode> ifElseDefNodes = new HashSet<IfElseDefNode>();
+    private static Scope scope = new Scope();
 
     private File file;
 
@@ -189,6 +177,7 @@ public class ScssStylesheet extends Node {
         }
 
         stylesheet.setCharset(parser.getInputSource().getEncoding());
+
         return stylesheet;
     }
 
@@ -241,15 +230,13 @@ public class ScssStylesheet extends Node {
      * @throws Exception
      */
     public void compile() throws Exception {
+        // reset compilation state
         mainStyleSheet = this;
-        mixinDefs.clear();
-        functionDefs.clear();
-        variables.clear();
-        variables.add(new HashMap<String, VariableNode>());
-        ifElseDefNodes.clear();
+        // top-level scope has definitions by parser
+        scope = new Scope();
         ExtendNodeHandler.clear();
+
         importOtherFiles(this);
-        populateDefinitions(this);
         traverse();
         ExtendNodeHandler.modifyTree(this);
         removeEmptyBlocks(this);
@@ -259,22 +246,12 @@ public class ScssStylesheet extends Node {
         ImportNodeHandler.traverse(node);
     }
 
-    private void populateDefinitions(Node node) {
-        if (node instanceof MixinDefNode) {
-            mixinDefs.put(((MixinDefNode) node).getName(), (MixinDefNode) node);
-            node.removeFromParent();
-        } else if (node instanceof FunctionDefNode) {
-            functionDefs.put(((FunctionDefNode) node).getName(),
-                    (FunctionDefNode) node);
-            node.removeFromParent();
-        } else if (node instanceof IfElseDefNode) {
-            ifElseDefNodes.add((IfElseDefNode) node);
-        }
+    public static void defineFunction(FunctionDefNode function) {
+        scope.defineFunction(function);
+    }
 
-        for (final Node child : new ArrayList<Node>(node.getChildren())) {
-            populateDefinitions(child);
-        }
-
+    public static void defineMixin(MixinDefNode mixin) {
+        scope.defineMixin(mixin);
     }
 
     /**
@@ -312,6 +289,42 @@ public class ScssStylesheet extends Node {
     }
 
     /**
+     * Switch to a new sub-scope of a specific scope. Any variables created
+     * after opening a new scope are only valid until the scope is closed,
+     * whereas variables from the parent scope(s) that are modified will keep
+     * their new values even after closing the inner scope.
+     * 
+     * When using this method, the scope must be closed with
+     * {@link #closeVariableScope(Scope)} with the return value of this method
+     * as its parameter.
+     * 
+     * @return previous scope
+     */
+    public static Scope openVariableScope(Scope parent) {
+        Scope previousScope = scope;
+        scope = new Scope(parent);
+        return previousScope;
+    }
+
+    /**
+     * End a scope for variables, removing all active variables that only
+     * existed in the new scope.
+     */
+    public static void closeVariableScope(Scope newScope) {
+        scope = newScope;
+    }
+
+    /**
+     * Returns the current scope. The returned value should be treated as opaque
+     * and only used as a parameter to {@link #openVariableScope(Scope)}.
+     * 
+     * @return current scope
+     */
+    public static Scope getCurrentScope() {
+        return scope;
+    }
+
+    /**
      * Start a new scope for variables. Any variables created after opening a
      * new scope are only valid until the scope is closed, at which time they
      * are replaced with their old values, whereas variables from outside the
@@ -319,7 +332,7 @@ public class ScssStylesheet extends Node {
      * closing the inner scope.
      */
     public static void openVariableScope() {
-        variables.addFirst(new HashMap<String, VariableNode>());
+        scope = new Scope(scope);
     }
 
     /**
@@ -327,7 +340,7 @@ public class ScssStylesheet extends Node {
      * existed in the new scope.
      */
     public static void closeVariableScope() {
-        variables.remove();
+        scope = scope.getParent();
     }
 
     public void removeEmptyBlocks(Node node) {
@@ -350,14 +363,7 @@ public class ScssStylesheet extends Node {
      *            variable to set
      */
     public static void setVariable(VariableNode node) {
-        for (HashMap<String, VariableNode> scope : variables) {
-            if (scope.containsKey(node.getName())) {
-                scope.put(node.getName(), node);
-                return;
-            }
-        }
-        // if not in any other scope, put in current scope
-        variables.getFirst().put(node.getName(), node);
+        scope.setVariable(node);
     }
 
     /**
@@ -368,36 +374,23 @@ public class ScssStylesheet extends Node {
      *            variable to add
      */
     public static void addVariable(VariableNode node) {
-        variables.getFirst().put(node.getName(), node);
+        scope.addVariable(node);
     }
 
     public static VariableNode getVariable(String string) {
-        for (HashMap<String, VariableNode> scope : variables) {
-            if (scope.containsKey(string)) {
-                return scope.get(string);
-            }
-        }
-        return null;
+        return scope.getVariable(string);
     }
 
-    // TODO should require less copying somehow
     public static Iterable<VariableNode> getVariables() {
-        LinkedHashMap<String, VariableNode> result = new LinkedHashMap<String, VariableNode>();
-        // reverse order to get the innermost scope override outer ones
-        Iterator<HashMap<String, VariableNode>> scopeIt = variables
-                .descendingIterator();
-        while (scopeIt.hasNext()) {
-            result.putAll(scopeIt.next());
-        }
-        return result.values();
+        return scope.getVariables();
     }
 
     public static MixinDefNode getMixinDefinition(String name) {
-        return mixinDefs.get(name);
+        return scope.getMixinDefinition(name);
     }
 
     public static FunctionDefNode getFunctionDefinition(String name) {
-        return functionDefs.get(name);
+        return scope.getFunctionDefinition(name);
     }
 
     public void setFile(File file) {

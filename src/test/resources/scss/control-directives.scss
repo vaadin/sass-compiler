@@ -1,5 +1,12 @@
 $borderWeight : solid;
 
+@mixin logo($size){
+	font: {
+		size: $size;
+		color: blue;		
+	}
+}
+
 @mixin animals($list : puma sea-slug egret salamander){
 	@each $animal in $list {
 	  .#{$animal}-icon #animal, .menu {
@@ -32,13 +39,6 @@ $borderWeight : solid;
 	 .#{$thing}-icon {
 	 	background-image: url('/images/#{$thing}.png');
 	 }
-}
-
-@mixin logo($size){
-	font: {
-		size: $size;
-		color: blue;		
-	}
 }
 
 @for $i from 1 through 4 {

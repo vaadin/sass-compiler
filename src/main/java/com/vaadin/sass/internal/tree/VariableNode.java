@@ -16,10 +16,11 @@
 
 package com.vaadin.sass.internal.tree;
 
+import com.vaadin.sass.internal.Definition;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.visitor.VariableNodeHandler;
 
-public class VariableNode extends Node implements IVariableNode {
+public class VariableNode extends Node implements Definition, IVariableNode {
     private static final long serialVersionUID = 7003372557547748734L;
 
     private String name;

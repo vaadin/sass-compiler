@@ -17,17 +17,24 @@ package com.vaadin.sass.internal.tree;
 
 import java.util.Collection;
 
+import com.vaadin.sass.internal.ScssStylesheet;
+
 public class FunctionDefNode extends DefNode {
     public FunctionDefNode(String name, Collection<VariableNode> args,
             boolean hasVariableArgs) {
         super(name, args, hasVariableArgs);
     }
 
-    // TODO: The functionality specific to a function definition node.
-
     @Override
     public FunctionDefNode copy() {
         return (FunctionDefNode) super.copy();
+    }
+
+    @Override
+    public void traverse() {
+        ScssStylesheet.defineFunction(this);
+        setDefinitionScope(ScssStylesheet.getCurrentScope());
+        removeFromParent();
     }
 
 }

@@ -54,11 +54,17 @@ public class SassCompiler {
             return;
         }
 
-        scss.compile();
-        if (output == null) {
-            System.out.println(scss.printState());
-        } else {
-            writeFile(output, scss.printState());
+        try {
+            scss.compile();
+            if (output == null) {
+                System.out.println(scss.printState());
+            } else {
+                writeFile(output, scss.printState());
+            }
+        } catch (Exception e) {
+            System.err.println("Compilation failed:");
+            e.printStackTrace();
+            throw e;
         }
     }
 

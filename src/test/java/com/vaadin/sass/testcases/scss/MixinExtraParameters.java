@@ -16,8 +16,9 @@ public class MixinExtraParameters extends AbstractTestBase {
             sheet = getStyleSheet(scss);
             sheet.compile();
         } catch (RuntimeException e) {
-            Assert.assertEquals(e.getMessage(),
-                    "More parameters than expected, in Mixin test");
+            Assert.assertEquals(
+                    "Substitution error: some actual parameters were not used. Formal parameters: FormalArgumentList[$p1: null], actual parameters: Actual argument list [ArgumentList [foo, bar]] at line 4, column 14",
+                    e.getMessage());
         } catch (Exception e) {
             Assert.fail();
         }

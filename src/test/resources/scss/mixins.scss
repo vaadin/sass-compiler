@@ -15,6 +15,15 @@
 
 $mixinVar : 1px;
 
+@mixin main-details($size){
+	.details {
+		font: {
+			size : $size;
+			weight: bold;
+		}
+	}
+}
+
 .main {
 	@include rounded-borders($mixinVar);
 	@include font-settings;
@@ -45,31 +54,22 @@ $mixinVar : 1px;
 	@include font-settings;
 }
 
-@mixin main-details($size){
-	.details {
-		font: {
-			size : $size;
-			weight: bold;
-		}
-	}
+@mixin fontType($border : 2px solid red, $color : black){
+	border : $border;
+	font-color: $color;
 }
 
 .banner {
 	@include fontType(1px solid black, $color : red);
 }
 
-@mixin fontType($border : 2px solid red, $color : black){
-	border : $border;
-	font-color: $color;
-}
-
-@include interpolation(interpolation);
-
 @mixin interpolation($interpolation){
 	.#{$interpolation}-test {
 		font-size: 14px;
 	}
 }
+
+@include interpolation(interpolation);
 
 @include layout;
 

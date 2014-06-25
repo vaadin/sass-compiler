@@ -774,7 +774,9 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     private SassListItem replaceInterpolation() {
         // replace interpolation
         if (containsInterpolation()) {
+            // handle Interpolation objects
             StringInterpolationSequence sis = s.replaceVariables();
+            // handle strings with interpolation
             for (VariableNode node : ScssStylesheet.getVariables()) {
                 if (!sis.containsInterpolation()) {
                     break;

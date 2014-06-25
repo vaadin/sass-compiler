@@ -140,14 +140,14 @@ public class AdjustColorFunctionGenerator extends AbstractFunctionGenerator {
         SassListItem resultItem = getParam(actualArguments, "color");
         if (!(resultItem instanceof LexicalUnitImpl)) {
             throw new ParseException(
-                    "The color argument of adjust-color must represent a valid color",
+                    "The color argument must represent a valid color",
                     function);
         }
         LexicalUnitImpl result = (LexicalUnitImpl) resultItem;
         if (!ColorUtil.isColor(result) && !ColorUtil.isRgba(result)
                 && !ColorUtil.isHsla(result)) {
             throw new ParseException(
-                    "The color argument of adjust-color must represent a valid color",
+                    "The color argument must represent a valid color",
                     function);
         }
         return result;

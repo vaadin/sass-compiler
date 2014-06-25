@@ -18,6 +18,8 @@ package com.vaadin.sass.internal.tree;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.vaadin.sass.internal.visitor.MixinNodeHandler;
 
@@ -52,11 +54,18 @@ public class MixinNode extends NodeWithVariableArguments {
     }
 
     @Override
-    public void doTraverse() throws Exception {
-        replaceVariables();
-        expandVariableArguments();
-        replaceVariablesForChildren();
-        MixinNodeHandler.traverse(this);
+    public void traverse() {
+        try {
+            replaceVariables();
+            expandVariableArguments();
+            // for the content block, use the scope where it is defined
+            // (consistent with sass-lang)
+            replaceVariablesForChildren();
+            // inner scope is managed by MixinNodeHandler
+            MixinNodeHandler.traverse(this);
+        } catch (Exception e) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, e);
+        }
     }
 
 }

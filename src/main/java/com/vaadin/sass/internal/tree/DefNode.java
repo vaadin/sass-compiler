@@ -17,6 +17,8 @@ package com.vaadin.sass.internal.tree;
 
 import java.util.Collection;
 
+import com.vaadin.sass.internal.Definition;
+import com.vaadin.sass.internal.Scope;
 import com.vaadin.sass.internal.parser.ActualArgumentList;
 import com.vaadin.sass.internal.parser.FormalArgumentList;
 
@@ -27,9 +29,10 @@ import com.vaadin.sass.internal.parser.FormalArgumentList;
  * @author Vaadin
  * 
  */
-public abstract class DefNode extends Node implements IVariableNode {
+public abstract class DefNode extends Node implements Definition, IVariableNode {
     private String name;
     private FormalArgumentList arglist;
+    private Scope definitionScope;
 
     public DefNode(String name, Collection<VariableNode> args,
             boolean hasVariableArgs) {
@@ -60,9 +63,23 @@ public abstract class DefNode extends Node implements IVariableNode {
         arglist = arglist.replaceFormalArguments(actualArgumentList, true);
     }
 
+    public Scope getDefinitionScope() {
+        return definitionScope;
+    }
+
     @Override
-    public void traverse() {
-        // this is not used for definition nodes
+    public DefNode copy() {
+        // scope does not need to be copied
+        Scope scope = definitionScope;
+        definitionScope = null;
+        DefNode copy = (DefNode) super.copy();
+        copy.definitionScope = scope;
+        definitionScope = scope;
+        return copy;
+    }
+
+    protected void setDefinitionScope(Scope scope) {
+        definitionScope = scope;
     }
 
 }

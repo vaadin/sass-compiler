@@ -16,10 +16,7 @@
 package com.vaadin.sass.internal.tree;
 
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.ActualArgumentList;
 import com.vaadin.sass.internal.parser.SassList;
 
@@ -84,20 +81,5 @@ public abstract class NodeWithVariableArguments extends Node implements
         arglist = arglist.replaceVariables();
         arglist = arglist.evaluateFunctionsAndExpressions(true);
     }
-
-    @Override
-    public void traverse() {
-        // limit variable scope
-        ScssStylesheet.openVariableScope();
-        try {
-            doTraverse();
-        } catch (Exception e) {
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, e);
-        } finally {
-            ScssStylesheet.closeVariableScope();
-        }
-    }
-
-    protected abstract void doTraverse() throws Exception;
 
 }
