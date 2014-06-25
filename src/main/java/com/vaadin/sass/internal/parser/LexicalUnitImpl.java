@@ -999,6 +999,12 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
                 if (ColorUtil.isColor(this)) {
                     text = ColorUtil.rgbToColorString(ColorUtil
                             .colorToRgb(this));
+                } else if (ColorUtil.isRgba(this) && params.size() == 2) {
+                    rgb = ColorUtil.colorToRgb(this);
+                    float alpha = params.get(1).getContainedValue()
+                            .getFloatValue();
+                    text = "rgba(" + rgb[0] + ", " + rgb[1] + ", " + rgb[2]
+                            + ", " + alpha + ")";
                 } else {
                     text = fname + "(" + params.buildString(strategy) + ")";
                 }

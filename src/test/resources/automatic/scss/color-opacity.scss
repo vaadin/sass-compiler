@@ -1,3 +1,10 @@
+.hex-rgba-test-output {
+  c1: rgba(#f00, 0.5);
+  c2: rgba(#0a0, 0.75);
+  c3: rgba(#000040, 0.25);
+  c4: rgba(#6ab8f5, 0.1);
+}
+
 $color1: #0a141e;
 .hexcolor {
     c1: opacify($color1, 0.4);
