@@ -999,15 +999,22 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
                 if (ColorUtil.isColor(this)) {
                     text = ColorUtil.rgbToColorString(ColorUtil
                             .colorToRgb(this));
-                } else if (ColorUtil.isRgba(this) && params.size() == 2) {
+                    break;
+                } else if (ColorUtil.isRgba(this)) {
+                    float alpha = params.get(params.size() - 1)
+                            .getContainedValue().getFloatValue();
                     rgb = ColorUtil.colorToRgb(this);
-                    float alpha = params.get(1).getContainedValue()
-                            .getFloatValue();
-                    text = "rgba(" + rgb[0] + ", " + rgb[1] + ", " + rgb[2]
-                            + ", " + alpha + ")";
-                } else {
-                    text = fname + "(" + params.buildString(strategy) + ")";
+                    if (alpha == 0.0f && rgb[0] == 0 && rgb[1] == 0
+                            && rgb[2] == 0) {
+                        text = "transparent";
+                        break;
+                    } else if (params.size() == 2) {
+                        text = "rgba(" + rgb[0] + ", " + rgb[1] + ", " + rgb[2]
+                                + ", " + alpha + ")";
+                        break;
+                    }
                 }
+                text = fname + "(" + params.buildString(strategy) + ")";
                 break;
             case LexicalUnit.SAC_IDENT:
                 text = getStringValue();
