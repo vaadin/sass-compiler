@@ -90,9 +90,51 @@ public enum BinaryOperator {
     },
     ADD(LexicalUnit.SAC_OPERATOR_PLUS, 4) {
         @Override
-        public LexicalUnitImpl evalInternal(LexicalUnitImpl leftValue,
-                LexicalUnitImpl rightValue) {
-            return leftValue.add(rightValue);
+        public LexicalUnitImpl eval(SassListItem leftValue,
+                SassListItem rightValue) {
+            return add(leftValue, rightValue);
+        }
+
+        private LexicalUnitImpl add(SassListItem left, SassListItem right) {
+            if (left instanceof LexicalUnitImpl
+                    && right instanceof LexicalUnitImpl
+                    && !LexicalUnitImpl.checkLexicalUnitType(left,
+                            LexicalUnitImpl.SAC_STRING_VALUE,
+                            LexicalUnitImpl.SAC_IDENT)
+                    && !LexicalUnitImpl.checkLexicalUnitType(right,
+                            LexicalUnitImpl.SAC_STRING_VALUE,
+                            LexicalUnitImpl.SAC_IDENT)) {
+                return ((LexicalUnitImpl) left).add((LexicalUnitImpl) right);
+            } else {
+                String leftValue;
+                if (LexicalUnitImpl.checkLexicalUnitType(left,
+                        LexicalUnitImpl.SAC_STRING_VALUE,
+                        LexicalUnitImpl.SAC_IDENT)) {
+                    leftValue = ((LexicalUnitImpl) left).getStringValue();
+                } else {
+                    leftValue = left.printState();
+                }
+                String rightValue;
+                if (LexicalUnitImpl.checkLexicalUnitType(right,
+                        LexicalUnitImpl.SAC_STRING_VALUE,
+                        LexicalUnitImpl.SAC_IDENT)) {
+                    rightValue = ((LexicalUnitImpl) right).getStringValue();
+                } else {
+                    rightValue = right.printState();
+                }
+                String stringValue = leftValue + rightValue;
+                boolean quotedResult = (LexicalUnitImpl.checkLexicalUnitType(
+                        left, LexicalUnitImpl.SAC_STRING_VALUE) || (!LexicalUnitImpl
+                        .checkLexicalUnitType(left, LexicalUnitImpl.SAC_IDENT) && LexicalUnitImpl
+                        .checkLexicalUnitType(right,
+                                LexicalUnitImpl.SAC_STRING_VALUE)));
+                if (quotedResult) {
+                    return LexicalUnitImpl.createString(stringValue);
+                } else {
+                    return LexicalUnitImpl.createIdent(stringValue);
+                }
+
+            }
         }
     },
     MINUS(LexicalUnit.SAC_OPERATOR_MINUS, 4) {

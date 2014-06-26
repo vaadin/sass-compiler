@@ -1,0 +1,16 @@
+.string-plus {
+  s1: stringPlus;
+  s2: "stringPlus";
+  s3: stringPlus;
+  s4: "stringPlus";
+  s5: "string-plus-number-1";
+  s6: "1plus-string";
+  s7: 1plus-string;
+  s8: 2plus-string;
+  s9: value12;
+  s10: str5;
+  s11: 5str;
+  s12: strstr;
+  s13: "strstr";
+  s14: "10str";
+}

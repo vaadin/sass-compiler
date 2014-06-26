@@ -1,0 +1,19 @@
+.string-plus {
+    s1: string + Plus;
+    s2: "string" + "Plus";
+    s3: string + "Plus";
+    s4: "string" + Plus;
+    s5: "string-plus-number-" + 1;
+    s6: 1 + "plus-string";
+    s7: 1 + plus-string;
+    s8: 1 + 1 + plus-string;
+    s9: value + (3 * 4);
+    $string: str;
+    $quoted: "str";
+    $number: 5;
+    s10: $string + $number;
+    s11: $number + $string;
+    s12: $string + $quoted;
+    s13: $quoted + $string;
+    s14: $number + $number + $quoted;
+}
