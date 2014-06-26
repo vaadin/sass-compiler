@@ -53,7 +53,9 @@ public class TypeOfFunctionGenerator extends AbstractFunctionGenerator {
                 type = "color";
             } else if (unit.getLexicalUnitType() == LexicalUnitImpl.SAC_FUNCTION) {
                 if ("rgb".equals(unit.getFunctionName())
-                        || "rgba".equals(unit.getFunctionName())) {
+                        || "rgba".equals(unit.getFunctionName())
+                        || "hsl".equals(unit.getFunctionName())
+                        || "hsla".equals(unit.getFunctionName())) {
                     type = "color";
                 }
             }

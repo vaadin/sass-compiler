@@ -14,4 +14,6 @@
   c4: color;
   l1: list;
   l2: list;
+  hsl: color;
+  hsla: color;
 }

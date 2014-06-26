@@ -16,4 +16,6 @@
   l1: type-of(1 2);
   $list: 1,2;
   l2: type-of($list);
+  hsl: type-of(hsl(0, 50%, 50%));
+  hsla: type-of(hsla(0, 50%, 50%, 0.5));
 }
