@@ -1,0 +1,8 @@
+@mixin testVariable($var){
+    foo {
+        $var: two;
+        value: $var;
+    }
+}
+
+@include testVariable(one);
