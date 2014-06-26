@@ -1000,7 +1000,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
                     text = ColorUtil.rgbToColorString(ColorUtil
                             .colorToRgb(this));
                     break;
-                } else if (ColorUtil.isRgba(this)) {
+                } else if (ColorUtil.isRgba(this) || ColorUtil.isHsla(this)) {
                     float alpha = params.get(params.size() - 1)
                             .getContainedValue().getFloatValue();
                     rgb = ColorUtil.colorToRgb(this);
@@ -1008,9 +1008,15 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
                             && rgb[2] == 0) {
                         text = "transparent";
                         break;
-                    } else if (params.size() == 2) {
+                    } else if (alpha == 1.0f) {
+                        text = ColorUtil.rgbToColorString(ColorUtil
+                                .colorToRgb(this));
+                        break;
+                    } else if (params.size() == 2 || ColorUtil.isHsla(this)) {
+
+                        String alphaText = alpha == 0.0f ? "0" : "" + alpha;
                         text = "rgba(" + rgb[0] + ", " + rgb[1] + ", " + rgb[2]
-                                + ", " + alpha + ")";
+                                + ", " + alphaText + ")";
                         break;
                     }
                 }
