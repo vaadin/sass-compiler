@@ -1,0 +1,5 @@
+@-webkit-keyframes valo-anim-slide-out-left {
+  100% {
+    -webkit-transform: translateX(-100%);
+  }
+}

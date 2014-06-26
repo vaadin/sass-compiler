@@ -1,0 +1,8 @@
+@mixin transform($property: none) {
+  -webkit-transform: $property;
+}
+@-webkit-keyframes valo-anim-slide-out-left {
+  100% {
+    @include transform( translateX(-100%) );
+  }
+}

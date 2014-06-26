@@ -41,6 +41,7 @@ public class KeyframesNode extends Node implements IVariableNode {
     @Override
     public void traverse() {
         replaceVariables();
+        traverseChildren();
     }
 
     @Override
