@@ -15,13 +15,13 @@
  */
 package com.vaadin.sass.internal.visitor;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.VariableNode;
-import com.vaadin.sass.internal.tree.controldirective.WhileNode;
+import com.vaadin.sass.internal.tree.controldirective.TemporaryNode;
 
 /**
  * Base class for handlers of all kinds of looping nodes (@for, @while, @each).
@@ -41,13 +41,14 @@ public abstract class LoopNodeHandler {
             Iterable<VariableNode> loopVariables) {
         // the type of this node does not matter much as long as it can have
         // children that can be traversed
-        Node tempParent = new WhileNode(null);
+        Node tempParent = new TemporaryNode();
         for (final VariableNode var : loopVariables) {
             iteration(loopNode.getChildren(), tempParent, var);
         }
-        // need to copy child list to avoid concurrent modifications
+        // traverse the newly created nodes
         loopNode.getParentNode().replaceNode(loopNode,
-                new ArrayList<Node>(tempParent.getChildren()));
+                Collections.singleton(tempParent));
+        tempParent.traverse();
     }
 
     private static void iteration(List<Node> loopChildren, Node newParent,

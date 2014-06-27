@@ -22,6 +22,7 @@ import java.util.Collections;
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.selector.Selector;
 import com.vaadin.sass.internal.tree.BlockNode;
+import com.vaadin.sass.internal.tree.controldirective.TemporaryNode;
 
 /**
  * Handle nesting of blocks by moving child blocks to their parent, updating
@@ -49,6 +50,9 @@ public class BlockNodeHandler {
         if (node.getChildren().size() == 0) {
             // empty blocks are also removed later
             node.removeFromParent();
+            return;
+        }
+        if (node.getParentNode() instanceof TemporaryNode) {
             return;
         }
 

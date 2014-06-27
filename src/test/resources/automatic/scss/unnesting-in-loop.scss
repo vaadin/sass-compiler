@@ -1,0 +1,7 @@
+.outer {
+  @for $i from 1 through 1 {
+    .inner {
+      x: $i;
+    }
+  }
+}
