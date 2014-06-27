@@ -66,13 +66,15 @@ public class AdjustColorFunctionGenerator extends AbstractFunctionGenerator {
                     "The function adjust-color cannot modify both RGB and HSL values",
                     function);
         }
-        int[] rgb = ColorUtil.colorToRgb(color);
         if (adjustRGB) {
+            int[] rgb = ColorUtil.colorToRgb(color);
             if ("adjust-color".equals(functionName)) {
                 adjustRgb(rgb, adjustBy);
             } else {
                 scaleRgb(rgb, adjustBy);
             }
+            return ColorUtil.createRgbaOrHexColor(rgb, alpha,
+                    function.getLineNumber(), function.getColumnNumber());
         }
         if (adjustHsl) {
             float[] hsl = ColorUtil.colorToHsl(color);
@@ -81,15 +83,20 @@ public class AdjustColorFunctionGenerator extends AbstractFunctionGenerator {
             } else {
                 scaleHsl(hsl, adjustBy);
             }
-            rgb = ColorUtil.hslToRgb(hsl);
-        }
-        color = ColorUtil.createHexColor(rgb[0], rgb[1], rgb[2],
-                function.getLineNumber(), function.getColumnNumber());
-        if (alpha == 1.0f) {
-            return color;
-        } else {
-            return ColorUtil.createRgbaColor(rgb[0], rgb[1], rgb[2], alpha,
+            return ColorUtil.createHslaOrHslColor(hsl, alpha,
                     function.getLineNumber(), function.getColumnNumber());
+        }
+        // Only alpha modified, preserve whether an RGB or HSL color.
+        if (ColorUtil.isHsla(color) || ColorUtil.isHslColor(color)) {
+            return ColorUtil
+                    .createHslaOrHslColor(ColorUtil.colorToHsl(color), alpha,
+                            function.getLineNumber(),
+                            function.getColumnNumber());
+        } else {
+            return ColorUtil
+                    .createRgbaOrHexColor(ColorUtil.colorToRgb(color), alpha,
+                            function.getLineNumber(),
+                            function.getColumnNumber());
         }
     }
 

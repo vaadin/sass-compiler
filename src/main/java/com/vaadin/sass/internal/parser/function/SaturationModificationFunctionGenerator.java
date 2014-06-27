@@ -44,9 +44,8 @@ public class SaturationModificationFunctionGenerator extends
             hsl[1] -= amount;
         }
         hsl[1] = Math.max(0, Math.min(100, hsl[1]));
-        int[] rgb = ColorUtil.hslToRgb(hsl);
-        return ColorUtil.createRgbaOrHexColor(rgb, alpha,
-                function.getLineNumber(), function.getColumnNumber());
+        return ColorUtil.createHslaOrHslColor(hsl, alpha, function.getLineNumber(),
+                function.getColumnNumber());
     }
 
     private LexicalUnitImpl checkAndGetColor(LexicalUnitImpl function,

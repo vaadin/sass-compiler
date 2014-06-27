@@ -1014,7 +1014,8 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
                         break;
                     } else if (params.size() == 2 || ColorUtil.isHsla(this)) {
 
-                        String alphaText = alpha == 0.0f ? "0" : "" + alpha;
+                        String alphaText = alpha == 0.0f ? "0"
+                                : CSS_FLOAT_FORMAT.format(alpha);
                         text = "rgba(" + rgb[0] + ", " + rgb[1] + ", " + rgb[2]
                                 + ", " + alphaText + ")";
                         break;

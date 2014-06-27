@@ -45,9 +45,11 @@ $blue:3;
 
 .hslcolor{
     $hslcolor: hsl(120, 30%, 90%);
+    $hslacolor: hsla(120, 30%, 90%, 0.5);
     red: red($hslcolor);
     green: green($hslcolor);
     blue: blue($hslcolor);
     alpha: alpha($hslcolor);
     opacity: opacity($hslcolor);
+    alpha2: alpha($hslacolor);
 }

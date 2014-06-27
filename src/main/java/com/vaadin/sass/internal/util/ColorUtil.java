@@ -509,6 +509,31 @@ public class ColorUtil {
         return LexicalUnitImpl.createFunction(line, column, "rgba", args);
     }
 
+    public static LexicalUnitImpl createHslaColor(float hue, float saturation,
+            float lightness, float alpha, int line, int column) {
+        LexicalUnitImpl hueUnit = LexicalUnitImpl.createNumber(line, column,
+                hue);
+        LexicalUnitImpl saturationUnit = LexicalUnitImpl.createPercentage(line,
+                column, saturation);
+        LexicalUnitImpl lightnessUnit = LexicalUnitImpl.createPercentage(line,
+                column, lightness);
+        LexicalUnitImpl alphaUnit = LexicalUnitImpl.createNumber(line, column,
+                alpha);
+        ActualArgumentList args = new ActualArgumentList(
+                SassList.Separator.COMMA, hueUnit, saturationUnit,
+                lightnessUnit, alphaUnit);
+        return LexicalUnitImpl.createFunction(line, column, "hsla", args);
+    }
+
+    public static LexicalUnitImpl createHslaOrHslColor(float[] hsl,
+            float alpha, int line, int column) {
+        if (alpha < 1.0f) {
+            return createHslaColor(hsl[0], hsl[1], hsl[2], alpha, line, column);
+        } else {
+            return createHslFunction(hsl[0], hsl[1], hsl[2], line, column);
+        }
+    }
+
     /**
      * Creates a hex color if alpha is equal to one. Otherwise creates an RGBA
      * color.
@@ -539,36 +564,17 @@ public class ColorUtil {
     private static LexicalUnitImpl adjust(LexicalUnitImpl color,
             float amountByPercent, ColorOperation op) {
 
-        if (isHslColor(color)) {
-            return adjustHsl(color, amountByPercent, op);
-        } else if (isColor(color)) {
-            LexicalUnitImpl hsl = colorToHslUnit(color);
-            LexicalUnitImpl adjustedHsl = adjustHsl(hsl, amountByPercent, op);
-            return hslToColor(adjustedHsl);
-        }
-        return color;
-    }
-
-    private static LexicalUnitImpl adjustHsl(LexicalUnitImpl color,
-            float amountByPercent, ColorOperation op) {
-        ActualArgumentList funcParam = color.getParameterList();
-        LexicalUnitImpl lightness = funcParam.get(2).getContainedValue();
-        float newValue = 0f;
+        float[] hsl = colorToHsl(color);
         if (op == ColorOperation.Darken) {
-            newValue = lightness.getFloatValue() - amountByPercent;
-            newValue = newValue < 0 ? 0 : newValue;
+            hsl[2] = hsl[2] - amountByPercent;
+            hsl[2] = hsl[2] < 0 ? 0 : hsl[2];
         } else if (op == ColorOperation.Lighten) {
-            newValue = lightness.getFloatValue() + amountByPercent;
-            newValue = newValue > 100 ? 100 : newValue;
+            hsl[2] = hsl[2] + amountByPercent;
+            hsl[2] = hsl[2] > 100 ? 100 : hsl[2];
         }
-        LexicalUnitImpl newLightness = lightness.copyWithValue(newValue);
-
-        ActualArgumentList newParams = new ActualArgumentList(
-                funcParam.getSeparator(), funcParam.get(0), funcParam.get(1),
-                newLightness);
-
-        return LexicalUnitImpl.createFunction(color.getLineNumber(),
-                color.getColumnNumber(), color.getFunctionName(), newParams);
+        float alpha = getAlpha(color);
+        return createHslaOrHslColor(hsl, alpha, color.getLineNumber(),
+                color.getColumnNumber());
     }
 
     public static LexicalUnitImpl darken(LexicalUnitImpl color, float amount) {

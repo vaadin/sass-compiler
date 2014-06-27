@@ -39,9 +39,8 @@ public class GrayscaleFunctionGenerator extends
         }
         float[] hsl = ColorUtil.colorToHsl(firstParam);
         hsl[1] = 0;
-        int[] rgb = ColorUtil.hslToRgb(hsl);
         float alpha = ColorUtil.getAlpha(firstParam);
-        return ColorUtil.createRgbaOrHexColor(rgb, alpha,
+        return ColorUtil.createHslaOrHslColor(hsl, alpha,
                 firstParam.getLineNumber(), firstParam.getColumnNumber());
     }
 }

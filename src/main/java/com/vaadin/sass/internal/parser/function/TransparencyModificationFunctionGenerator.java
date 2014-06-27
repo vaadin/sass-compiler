@@ -15,14 +15,10 @@
  */
 package com.vaadin.sass.internal.parser.function;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.vaadin.sass.internal.parser.ActualArgumentList;
 import com.vaadin.sass.internal.parser.FormalArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
-import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.util.ColorUtil;
 
@@ -49,46 +45,26 @@ public class TransparencyModificationFunctionGenerator extends
                 .getFloatValue();
         LexicalUnitImpl color = (LexicalUnitImpl) getParam(actualArguments,
                 "color");
-        int[] rgb = null;
         float opacity = 1.0f;
-        if (ColorUtil.isRgba(color)) {
+        boolean rgba = ColorUtil.isRgba(color);
+        boolean hsla = ColorUtil.isHsla(color);
+        boolean hsl = ColorUtil.isHslColor(color);
+        if (rgba || hsla) {
             ActualArgumentList colorComponents = color.getParameterList();
-            if (colorComponents.size() == 2) {
-                color = (LexicalUnitImpl) colorComponents.get(0);
-                opacity = getFloat(colorComponents, 1);
-            } else {
-                rgb = new int[] { getInteger(colorComponents, 0),
-                        getInteger(colorComponents, 1),
-                        getInteger(colorComponents, 2) };
-                opacity = getFloat(colorComponents, 3);
-                color = null;
-            }
+            int lastIndex = colorComponents.size() - 1;
+            opacity = getFloat(colorComponents, lastIndex);
         }
-        if (color != null && ColorUtil.isColor(color)) {
-            rgb = ColorUtil.colorToRgb(color);
-        }
-
-        List<SassListItem> newParamValues = new ArrayList<SassListItem>();
-        newParamValues.add(createNumber(function, rgb[0]));
-        newParamValues.add(createNumber(function, rgb[1]));
-        newParamValues.add(createNumber(function, rgb[2]));
         opacity += factor * amount;
         opacity = Math.min(1, Math.max(0, opacity));
-        if (opacity == 1.0f) {
-            ActualArgumentList newParams = new ActualArgumentList(
-                    SassList.Separator.COMMA, newParamValues);
-            return LexicalUnitImpl.createRGBColor(function.getLineNumber(),
-                    function.getColumnNumber(), newParams);
+        if (hsl || hsla) {
+            return ColorUtil.createHslaOrHslColor(ColorUtil.colorToHsl(color),
+                    opacity, function.getLineNumber(),
+                    function.getColumnNumber());
+        } else {
+            return ColorUtil.createRgbaOrHexColor(ColorUtil.colorToRgb(color),
+                    opacity, function.getLineNumber(),
+                    function.getColumnNumber());
         }
-        newParamValues.add(LexicalUnitImpl.createNumber(
-                function.getLineNumber(), function.getColumnNumber(), opacity));
-        ActualArgumentList newParams = new ActualArgumentList(
-                SassList.Separator.COMMA, newParamValues);
-        LexicalUnitImpl result = LexicalUnitImpl.createFunction(
-                function.getLineNumber(), function.getColumnNumber(), "rgba",
-                newParams);
-        return result;
-
     }
 
     private void checkParameters(LexicalUnitImpl function,
@@ -96,8 +72,9 @@ public class TransparencyModificationFunctionGenerator extends
 
         SassListItem color = getParam(args, 0);
         if (!(color instanceof LexicalUnitImpl)
-                || (!ColorUtil.isColor(color.getContainedValue()) && !ColorUtil
-                        .isRgba(color.getContainedValue()))) {
+                || (!ColorUtil.isColor(color.getContainedValue())
+                        && !ColorUtil.isRgba(color.getContainedValue()) && !ColorUtil
+                            .isHsla(color.getContainedValue()))) {
             throw new ParseException("The function "
                     + function.getFunctionName()
                     + "requires a valid color as its first parameter", function);
