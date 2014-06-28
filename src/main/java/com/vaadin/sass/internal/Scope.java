@@ -18,6 +18,7 @@ package com.vaadin.sass.internal;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import com.vaadin.sass.internal.tree.FunctionDefNode;
 import com.vaadin.sass.internal.tree.MixinDefNode;
@@ -30,8 +31,8 @@ public class Scope {
 
     private static class DefinitionScope<T extends Definition> {
         private DefinitionScope<T> parent;
-        // TODO optimize by not creating map if empty?
-        private HashMap<String, T> definitions = new HashMap<String, T>();
+        // optimization: create map only when needed
+        private HashMap<String, T> definitions = null;
 
         public DefinitionScope(DefinitionScope<T> parent) {
             this.parent = parent;
@@ -58,7 +59,7 @@ public class Scope {
          *            definition to set
          */
         public void add(T node) {
-            definitions.put(node.getName(), node);
+            getDefinitions(true).put(node.getName(), node);
         }
 
         /**
@@ -73,16 +74,16 @@ public class Scope {
             if (parent != null && parent.setIfPresent(node)) {
                 return true;
             }
-            if (definitions.containsKey(node.getName())) {
-                definitions.put(node.getName(), node);
+            if (getDefinitions(false).containsKey(node.getName())) {
+                getDefinitions(true).put(node.getName(), node);
                 return true;
             }
             return false;
         }
 
         public T get(String name) {
-            if (definitions.containsKey(name)) {
-                return definitions.get(name);
+            if (getDefinitions(false).containsKey(name)) {
+                return getDefinitions(false).get(name);
             } else if (parent != null) {
                 return parent.get(name);
             } else {
@@ -102,21 +103,42 @@ public class Scope {
         public Iterable<T> getIterable() {
             // no need to copy contents in the top-level scope
             if (parent == null) {
-                return Collections.unmodifiableCollection(definitions.values());
+                return Collections.unmodifiableCollection(getDefinitions(false)
+                        .values());
             }
-
+            // optimize this?
             LinkedHashMap<String, T> result = new LinkedHashMap<String, T>();
-            // parent first so that this scope can override its variables
-            for (T var : parent.getIterable()) {
-                result.put(var.getName(), var);
-            }
-            result.putAll(definitions);
+            addVariablesToMap(result);
             return Collections.unmodifiableCollection(result.values());
+        }
+
+        private void addVariablesToMap(Map<String, T> map) {
+            // parent first so that this scope can override its variables
+            if (parent != null) {
+                parent.addVariablesToMap(map);
+            }
+            map.putAll(getDefinitions(false));
         }
 
         @Override
         public String toString() {
-            return definitions.keySet().toString() + ", parent = " + parent;
+            if (definitions != null) {
+                return getDefinitions(false).keySet().toString()
+                        + ", parent = " + parent;
+            } else {
+                return "{}, parent = " + parent;
+            }
+        }
+
+        private Map<String, T> getDefinitions(boolean create) {
+            if (create && definitions == null) {
+                definitions = new HashMap<String, T>();
+            }
+            if (definitions != null) {
+                return definitions;
+            } else {
+                return Collections.emptyMap();
+            }
         }
 
     }
