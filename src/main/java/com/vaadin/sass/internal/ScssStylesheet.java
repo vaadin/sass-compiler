@@ -42,7 +42,6 @@ import com.vaadin.sass.internal.tree.MixinDefNode;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.VariableNode;
 import com.vaadin.sass.internal.visitor.ExtendNodeHandler;
-import com.vaadin.sass.internal.visitor.ImportNodeHandler;
 
 public class ScssStylesheet extends Node {
 
@@ -58,6 +57,9 @@ public class ScssStylesheet extends Node {
     private String charset;
 
     private List<ScssStylesheetResolver> resolvers = new ArrayList<ScssStylesheetResolver>();
+
+    // relative path to use when importing files etc.
+    private String prefix = "";
 
     /**
      * Read in a file SCSS and parse it into a ScssStylesheet
@@ -236,14 +238,9 @@ public class ScssStylesheet extends Node {
         scope = new Scope();
         ExtendNodeHandler.clear();
 
-        importOtherFiles(this);
         traverse();
         ExtendNodeHandler.modifyTree(this);
         removeEmptyBlocks(this);
-    }
-
-    private void importOtherFiles(ScssStylesheet node) {
-        ImportNodeHandler.traverse(node);
     }
 
     public static void defineFunction(FunctionDefNode function) {
@@ -425,6 +422,14 @@ public class ScssStylesheet extends Node {
 
     public void setCharset(String charset) {
         this.charset = charset;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
     }
 
     private String buildString(BuildStringStrategy strategy) {

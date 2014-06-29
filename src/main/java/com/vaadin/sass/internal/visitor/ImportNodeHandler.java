@@ -19,6 +19,8 @@ package com.vaadin.sass.internal.visitor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,13 +35,12 @@ import com.vaadin.sass.internal.tree.RuleNode;
 
 public class ImportNodeHandler {
 
-    public static void traverse(Node node) {
-        ScssStylesheet styleSheet = null;
-        if (node instanceof ScssStylesheet) {
-            styleSheet = (ScssStylesheet) node;
-        } else {
+    public static void traverse(ImportNode importNode) {
+        ScssStylesheet styleSheet = importNode.getStylesheet();
+        // top-level case
+        if (styleSheet == null) {
             // iterate to parents of node, find ScssStylesheet
-            Node parent = node.getParentNode();
+            Node parent = importNode.getParentNode();
             while (parent != null && !(parent instanceof ScssStylesheet)) {
                 parent = parent.getParentNode();
             }
@@ -50,72 +51,73 @@ public class ImportNodeHandler {
         if (styleSheet == null) {
             throw new ParseException("Nested import in an invalid context");
         }
-        ArrayList<Node> c = new ArrayList<Node>(node.getChildren());
-        for (Node n : c) {
-            if (n instanceof ImportNode) {
-                ImportNode importNode = (ImportNode) n;
-                if (!importNode.isPureCssImport()) {
-                    try {
-                        // set parent's charset to imported node.
-                        ScssStylesheet imported = ScssStylesheet.get(
-                                importNode.getUri(), styleSheet);
-                        if (imported == null) {
-                            throw new FileNotFoundException("Import '"
-                                    + importNode.getUri() + "' in '"
-                                    + styleSheet.getFileName()
-                                    + "' could not be found");
-                        }
-
-                        traverse(imported);
-
-                        String prefix = getUrlPrefix(importNode.getUri());
-                        if (prefix != null) {
-                            updateUrlInImportedSheet(imported, prefix);
-                        }
-
-                        node.replaceNode(importNode, new ArrayList<Node>(
-                                imported.getChildren()));
-                    } catch (CSSException e) {
-                        Logger.getLogger(ImportNodeHandler.class.getName())
-                                .log(Level.SEVERE, null, e);
-                    } catch (IOException e) {
-                        Logger.getLogger(ImportNodeHandler.class.getName())
-                                .log(Level.SEVERE, null, e);
-                    }
-                } else {
-                    if (styleSheet != node) {
-                        throw new ParseException(
-                                "CSS imports can only be used at the top level, not as nested imports. Within style rules, use SCSS imports.");
-                    }
+        if (!importNode.isPureCssImport()) {
+            List<Node> importedChildren = Collections.emptyList();
+            try {
+                // set parent's charset to imported node.
+                ScssStylesheet imported = ScssStylesheet.get(
+                        importNode.getUri(), styleSheet);
+                if (imported == null) {
+                    throw new FileNotFoundException("Import '"
+                            + importNode.getUri() + "' in '"
+                            + styleSheet.getFileName() + "' could not be found");
                 }
-            } else {
-                for (Node child : new ArrayList<Node>(node.getChildren())) {
-                    traverse(child);
+
+                String prefix = styleSheet.getPrefix()
+                        + getUrlPrefix(importNode.getUri());
+                if (!"".equals(prefix)) {
+                    // support resolving nested imports relative to prefix
+                    imported.setPrefix(prefix);
+                    updateUrlInImportedSheet(imported, prefix, imported);
                 }
+
+                importedChildren = new ArrayList<Node>(imported.getChildren());
+                importNode.getParentNode().replaceNode(importNode,
+                        importedChildren);
+            } catch (CSSException e) {
+                Logger.getLogger(ImportNodeHandler.class.getName()).log(
+                        Level.SEVERE, null, e);
+            } catch (IOException e) {
+                Logger.getLogger(ImportNodeHandler.class.getName()).log(
+                        Level.SEVERE, null, e);
+            }
+
+            // traverse the imported nodes normally
+            for (Node child : importedChildren) {
+                child.traverse();
+            }
+        } else {
+            if (styleSheet != importNode.getParentNode()) {
+                throw new ParseException(
+                        "CSS imports can only be used at the top level, not as nested imports. Within style rules, use SCSS imports.");
             }
         }
     }
 
     private static String getUrlPrefix(String url) {
         if (url == null) {
-            return null;
+            return "";
         }
         int pos = url.lastIndexOf('/');
         if (pos == -1) {
-            return null;
+            return "";
         }
         return url.substring(0, pos + 1);
     }
 
-    private static void updateUrlInImportedSheet(Node node, String prefix) {
+    private static void updateUrlInImportedSheet(Node node, String prefix,
+            ScssStylesheet styleSheet) {
         for (Node child : node.getChildren()) {
             if (child instanceof RuleNode) {
                 SassListItem value = ((RuleNode) child).getValue();
                 if (value != null) {
                     value.updateUrl(prefix);
                 }
+            } else if (child instanceof ImportNode) {
+                ImportNode importNode = (ImportNode) child;
+                importNode.setStylesheet(styleSheet);
             }
-            updateUrlInImportedSheet(child, prefix);
+            updateUrlInImportedSheet(child, prefix, styleSheet);
         }
     }
 }

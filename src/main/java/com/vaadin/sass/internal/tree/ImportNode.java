@@ -18,6 +18,7 @@ package com.vaadin.sass.internal.tree;
 
 import org.w3c.css.sac.SACMediaList;
 
+import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.visitor.ImportNodeHandler;
 
 public class ImportNode extends Node {
@@ -26,6 +27,11 @@ public class ImportNode extends Node {
     private String uri;
     private SACMediaList ml;
     private boolean isURL;
+
+    // the stylesheet which contained this import node - usually empty as its
+    // contents have been moved to its parent, but used to access resolvers,
+    // charset etc.
+    private ScssStylesheet styleSheet;
 
     public ImportNode(String uri, SACMediaList ml, boolean isURL) {
         super();
@@ -78,8 +84,15 @@ public class ImportNode extends Node {
 
     @Override
     public void traverse() {
-        // nested imports
-        ImportNodeHandler.traverse(getParentNode());
+        ImportNodeHandler.traverse(this);
+    }
+
+    public void setStylesheet(ScssStylesheet styleSheet) {
+        this.styleSheet = styleSheet;
+    }
+
+    public ScssStylesheet getStylesheet() {
+        return styleSheet;
     }
 
 }
