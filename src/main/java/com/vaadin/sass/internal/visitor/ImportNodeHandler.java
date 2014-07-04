@@ -53,10 +53,10 @@ public class ImportNodeHandler {
         }
         if (!importNode.isPureCssImport()) {
             List<Node> importedChildren = Collections.emptyList();
+            ScssStylesheet imported = null;
             try {
                 // set parent's charset to imported node.
-                ScssStylesheet imported = ScssStylesheet.get(
-                        importNode.getUri(), styleSheet);
+                imported = ScssStylesheet.get(importNode.getUri(), styleSheet);
                 if (imported == null) {
                     throw new FileNotFoundException("Import '"
                             + importNode.getUri() + "' in '"
@@ -82,9 +82,13 @@ public class ImportNodeHandler {
                         Level.SEVERE, null, e);
             }
 
-            // traverse the imported nodes normally
-            for (Node child : importedChildren) {
-                child.traverse();
+            if (imported != null) {
+                // traverse the imported nodes normally
+                for (Node child : importedChildren) {
+                    child.traverse();
+                }
+
+                styleSheet.addSourceUris(imported.getSourceUris());
             }
         } else {
             if (styleSheet != importNode.getParentNode()) {

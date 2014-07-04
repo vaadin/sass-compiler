@@ -19,6 +19,7 @@ package com.vaadin.sass.internal;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.LogManager;
@@ -60,6 +61,8 @@ public class ScssStylesheet extends Node {
 
     // relative path to use when importing files etc.
     private String prefix = "";
+
+    private List<String> sourceUris = new ArrayList<String>();
 
     /**
      * Read in a file SCSS and parse it into a ScssStylesheet
@@ -179,6 +182,7 @@ public class ScssStylesheet extends Node {
         }
 
         stylesheet.setCharset(parser.getInputSource().getEncoding());
+        stylesheet.sourceUris.add(source.getURI());
 
         return stylesheet;
     }
@@ -224,6 +228,14 @@ public class ScssStylesheet extends Node {
      */
     public void addResolver(ScssStylesheetResolver resolver) {
         resolvers.add(resolver);
+    }
+
+    public List<String> getSourceUris() {
+        return Collections.unmodifiableList(sourceUris);
+    }
+
+    public void addSourceUris(Collection<String> uris) {
+        sourceUris.addAll(uris);
     }
 
     /**

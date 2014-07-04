@@ -17,6 +17,7 @@
 package com.vaadin.sass.testcases.scss;
 
 import java.io.IOException;
+import java.util.List;
 
 import junit.framework.Assert;
 
@@ -59,6 +60,18 @@ public class ParentImports extends AbstractTestBase {
 
     @Test
     public void testCompiler() throws Exception {
-        testCompiler(scss, css);
+        ScssStylesheet sheet = testCompiler(scss, css);
+        List<String> importedSheets = sheet.getSourceUris();
+        Assert.assertEquals(5, importedSheets.size());
+        Assert.assertTrue(importedSheets.get(0).replace('\\', '/')
+                .endsWith("/scss/folder-test/parent-import.scss"));
+        Assert.assertTrue(importedSheets.get(1).replace('\\', '/')
+                .endsWith("/scss/folder-test2/variables.scss"));
+        Assert.assertTrue(importedSheets.get(2).replace('\\', '/')
+                .endsWith("/scss/folder-test2/url.scss"));
+        Assert.assertTrue(importedSheets.get(3).replace('\\', '/')
+                .endsWith("/scss/folder-test2/base-imported.scss"));
+        Assert.assertTrue(importedSheets.get(4).replace('\\', '/')
+                .endsWith("/scss/folder-test2/base.scss"));
     }
 }

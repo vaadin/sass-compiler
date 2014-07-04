@@ -68,8 +68,8 @@ public abstract class AbstractTestBase {
         return IOUtils.toString(new FileReader(file));
     }
 
-    public void testParser(String file) throws CSSException, IOException,
-            URISyntaxException {
+    public ScssStylesheet testParser(String file) throws CSSException,
+            IOException, URISyntaxException {
         originalScss = getFileContent(file);
         originalScss = originalScss.replaceAll(CR, "");
         ScssStylesheet sheet = getStyleSheet(file);
@@ -77,9 +77,11 @@ public abstract class AbstractTestBase {
         parsedScss = parsedScss.replace(CR, "");
         Assert.assertEquals("Original CSS and parsed CSS do not match",
                 originalScss, parsedScss);
+        return sheet;
     }
 
-    public void testCompiler(String scss, String css) throws Exception {
+    public ScssStylesheet testCompiler(String scss, String css)
+            throws Exception {
         comparisonCss = getFileContent(css);
         comparisonCss = comparisonCss.replaceAll(CR, "");
         ScssStylesheet sheet = getStyleSheet(scss);
@@ -88,5 +90,6 @@ public abstract class AbstractTestBase {
         parsedScss = parsedScss.replaceAll(CR, "");
         Assert.assertEquals("Original CSS and parsed CSS do not match",
                 comparisonCss, parsedScss);
+        return sheet;
     }
 }
