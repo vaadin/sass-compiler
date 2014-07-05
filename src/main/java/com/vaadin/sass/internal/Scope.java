@@ -33,6 +33,11 @@ public class Scope {
         private DefinitionScope<T> parent;
         // optimization: create map only when needed
         private HashMap<String, T> definitions = null;
+        // cached iterable, null when invalid
+        // Note that the set of variables in parent scope is not modified
+        // directly while a child scope is active even though the values of the
+        // variables may change.
+        private Iterable<T> cache = null;
 
         public DefinitionScope(DefinitionScope<T> parent) {
             this.parent = parent;
@@ -49,6 +54,7 @@ public class Scope {
             if (parent == null || !parent.setIfPresent(node)) {
                 add(node);
             }
+            cache = null;
         }
 
         /**
@@ -60,6 +66,7 @@ public class Scope {
          */
         public void add(T node) {
             getDefinitions(true).put(node.getName(), node);
+            cache = null;
         }
 
         /**
@@ -72,10 +79,12 @@ public class Scope {
          */
         private boolean setIfPresent(T node) {
             if (parent != null && parent.setIfPresent(node)) {
+                cache = null;
                 return true;
             }
             if (getDefinitions(false).containsKey(node.getName())) {
                 getDefinitions(true).put(node.getName(), node);
+                cache = null;
                 return true;
             }
             return false;
@@ -101,15 +110,22 @@ public class Scope {
          *         are unmodifiable
          */
         public Iterable<T> getIterable() {
+            if (cache != null) {
+                return cache;
+            }
             // no need to copy contents in the top-level scope
             if (parent == null) {
                 return Collections.unmodifiableCollection(getDefinitions(false)
                         .values());
             }
+            if (definitions == null) {
+                return parent.getIterable();
+            }
             // optimize this?
             LinkedHashMap<String, T> result = new LinkedHashMap<String, T>();
             addVariablesToMap(result);
-            return Collections.unmodifiableCollection(result.values());
+            cache = Collections.unmodifiableCollection(result.values());
+            return cache;
         }
 
         private void addVariablesToMap(Map<String, T> map) {
