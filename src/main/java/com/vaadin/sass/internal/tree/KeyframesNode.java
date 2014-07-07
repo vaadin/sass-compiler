@@ -31,6 +31,12 @@ public class KeyframesNode extends Node implements IVariableNode {
         this.animationName = animationName;
     }
 
+    private KeyframesNode(KeyframesNode nodeToCopy) {
+        super(nodeToCopy);
+        keyframeName = nodeToCopy.keyframeName;
+        animationName = nodeToCopy.animationName;
+    }
+
     @Override
     public String printState() {
         return buildString(PRINT_STRATEGY);
@@ -62,5 +68,10 @@ public class KeyframesNode extends Node implements IVariableNode {
         }
         string.append("\t}");
         return string.toString();
+    }
+
+    @Override
+    public KeyframesNode copy() {
+        return new KeyframesNode(this);
     }
 }

@@ -36,6 +36,12 @@ public class MicrosoftRuleNode extends Node implements IVariableNode {
         this.value = value;
     }
 
+    private MicrosoftRuleNode(MicrosoftRuleNode nodeToCopy) {
+        super(nodeToCopy);
+        name = nodeToCopy.name;
+        value = nodeToCopy.value;
+    }
+
     @Override
     public void replaceVariables() {
         boolean variableReplaced = false;
@@ -77,5 +83,10 @@ public class MicrosoftRuleNode extends Node implements IVariableNode {
         replaceVariables();
         traverseChildren();
         return Collections.singleton((Node) this);
+    }
+
+    @Override
+    public MicrosoftRuleNode copy() {
+        return new MicrosoftRuleNode(this);
     }
 }

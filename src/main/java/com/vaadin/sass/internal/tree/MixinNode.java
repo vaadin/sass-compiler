@@ -56,6 +56,12 @@ public class MixinNode extends Node implements IVariableNode {
                 hasVariableArgs);
     }
 
+    private MixinNode(MixinNode nodeToCopy) {
+        super(nodeToCopy);
+        arglist = nodeToCopy.arglist;
+        name = nodeToCopy.name;
+    }
+
     public ActualArgumentList getArglist() {
         return arglist;
     }
@@ -111,6 +117,11 @@ public class MixinNode extends Node implements IVariableNode {
             // TODO is ignoring this exception appropriate?
             return Collections.emptyList();
         }
+    }
+
+    @Override
+    public MixinNode copy() {
+        return new MixinNode(this);
     }
 
 }

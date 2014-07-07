@@ -26,6 +26,11 @@ public class KeyframeSelectorNode extends Node {
         this.selector = selector;
     }
 
+    private KeyframeSelectorNode(KeyframeSelectorNode nodeToCopy) {
+        super(nodeToCopy);
+        selector = nodeToCopy.selector;
+    }
+
     @Override
     public String printState() {
         return buildString(PRINT_STRATEGY);
@@ -51,5 +56,10 @@ public class KeyframeSelectorNode extends Node {
         }
         string.append("\t}");
         return string.toString();
+    }
+
+    @Override
+    public KeyframeSelectorNode copy() {
+        return new KeyframeSelectorNode(this);
     }
 }

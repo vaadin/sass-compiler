@@ -471,4 +471,10 @@ public class ScssStylesheet extends Node {
         }
     }
 
+    @Override
+    public Node copy() {
+        throw new UnsupportedOperationException(
+                "ScssStylesheet cannot be copied");
+    }
+
 }

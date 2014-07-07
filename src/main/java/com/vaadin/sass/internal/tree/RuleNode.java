@@ -38,6 +38,14 @@ public class RuleNode extends Node implements IVariableNode {
         this.comment = comment;
     }
 
+    private RuleNode(RuleNode nodeToCopy) {
+        super(nodeToCopy);
+        variable = nodeToCopy.variable;
+        value = nodeToCopy.value;
+        comment = nodeToCopy.comment;
+        important = nodeToCopy.important;
+    }
+
     public StringInterpolationSequence getVariable() {
         return variable;
     }
@@ -115,5 +123,10 @@ public class RuleNode extends Node implements IVariableNode {
             builder.append(comment);
         }
         return builder.toString();
+    }
+
+    @Override
+    public RuleNode copy() {
+        return new RuleNode(this);
     }
 }

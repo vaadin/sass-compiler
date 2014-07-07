@@ -31,6 +31,11 @@ public class MediaNode extends Node {
         this.media = media;
     }
 
+    private MediaNode(MediaNode nodeToCopy) {
+        super(nodeToCopy);
+        media = nodeToCopy.media;
+    }
+
     public SACMediaList getMedia() {
         return media;
     }
@@ -82,5 +87,10 @@ public class MediaNode extends Node {
         }
         builder.append("}");
         return builder.toString();
+    }
+
+    @Override
+    public MediaNode copy() {
+        return new MediaNode(this);
     }
 }

@@ -44,4 +44,9 @@ public class CommentNode extends Node {
     public Collection<Node> traverse() {
         return Collections.singleton((Node) this);
     }
+
+    @Override
+    public CommentNode copy() {
+        return new CommentNode(comment);
+    }
 }

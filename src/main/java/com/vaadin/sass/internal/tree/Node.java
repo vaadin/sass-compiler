@@ -27,7 +27,6 @@ import com.vaadin.sass.internal.parser.ActualArgumentList;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.controldirective.TemporaryNode;
-import com.vaadin.sass.internal.util.DeepCopy;
 
 public abstract class Node implements Serializable {
 
@@ -44,10 +43,10 @@ public abstract class Node implements Serializable {
     public Node() {
     }
 
-    // for internal use only - does not add the node to the children of parent!
-    @Deprecated
-    protected Node(Node parent) {
-        parentNode = parent;
+    protected Node(Node nodeToCopy) {
+        if (nodeToCopy != null && nodeToCopy.children != null) {
+            setChildren(nodeToCopy.copyChildren());
+        }
     }
 
     /**
@@ -179,19 +178,20 @@ public abstract class Node implements Serializable {
      * data that is not relevant to handling of function or mixin expansion is
      * not copied.
      * 
-     * @return
+     * @return copy of the node
      */
-    // TODO rework to use explicit copy methods in subclasses, avoid copying
-    // anything immutable
-    public Node copy() {
-        // these do not need to be copied
-        Node oldParent = parentNode;
-        parentNode = null;
+    public abstract Node copy();
 
-        Node copy = (Node) DeepCopy.copy(this);
-
-        parentNode = oldParent;
-        return copy;
+    // to be used primarily from inside the class Node
+    protected Collection<Node> copyChildren() {
+        if (getChildren(false).isEmpty()) {
+            return Collections.emptyList();
+        }
+        ArrayList<Node> result = new ArrayList<Node>();
+        for (Node child : getChildren(false)) {
+            result.add(child.copy());
+        }
+        return result;
     }
 
     public Collection<Node> traverseChildren() {

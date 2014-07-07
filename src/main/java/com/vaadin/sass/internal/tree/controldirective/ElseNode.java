@@ -22,6 +22,13 @@ import com.vaadin.sass.internal.tree.Node;
 
 public class ElseNode extends Node implements IfElseNode {
 
+    public ElseNode() {
+    }
+
+    public ElseNode(ElseNode nodeToCopy) {
+        super(nodeToCopy);
+    }
+
     @Override
     public SassListItem getExpression() {
         return null;
@@ -30,6 +37,11 @@ public class ElseNode extends Node implements IfElseNode {
     @Override
     public Collection<Node> traverse() {
         return traverseChildren();
+    }
+
+    @Override
+    public ElseNode copy() {
+        return new ElseNode(this);
     }
 
 }

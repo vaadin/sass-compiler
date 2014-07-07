@@ -26,13 +26,20 @@ import com.vaadin.sass.internal.tree.Node;
  */
 public class TemporaryNode extends Node {
 
+    private Node parentNode;
+
     public TemporaryNode(Node parent) {
-        super(parent);
+        parentNode = parent;
     }
 
     public TemporaryNode(Node parent, Collection<Node> children) {
-        super(parent);
+        parentNode = parent;
         setChildren(children);
+    }
+
+    @Override
+    public Node getParentNode() {
+        return parentNode;
     }
 
     @Override
@@ -63,6 +70,12 @@ public class TemporaryNode extends Node {
             result.addAll(node.traverse());
         }
         return result;
+    }
+
+    @Override
+    public Node copy() {
+        throw new UnsupportedOperationException(
+                "TemporaryNode cannot be copied");
     }
 
 }

@@ -27,9 +27,13 @@ public class FunctionDefNode extends DefNode {
         super(name, args, hasVariableArgs);
     }
 
+    private FunctionDefNode(FunctionDefNode nodeToCopy) {
+        super(nodeToCopy);
+    }
+
     @Override
     public FunctionDefNode copy() {
-        return (FunctionDefNode) super.copy();
+        return new FunctionDefNode(this);
     }
 
     @Override

@@ -16,6 +16,7 @@
 
 package com.vaadin.sass.internal.tree;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +36,12 @@ public class ExtendNode extends Node implements IVariableNode {
         super();
         this.list = list;
         this.optional = optional;
+    }
+
+    private ExtendNode(ExtendNode nodeToCopy) {
+        super(nodeToCopy);
+        list = new ArrayList<Selector>(nodeToCopy.list);
+        optional = nodeToCopy.optional;
     }
 
     public List<Selector> getList() {
@@ -72,5 +79,10 @@ public class ExtendNode extends Node implements IVariableNode {
             // TODO is it correct to ignore the exception?
             return Collections.emptyList();
         }
+    }
+
+    @Override
+    public ExtendNode copy() {
+        return new ExtendNode(this);
     }
 }

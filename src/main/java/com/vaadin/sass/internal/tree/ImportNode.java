@@ -42,6 +42,14 @@ public class ImportNode extends Node {
         this.isURL = isURL;
     }
 
+    private ImportNode(ImportNode nodeToCopy) {
+        super(nodeToCopy);
+        uri = nodeToCopy.uri;
+        ml = nodeToCopy.ml;
+        isURL = nodeToCopy.isURL;
+        styleSheet = nodeToCopy.styleSheet;
+    }
+
     public boolean isPureCssImport() {
         return (isURL || uri.endsWith(".css") || uri.startsWith("http://") || hasMediaQueries());
     }
@@ -99,12 +107,7 @@ public class ImportNode extends Node {
 
     @Override
     public ImportNode copy() {
-        ScssStylesheet styleSheet = this.styleSheet;
-        this.styleSheet = null;
-        ImportNode copy = (ImportNode) super.copy();
-        this.styleSheet = styleSheet;
-        copy.styleSheet = styleSheet;
-        return copy;
+        return new ImportNode(this);
     }
 
 }

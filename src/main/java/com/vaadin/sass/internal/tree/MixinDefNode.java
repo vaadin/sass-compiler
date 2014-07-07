@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 
 import com.vaadin.sass.internal.ScssStylesheet;
-import com.vaadin.sass.internal.util.DeepCopy;
 import com.vaadin.sass.internal.parser.Variable;
 
 public class MixinDefNode extends DefNode {
@@ -30,6 +29,10 @@ public class MixinDefNode extends DefNode {
     public MixinDefNode(String name, Collection<Variable> args,
             boolean hasVariableArgs) {
         super(name, args, hasVariableArgs);
+    }
+
+    private MixinDefNode(MixinDefNode nodeToCopy) {
+        super(nodeToCopy);
     }
 
     @Override
@@ -67,14 +70,14 @@ public class MixinDefNode extends DefNode {
             MixinNode mixinNode) {
         if (contentNode != null) {
             contentNode.getParentNode().replaceNode(contentNode,
-                    DeepCopy.copy(mixinNode.getChildren()));
+                    mixinNode.copyChildren());
         }
         return this;
     }
 
     @Override
     public MixinDefNode copy() {
-        return (MixinDefNode) super.copy();
+        return new MixinDefNode(this);
     }
 
     @Override

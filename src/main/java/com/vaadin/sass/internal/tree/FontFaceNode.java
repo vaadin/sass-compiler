@@ -20,6 +20,13 @@ import java.util.Collections;
 
 public class FontFaceNode extends Node {
 
+    public FontFaceNode() {
+    }
+
+    private FontFaceNode(FontFaceNode nodeToCopy) {
+        super(nodeToCopy);
+    }
+
     @Override
     public String printState() {
         return buildString(PRINT_STRATEGY);
@@ -46,6 +53,11 @@ public class FontFaceNode extends Node {
 
         builder.append("}");
         return builder.toString();
+    }
+
+    @Override
+    public FontFaceNode copy() {
+        return new FontFaceNode(this);
     }
 
 }

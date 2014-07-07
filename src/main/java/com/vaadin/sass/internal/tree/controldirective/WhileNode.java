@@ -30,6 +30,11 @@ public class WhileNode extends Node {
         this.condition = condition;
     }
 
+    private WhileNode(WhileNode nodeToCopy) {
+        super(nodeToCopy);
+        condition = nodeToCopy.condition;
+    }
+
     @Override
     public String toString() {
         return "While Node: { condition: " + condition + "}";
@@ -42,6 +47,11 @@ public class WhileNode extends Node {
     @Override
     public Collection<Node> traverse() {
         return WhileNodeHandler.traverse(this);
+    }
+
+    @Override
+    public WhileNode copy() {
+        return new WhileNode(this);
     }
 
 }

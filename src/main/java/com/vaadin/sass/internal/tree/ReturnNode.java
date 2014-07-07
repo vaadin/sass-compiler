@@ -28,6 +28,11 @@ public class ReturnNode extends Node implements IVariableNode {
         expr = expression;
     }
 
+    private ReturnNode(ReturnNode nodeToCopy) {
+        super(nodeToCopy);
+        expr = nodeToCopy.expr;
+    }
+
     @Override
     public void replaceVariables() {
         expr = expr.replaceVariables();
@@ -57,6 +62,11 @@ public class ReturnNode extends Node implements IVariableNode {
         expr = expr.replaceVariables();
         expr = expr.evaluateFunctionsAndExpressions(arith);
         return expr;
+    }
+
+    @Override
+    public ReturnNode copy() {
+        return new ReturnNode(this);
     }
 
 }

@@ -25,6 +25,13 @@ import com.vaadin.sass.internal.visitor.IfElseNodeHandler;
 
 public class IfElseDefNode extends Node {
 
+    public IfElseDefNode() {
+    }
+
+    private IfElseDefNode(IfElseDefNode nodeToCopy) {
+        super(nodeToCopy);
+    }
+
     @Override
     public String printState() {
         return buildString(PRINT_STRATEGY);
@@ -54,6 +61,11 @@ public class IfElseDefNode extends Node {
             b.append("\n");
         }
         return b.toString();
+    }
+
+    @Override
+    public IfElseDefNode copy() {
+        return new IfElseDefNode(this);
     }
 
 }

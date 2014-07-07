@@ -38,6 +38,14 @@ public class ForNode extends Node {
         this.exclusive = exclusive;
     }
 
+    private ForNode(ForNode nodeToCopy) {
+        super(nodeToCopy);
+        variableName = nodeToCopy.variableName;
+        from = nodeToCopy.from;
+        to = nodeToCopy.to;
+        exclusive = nodeToCopy.exclusive;
+    }
+
     public String getVariableName() {
         return variableName;
     }
@@ -64,6 +72,11 @@ public class ForNode extends Node {
     @Override
     public Collection<Node> traverse() {
         return ForNodeHandler.traverse(this);
+    }
+
+    @Override
+    public ForNode copy() {
+        return new ForNode(this);
     }
 
 }

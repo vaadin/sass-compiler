@@ -36,6 +36,12 @@ public class EachDefNode extends Node implements IVariableNode {
         this.list = list;
     }
 
+    private EachDefNode(EachDefNode nodeToCopy) {
+        super(nodeToCopy);
+        var = nodeToCopy.var;
+        list = nodeToCopy.list;
+    }
+
     public SassList getVariables() {
         if (list instanceof SassList) {
             return (SassList) list;
@@ -63,5 +69,10 @@ public class EachDefNode extends Node implements IVariableNode {
     public Collection<Node> traverse() {
         replaceVariables();
         return EachNodeHandler.traverse(this);
+    }
+
+    @Override
+    public EachDefNode copy() {
+        return new EachDefNode(this);
     }
 }

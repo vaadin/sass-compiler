@@ -26,12 +26,17 @@ import com.vaadin.sass.internal.visitor.NestedNodeHandler;
 public class NestPropertiesNode extends Node implements IVariableNode {
     private static final long serialVersionUID = 3671253315690598308L;
 
+    private StringInterpolationSequence name;
+
     public NestPropertiesNode(StringInterpolationSequence name) {
         super();
         this.name = name;
     }
 
-    private StringInterpolationSequence name;
+    private NestPropertiesNode(NestPropertiesNode nodeToCopy) {
+        super(nodeToCopy);
+        name = nodeToCopy.name;
+    }
 
     public StringInterpolationSequence getName() {
         return name;
@@ -83,6 +88,11 @@ public class NestPropertiesNode extends Node implements IVariableNode {
     @Override
     public String printState() {
         return null;
+    }
+
+    @Override
+    public NestPropertiesNode copy() {
+        return new NestPropertiesNode(this);
     }
 
 }

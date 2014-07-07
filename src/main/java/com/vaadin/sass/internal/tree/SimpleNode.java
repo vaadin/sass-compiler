@@ -36,7 +36,11 @@ public class SimpleNode extends Node implements IVariableNode {
 
     public SimpleNode(String text) {
         this.text = text;
+    }
 
+    private SimpleNode(SimpleNode nodeToCopy) {
+        super(nodeToCopy);
+        text = nodeToCopy.text;
     }
 
     @Override
@@ -63,5 +67,10 @@ public class SimpleNode extends Node implements IVariableNode {
     public Collection<Node> traverse() {
         replaceVariables();
         return Collections.singleton((Node) this);
+    }
+
+    @Override
+    public SimpleNode copy() {
+        return new SimpleNode(this);
     }
 }

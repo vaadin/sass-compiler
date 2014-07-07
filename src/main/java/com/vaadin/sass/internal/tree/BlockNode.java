@@ -41,6 +41,12 @@ public class BlockNode extends Node implements IVariableNode {
         setChildren(children);
     }
 
+    // for use by copy() only
+    private BlockNode(BlockNode blockNode) {
+        super(blockNode);
+        selectorList = new ArrayList<Selector>(blockNode.selectorList);
+    }
+
     public List<Selector> getSelectorList() {
         return Collections.unmodifiableList(selectorList);
     }
@@ -122,6 +128,11 @@ public class BlockNode extends Node implements IVariableNode {
         }
         string.append("}");
         return string.toString();
+    }
+
+    @Override
+    public BlockNode copy() {
+        return new BlockNode(this);
     }
 
 }

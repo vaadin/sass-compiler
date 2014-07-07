@@ -42,6 +42,13 @@ public abstract class DefNode extends Node implements Definition, IVariableNode 
         arglist = new FormalArgumentList(args, hasVariableArgs);
     }
 
+    protected DefNode(DefNode nodeToCopy) {
+        super(nodeToCopy);
+        name = nodeToCopy.name;
+        arglist = nodeToCopy.arglist;
+        definitionScope = nodeToCopy.definitionScope;
+    }
+
     public String getName() {
         return name;
     }
@@ -66,17 +73,6 @@ public abstract class DefNode extends Node implements Definition, IVariableNode 
 
     public Scope getDefinitionScope() {
         return definitionScope;
-    }
-
-    @Override
-    public DefNode copy() {
-        // scope does not need to be copied
-        Scope scope = definitionScope;
-        definitionScope = null;
-        DefNode copy = (DefNode) super.copy();
-        copy.definitionScope = scope;
-        definitionScope = scope;
-        return copy;
     }
 
     protected void setDefinitionScope(Scope scope) {

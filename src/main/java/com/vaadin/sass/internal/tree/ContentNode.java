@@ -24,6 +24,13 @@ import java.util.Collections;
 
 public class ContentNode extends Node {
 
+    public ContentNode() {
+    }
+
+    private ContentNode(Node nodeToCopy) {
+        super(nodeToCopy);
+    }
+
     @Override
     public Collection<Node> traverse() {
         /*
@@ -32,6 +39,11 @@ public class ContentNode extends Node {
          * will be replaced when traversing MixinDefNode which contains it.
          */
         return Collections.singleton((Node) this);
+    }
+
+    @Override
+    public ContentNode copy() {
+        return new ContentNode(this);
     }
 
 }

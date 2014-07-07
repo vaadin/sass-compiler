@@ -32,6 +32,11 @@ public class IfNode extends Node implements IfElseNode, IVariableNode {
         this.expression = expression;
     }
 
+    private IfNode(IfNode nodeToCopy) {
+        super(nodeToCopy);
+        expression = nodeToCopy.expression;
+    }
+
     @Override
     public SassListItem getExpression() {
         return expression;
@@ -50,5 +55,10 @@ public class IfNode extends Node implements IfElseNode, IVariableNode {
     @Override
     public Collection<Node> traverse() {
         return traverseChildren();
+    }
+
+    @Override
+    public IfNode copy() {
+        return new IfNode(this);
     }
 }

@@ -62,4 +62,9 @@ public class ConsoleMessageNode extends Node implements IVariableNode {
                 .log(level, message);
         return Collections.emptyList();
     }
+
+    @Override
+    public ConsoleMessageNode copy() {
+        return new ConsoleMessageNode(message, warning);
+    }
 }
