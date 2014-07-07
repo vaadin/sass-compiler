@@ -24,6 +24,7 @@ import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassListItem;
+import com.vaadin.sass.internal.parser.Variable;
 
 /**
  * Transient class representing a function call to a custom (user-defined)
@@ -75,7 +76,7 @@ public class FunctionNode extends NodeWithVariableArguments {
             Scope previousScope = ScssStylesheet.openVariableScope(defCopy
                     .getDefinitionScope());
             try {
-                for (VariableNode param : defCopy.getArglist()) {
+                for (Variable param : defCopy.getArglist()) {
                     ScssStylesheet.addVariable(param);
                 }
 

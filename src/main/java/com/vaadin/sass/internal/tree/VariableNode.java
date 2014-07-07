@@ -18,40 +18,37 @@ package com.vaadin.sass.internal.tree;
 
 import com.vaadin.sass.internal.Definition;
 import com.vaadin.sass.internal.parser.SassListItem;
+import com.vaadin.sass.internal.parser.Variable;
 import com.vaadin.sass.internal.visitor.VariableNodeHandler;
 
 public class VariableNode extends Node implements Definition, IVariableNode {
     private static final long serialVersionUID = 7003372557547748734L;
 
-    private String name;
-    private SassListItem expr = null;
-    private boolean guarded;
+    private final Variable variable;
 
     public VariableNode(String name, SassListItem expr, boolean guarded) {
         super();
-        this.name = name;
-        setExpr(expr);
-        this.guarded = guarded;
+        variable = new Variable(name, expr, guarded);
     }
 
     public SassListItem getExpr() {
-        return expr;
+        return variable.getExpr();
     }
 
     public void setExpr(SassListItem expr) {
-        this.expr = expr;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+        variable.setExpr(expr);
     }
 
     public String getName() {
-        return name;
+        return variable.getName();
     }
 
     public boolean isGuarded() {
-        return guarded;
+        return variable.isGuarded();
+    }
+
+    public Variable getVariable() {
+        return variable;
     }
 
     @Override
@@ -64,27 +61,9 @@ public class VariableNode extends Node implements Definition, IVariableNode {
         return "Variable node [" + buildString(TO_STRING_STRATEGY) + "]";
     }
 
-    public void setGuarded(boolean guarded) {
-        this.guarded = guarded;
-    }
-
     @Override
     public void replaceVariables() {
-        expr = expr.replaceVariables();
-    }
-
-    /**
-     * Replaces each occurrence of ${name} in the parameter. Only evaluates the
-     * variable if at least one such occurrence, and then only evaluates it
-     * once.
-     */
-    public String replaceInterpolation(String s) {
-        final String interpolation = "#{$" + getName() + "}";
-        if (s.contains(interpolation)) {
-            return s.replace(interpolation, getExpr().unquotedString());
-        } else {
-            return s;
-        }
+        variable.setExpr(variable.getExpr().replaceVariables());
     }
 
     @Override
@@ -97,20 +76,22 @@ public class VariableNode extends Node implements Definition, IVariableNode {
          * successor is a Variable or not, to determine it is an arithmetic
          * operator.
          */
-        boolean hasOperator = expr.containsArithmeticalOperator();
+        boolean hasOperator = variable.getExpr().containsArithmeticalOperator();
         replaceVariables();
-        expr = expr.evaluateFunctionsAndExpressions(hasOperator);
+        variable.setExpr(variable.getExpr().evaluateFunctionsAndExpressions(
+                hasOperator));
         VariableNodeHandler.traverse(this);
     }
 
     private String buildString(BuildStringStrategy strategy) {
         StringBuilder builder = new StringBuilder("$");
-        builder.append(name).append(": ").append(strategy.build(expr));
+        builder.append(getName()).append(": ")
+                .append(strategy.build(getExpr()));
         return builder.toString();
     }
 
     @Override
     public VariableNode copy() {
-        return new VariableNode(name, expr, guarded);
+        return new VariableNode(getName(), getExpr(), isGuarded());
     }
 }

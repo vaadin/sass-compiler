@@ -18,9 +18,10 @@ package com.vaadin.sass.internal.tree;
 import java.util.Collection;
 
 import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.parser.Variable;
 
 public class FunctionDefNode extends DefNode {
-    public FunctionDefNode(String name, Collection<VariableNode> args,
+    public FunctionDefNode(String name, Collection<Variable> args,
             boolean hasVariableArgs) {
         super(name, args, hasVariableArgs);
     }

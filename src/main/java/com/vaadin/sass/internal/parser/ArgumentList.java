@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import com.vaadin.sass.internal.tree.Node;
-import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
  * An ArgumentList is used for packing arguments into a list. There can be named
@@ -31,14 +30,14 @@ import com.vaadin.sass.internal.tree.VariableNode;
  * parameters of an @include or a function call.
  */
 public class ArgumentList extends SassList implements Serializable {
-    private List<VariableNode> namedVariables = new ArrayList<VariableNode>();
+    private List<Variable> namedVariables = new ArrayList<Variable>();
 
     public ArgumentList(SassList list) {
         super(list.getSeparator(), list.getItems());
     }
 
     public ArgumentList(Separator separator, List<SassListItem> list,
-            List<VariableNode> named) {
+            List<Variable> named) {
         super(separator, list);
         namedVariables = named;
     }
@@ -51,7 +50,7 @@ public class ArgumentList extends SassList implements Serializable {
         super(separator, newParamValues);
     }
 
-    public List<VariableNode> getNamedVariables() {
+    public List<Variable> getNamedVariables() {
         return Collections.unmodifiableList(namedVariables);
     }
 
@@ -63,10 +62,10 @@ public class ArgumentList extends SassList implements Serializable {
         for (SassListItem item : this) {
             list.add(item.replaceVariables());
         }
-        List<VariableNode> named = new ArrayList<VariableNode>();
-        for (VariableNode node : namedVariables) {
-            named.add(new VariableNode(node.getName(), node.getExpr()
-                    .replaceVariables(), node.isGuarded()));
+        List<Variable> named = new ArrayList<Variable>();
+        for (Variable var : namedVariables) {
+            named.add(new Variable(var.getName(), var.getExpr()
+                    .replaceVariables(), var.isGuarded()));
         }
         return new ArgumentList(getSeparator(), list, named);
     }
@@ -78,10 +77,10 @@ public class ArgumentList extends SassList implements Serializable {
         for (SassListItem item : this) {
             list.add(item.evaluateFunctionsAndExpressions(evaluateArithmetics));
         }
-        List<VariableNode> named = new ArrayList<VariableNode>();
-        for (VariableNode node : namedVariables) {
-            named.add(new VariableNode(node.getName(), node.getExpr()
-                    .evaluateFunctionsAndExpressions(evaluateArithmetics), node
+        List<Variable> named = new ArrayList<Variable>();
+        for (Variable var : namedVariables) {
+            named.add(new Variable(var.getName(), var.getExpr()
+                    .evaluateFunctionsAndExpressions(evaluateArithmetics), var
                     .isGuarded()));
         }
         return new ArgumentList(getSeparator(), list, named);
@@ -110,7 +109,7 @@ public class ArgumentList extends SassList implements Serializable {
     private String namedAsString() {
         String result = "";
         for (int i = 0; i < namedVariables.size(); i++) {
-            VariableNode named = namedVariables.get(i);
+            Variable named = namedVariables.get(i);
             String contents = named.getExpr() == null ? "null" : named
                     .getExpr().buildString(Node.PRINT_STRATEGY);
             result += "$" + named.getName() + ": " + contents;

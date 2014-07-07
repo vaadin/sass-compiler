@@ -21,16 +21,19 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.vaadin.sass.internal.parser.ActualArgumentList;
+import com.vaadin.sass.internal.parser.SassList;
+import com.vaadin.sass.internal.parser.Variable;
 import com.vaadin.sass.internal.visitor.MixinNodeHandler;
 
 public class MixinNode extends NodeWithVariableArguments {
     private static final long serialVersionUID = 4725008226813110658L;
 
     public MixinNode(String name) {
-        this(name, new ArrayList<VariableNode>(), false);
+        this(name, new ArrayList<Variable>(), false);
     }
 
-    public MixinNode(String name, Collection<VariableNode> args,
+    public MixinNode(String name, Collection<Variable> args,
             boolean hasVariableArgs) {
         super(name, args, hasVariableArgs);
     }

@@ -21,10 +21,10 @@ import java.util.ArrayList;
 import com.vaadin.sass.internal.Scope;
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.ParseException;
+import com.vaadin.sass.internal.parser.Variable;
 import com.vaadin.sass.internal.tree.MixinDefNode;
 import com.vaadin.sass.internal.tree.MixinNode;
 import com.vaadin.sass.internal.tree.Node;
-import com.vaadin.sass.internal.tree.VariableNode;
 
 public class MixinNodeHandler {
 
@@ -59,9 +59,9 @@ public class MixinNodeHandler {
                 .getDefinitionScope());
         try {
             // add variables from argList
-            for (VariableNode var : defClone.getArglist().getArguments()) {
-                VariableNode evaluated = new VariableNode(var.getName(), var
-                        .getExpr().evaluateFunctionsAndExpressions(true), false);
+            for (Variable var : defClone.getArglist().getArguments()) {
+                Variable evaluated = new Variable(var.getName(), var.getExpr()
+                        .evaluateFunctionsAndExpressions(true));
                 ScssStylesheet.addVariable(evaluated);
             }
             // traverse child nodes in this scope

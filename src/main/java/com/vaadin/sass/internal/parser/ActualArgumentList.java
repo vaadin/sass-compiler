@@ -22,7 +22,6 @@ import java.util.List;
 
 import com.vaadin.sass.internal.parser.SassList.Separator;
 import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
-import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
  * ActualArgumentList is used for representing the actual arguments of an @include
@@ -46,7 +45,7 @@ public class ActualArgumentList implements Serializable {
     }
 
     public ActualArgumentList(Separator separator, List<SassListItem> list,
-            List<VariableNode> named, SassListItem variableArgument) {
+            List<Variable> named, SassListItem variableArgument) {
         arglist = new ArgumentList(separator, list, named);
         this.variableArgument = variableArgument;
     }
@@ -60,12 +59,12 @@ public class ActualArgumentList implements Serializable {
         arglist = new ArgumentList(separator, newParamValues);
     }
 
-    public ActualArgumentList(Separator separator,
-            Collection<VariableNode> args, boolean hasVariableArguments) {
+    public ActualArgumentList(Separator separator, Collection<Variable> args,
+            boolean hasVariableArguments) {
         ArrayList<SassListItem> unnamed = new ArrayList<SassListItem>();
-        ArrayList<VariableNode> named = new ArrayList<VariableNode>();
+        ArrayList<Variable> named = new ArrayList<Variable>();
         if (args != null) {
-            for (VariableNode arg : args) {
+            for (Variable arg : args) {
                 if (arg.getName() == null) {
                     unnamed.add(arg.getExpr());
                 } else {
@@ -129,7 +128,7 @@ public class ActualArgumentList implements Serializable {
         if (hasVariableArguments()) {
             List<SassListItem> unnamedArgs = new ArrayList<SassListItem>(
                     arglist.getItems());
-            List<VariableNode> namedArgs = new ArrayList<VariableNode>(
+            List<Variable> namedArgs = new ArrayList<Variable>(
                     arglist.getNamedVariables());
             if (variableArgument instanceof SassList) {
                 SassList lastList = (SassList) variableArgument;
@@ -140,9 +139,9 @@ public class ActualArgumentList implements Serializable {
             // Append any remaining variable name-value pairs to the argument
             // list
             if (variableArgument instanceof ArgumentList) {
-                for (VariableNode namedNode : ((ArgumentList) variableArgument)
+                for (Variable namedVar : ((ArgumentList) variableArgument)
                         .getNamedVariables()) {
-                    namedArgs.add(namedNode.copy());
+                    namedArgs.add(namedVar.copy());
                 }
             }
             return new ActualArgumentList(
@@ -213,16 +212,7 @@ public class ActualArgumentList implements Serializable {
         return arglist.getSeparator();
     }
 
-    public List<VariableNode> getVariableNodeList() {
-        ArrayList<VariableNode> nodes = new ArrayList<VariableNode>();
-        for (SassListItem item : arglist.getItems()) {
-            nodes.add(new VariableNode(null, item, false));
-        }
-        nodes.addAll(arglist.getNamedVariables());
-        return nodes;
-    }
-
-    public List<VariableNode> getNamedVariables() {
+    public List<Variable> getNamedVariables() {
         return arglist.getNamedVariables();
     }
 }

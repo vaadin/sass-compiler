@@ -34,6 +34,7 @@ import com.vaadin.sass.internal.handler.SCSSErrorHandler;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.Parser;
 import com.vaadin.sass.internal.parser.SCSSParseException;
+import com.vaadin.sass.internal.parser.Variable;
 import com.vaadin.sass.internal.resolver.ClassloaderResolver;
 import com.vaadin.sass.internal.resolver.FilesystemResolver;
 import com.vaadin.sass.internal.resolver.ScssStylesheetResolver;
@@ -41,7 +42,6 @@ import com.vaadin.sass.internal.tree.BlockNode;
 import com.vaadin.sass.internal.tree.FunctionDefNode;
 import com.vaadin.sass.internal.tree.MixinDefNode;
 import com.vaadin.sass.internal.tree.Node;
-import com.vaadin.sass.internal.tree.VariableNode;
 import com.vaadin.sass.internal.visitor.ExtendNodeHandler;
 
 public class ScssStylesheet extends Node {
@@ -371,7 +371,7 @@ public class ScssStylesheet extends Node {
      * @param node
      *            variable to set
      */
-    public static void setVariable(VariableNode node) {
+    public static void setVariable(Variable node) {
         scope.setVariable(node);
     }
 
@@ -382,15 +382,15 @@ public class ScssStylesheet extends Node {
      * @param node
      *            variable to add
      */
-    public static void addVariable(VariableNode node) {
+    public static void addVariable(Variable node) {
         scope.addVariable(node);
     }
 
-    public static VariableNode getVariable(String string) {
+    public static Variable getVariable(String string) {
         return scope.getVariable(string);
     }
 
-    public static Iterable<VariableNode> getVariables() {
+    public static Iterable<Variable> getVariables() {
         return scope.getVariables();
     }
 

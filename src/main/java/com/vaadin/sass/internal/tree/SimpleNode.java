@@ -16,6 +16,7 @@
 package com.vaadin.sass.internal.tree;
 
 import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.parser.Variable;
 import com.vaadin.sass.internal.util.StringUtil;
 
 /**
@@ -47,9 +48,9 @@ public class SimpleNode extends Node implements IVariableNode {
 
     @Override
     public void replaceVariables() {
-        for (final VariableNode node : ScssStylesheet.getVariables()) {
-            if (StringUtil.containsVariable(text, node.getName())) {
-                text = StringUtil.replaceVariable(text, node.getName(), node
+        for (final Variable var : ScssStylesheet.getVariables()) {
+            if (StringUtil.containsVariable(text, var.getName())) {
+                text = StringUtil.replaceVariable(text, var.getName(), var
                         .getExpr().printState());
             }
         }

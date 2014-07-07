@@ -19,7 +19,6 @@ import java.io.Serializable;
 
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
-import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
  * StringItem is a wrapper class that allows strings to be stored in lists
@@ -63,7 +62,7 @@ public class StringItem implements SassListItem, Serializable {
                 && ((value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"') || (value
                         .charAt(0) == '\'' && value.charAt(value.length() - 1) == '\''))) {
             String stringValue = value;
-            for (VariableNode var : ScssStylesheet.getVariables()) {
+            for (Variable var : ScssStylesheet.getVariables()) {
                 stringValue = var.replaceInterpolation(stringValue);
             }
             return new StringItem(stringValue);

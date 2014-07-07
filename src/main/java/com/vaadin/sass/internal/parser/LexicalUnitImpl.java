@@ -70,7 +70,6 @@ import com.vaadin.sass.internal.tree.FunctionDefNode;
 import com.vaadin.sass.internal.tree.FunctionNode;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
-import com.vaadin.sass.internal.tree.VariableNode;
 import com.vaadin.sass.internal.util.ColorUtil;
 import com.vaadin.sass.internal.util.StringUtil;
 
@@ -759,9 +758,9 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         if (getLexicalUnitType() == LexicalUnitImpl.SCSS_VARIABLE) {
             // replace simple variable
             String stringValue = getStringValue();
-            for (VariableNode node : ScssStylesheet.getVariables()) {
-                if (node.getName().equals(stringValue)) {
-                    return node.getExpr().replaceVariables();
+            for (Variable var : ScssStylesheet.getVariables()) {
+                if (var.getName().equals(stringValue)) {
+                    return var.getExpr().replaceVariables();
                 }
             }
         }
@@ -778,13 +777,13 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
             // handle Interpolation objects
             StringInterpolationSequence sis = s.replaceVariables();
             // handle strings with interpolation
-            for (VariableNode node : ScssStylesheet.getVariables()) {
+            for (Variable var : ScssStylesheet.getVariables()) {
                 if (!sis.containsInterpolation()) {
                     break;
                 }
-                String interpolation = "#{$" + node.getName() + "}";
+                String interpolation = "#{$" + var.getName() + "}";
                 String stringValue = sis.toString();
-                SassListItem expr = node.getExpr();
+                SassListItem expr = var.getExpr();
                 // strings should be unquoted
                 if (stringValue.equals(interpolation)
                         && !checkLexicalUnitType(expr,

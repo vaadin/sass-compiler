@@ -17,14 +17,12 @@ package com.vaadin.sass.internal.selector;
 
 import java.io.Serializable;
 
-import com.vaadin.sass.internal.tree.VariableNode;
-
 /**
  * Simple CSS3 selector such as an id selector or an attribute selector.
  * 
  * {@link SimpleSelector} instances are immutable and
- * {@link #replaceVariable(VariableNode)} returns a modified copy of the
- * selector if necessary.
+ * {@link #replaceVariables()} returns a modified copy of the selector if
+ * necessary.
  * 
  * Multiple concatenated simple selectors are grouped in
  * {@link SimpleSelectorSequence} and multiple sequences of selectors joined

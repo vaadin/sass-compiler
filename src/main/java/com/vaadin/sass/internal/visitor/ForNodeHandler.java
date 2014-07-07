@@ -21,7 +21,8 @@ import java.util.Collection;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassListItem;
-import com.vaadin.sass.internal.tree.VariableNode;
+import com.vaadin.sass.internal.parser.Variable;
+import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.controldirective.ForNode;
 
 public class ForNodeHandler extends LoopNodeHandler {
@@ -36,13 +37,12 @@ public class ForNodeHandler extends LoopNodeHandler {
         if (forNode.isExclusive()) {
             toInt = toInt - 1;
         }
-        Collection<VariableNode> indices = new ArrayList<VariableNode>();
+        Collection<Variable> indices = new ArrayList<Variable>();
         for (int idx = fromInt; idx <= toInt; ++idx) {
             LexicalUnitImpl idxUnit = LexicalUnitImpl.createInteger(forNode
                     .getFrom().getLineNumber(), forNode.getFrom()
                     .getColumnNumber(), idx);
-            indices.add(new VariableNode(forNode.getVariableName(), idxUnit,
-                    false));
+            indices.add(new Variable(forNode.getVariableName(), idxUnit));
         }
         replaceLoopNode(forNode, indices);
     }

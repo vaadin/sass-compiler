@@ -21,11 +21,12 @@ import java.util.Collection;
 
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.util.DeepCopy;
+import com.vaadin.sass.internal.parser.Variable;
 
 public class MixinDefNode extends DefNode {
     private static final long serialVersionUID = 5469294053247343948L;
 
-    public MixinDefNode(String name, Collection<VariableNode> args,
+    public MixinDefNode(String name, Collection<Variable> args,
             boolean hasVariableArgs) {
         super(name, args, hasVariableArgs);
     }

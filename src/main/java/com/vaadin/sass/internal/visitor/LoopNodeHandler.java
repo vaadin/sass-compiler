@@ -19,8 +19,8 @@ import java.util.Collections;
 import java.util.List;
 
 import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.parser.Variable;
 import com.vaadin.sass.internal.tree.Node;
-import com.vaadin.sass.internal.tree.VariableNode;
 import com.vaadin.sass.internal.tree.controldirective.TemporaryNode;
 
 /**
@@ -38,11 +38,11 @@ public abstract class LoopNodeHandler {
      *            typically a collection for a fixed iteration count loop
      */
     protected static void replaceLoopNode(Node loopNode,
-            Iterable<VariableNode> loopVariables) {
+            Iterable<Variable> loopVariables) {
         // the type of this node does not matter much as long as it can have
         // children that can be traversed
-        Node tempParent = new TemporaryNode();
-        for (final VariableNode var : loopVariables) {
+        TemporaryNode tempParent = new TemporaryNode();
+        for (final Variable var : loopVariables) {
             iteration(loopNode.getChildren(), tempParent, var);
         }
         // traverse the newly created nodes
@@ -51,8 +51,8 @@ public abstract class LoopNodeHandler {
         tempParent.traverse();
     }
 
-    private static void iteration(List<Node> loopChildren, Node newParent,
-            VariableNode loopVar) {
+    private static void iteration(List<Node> loopChildren,
+            TemporaryNode newParent, Variable loopVar) {
         ScssStylesheet.openVariableScope();
         try {
             ScssStylesheet.addVariable(loopVar);

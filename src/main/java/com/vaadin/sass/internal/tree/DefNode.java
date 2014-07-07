@@ -21,6 +21,7 @@ import com.vaadin.sass.internal.Definition;
 import com.vaadin.sass.internal.Scope;
 import com.vaadin.sass.internal.parser.ActualArgumentList;
 import com.vaadin.sass.internal.parser.FormalArgumentList;
+import com.vaadin.sass.internal.parser.Variable;
 
 /**
  * DefNode defines the shared functionality of mixin and function definition
@@ -34,7 +35,7 @@ public abstract class DefNode extends Node implements Definition, IVariableNode 
     private FormalArgumentList arglist;
     private Scope definitionScope;
 
-    public DefNode(String name, Collection<VariableNode> args,
+    public DefNode(String name, Collection<Variable> args,
             boolean hasVariableArgs) {
         super();
         this.name = name;

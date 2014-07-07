@@ -31,6 +31,7 @@ import org.w3c.css.sac.SelectorList;
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
+import com.vaadin.sass.internal.parser.Variable;
 import com.vaadin.sass.internal.selector.Selector;
 import com.vaadin.sass.internal.tree.BlockNode;
 import com.vaadin.sass.internal.tree.CommentNode;
@@ -244,7 +245,7 @@ public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
     }
 
     @Override
-    public void startMixinDirective(String name, Collection<VariableNode> args,
+    public void startMixinDirective(String name, Collection<Variable> args,
             boolean hasVariableArgs) {
         MixinDefNode node = new MixinDefNode(name.trim(), args, hasVariableArgs);
         nodeStack.peek().appendChild(node);
@@ -257,8 +258,8 @@ public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
     }
 
     @Override
-    public void startFunctionDirective(String name,
-            Collection<VariableNode> args, boolean hasVariableArgs) {
+    public void startFunctionDirective(String name, Collection<Variable> args,
+            boolean hasVariableArgs) {
         FunctionDefNode node = new FunctionDefNode(name.trim(), args,
                 hasVariableArgs);
         nodeStack.peek().appendChild(node);
@@ -379,7 +380,7 @@ public class SCSSDocumentHandlerImpl implements SCSSDocumentHandler {
     }
 
     @Override
-    public void startInclude(String name, List<VariableNode> args,
+    public void startInclude(String name, List<Variable> args,
             boolean hasVariableArgs) {
         MixinNode node = new MixinNode(name, args, hasVariableArgs);
         nodeStack.peek().appendChild(node);

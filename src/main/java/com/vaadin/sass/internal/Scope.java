@@ -20,9 +20,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import com.vaadin.sass.internal.parser.Variable;
 import com.vaadin.sass.internal.tree.FunctionDefNode;
 import com.vaadin.sass.internal.tree.MixinDefNode;
-import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
  * Nestable scope for variables, functions and mixins.
@@ -144,19 +144,19 @@ public class Scope {
     }
 
     private Scope parent;
-    private DefinitionScope<VariableNode> variables;
+    private DefinitionScope<Variable> variables;
     private DefinitionScope<FunctionDefNode> functions;
     private DefinitionScope<MixinDefNode> mixins;
 
     public Scope() {
-        variables = new DefinitionScope<VariableNode>(null);
+        variables = new DefinitionScope<Variable>(null);
         functions = new DefinitionScope<FunctionDefNode>(null);
         mixins = new DefinitionScope<MixinDefNode>(null);
     }
 
     public Scope(Scope parent) {
         this.parent = parent;
-        variables = new DefinitionScope<VariableNode>(parent.variables);
+        variables = new DefinitionScope<Variable>(parent.variables);
         functions = new DefinitionScope<FunctionDefNode>(parent.functions);
         mixins = new DefinitionScope<MixinDefNode>(parent.mixins);
     }
@@ -172,7 +172,7 @@ public class Scope {
      * @param node
      *            variable to set
      */
-    public void setVariable(VariableNode node) {
+    public void setVariable(Variable node) {
         variables.set(node);
     }
 
@@ -182,11 +182,11 @@ public class Scope {
      * @param node
      *            variable to set
      */
-    public void addVariable(VariableNode node) {
+    public void addVariable(Variable node) {
         variables.add(node);
     }
 
-    public VariableNode getVariable(String name) {
+    public Variable getVariable(String name) {
         return variables.get(name);
     }
 
@@ -198,7 +198,7 @@ public class Scope {
      * @return iterable over all variables in scope, generated iterators are
      *         unmodifiable
      */
-    public Iterable<VariableNode> getVariables() {
+    public Iterable<Variable> getVariables() {
         return variables.getIterable();
     }
 

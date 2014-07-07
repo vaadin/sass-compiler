@@ -22,7 +22,7 @@ import com.vaadin.sass.internal.parser.FormalArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassListItem;
-import com.vaadin.sass.internal.tree.VariableNode;
+import com.vaadin.sass.internal.parser.Variable;
 
 /**
  * AbstractFunctionGenerator is an abstract base class for implementing built-in
@@ -117,11 +117,9 @@ public abstract class AbstractFunctionGenerator implements
     protected static FormalArgumentList createArgumentList(
             String[] argumentNames, SassListItem[] defaultValues,
             boolean hasVariableArguments) {
-        ArrayList<VariableNode> nodes = new ArrayList<VariableNode>();
+        ArrayList<Variable> nodes = new ArrayList<Variable>();
         for (int i = 0; i < argumentNames.length; i++) {
-            VariableNode node = new VariableNode(argumentNames[i],
-                    defaultValues[i], false);
-            nodes.add(node);
+            nodes.add(new Variable(argumentNames[i], defaultValues[i]));
         }
         return new FormalArgumentList(nodes, hasVariableArguments);
     }
@@ -169,9 +167,9 @@ public abstract class AbstractFunctionGenerator implements
      *         name.
      */
     protected static SassListItem getParam(FormalArgumentList args, String name) {
-        for (VariableNode node : args.getArguments()) {
-            if (node.getName().equals(name)) {
-                return node.getExpr();
+        for (Variable var : args.getArguments()) {
+            if (var.getName().equals(name)) {
+                return var.getExpr();
             }
         }
         throw new ParseException("There is no argument " + name

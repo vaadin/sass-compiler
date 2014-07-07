@@ -1601,7 +1601,7 @@ void eachDirective() :
 void mixinDirective() :
 {
     String name;
-    ArrayList<VariableNode> args = null;
+    ArrayList<Variable> args = null;
     boolean hasVariableArgs = false;
 }
 {
@@ -1621,7 +1621,7 @@ void mixinDirective() :
 void functionDirective() :
 {
     String name;
-    ArrayList<VariableNode> args = null;
+    ArrayList<Variable> args = null;
     boolean hasVariableArgs = false;
 }
 {
@@ -1736,10 +1736,10 @@ void functionWhileDirective() :
   { documentHandler.endWhileDirective(); }
 }
 
-ArrayList<VariableNode> arglist() :
+ArrayList<Variable> arglist() :
 {
-    ArrayList<VariableNode> args = new ArrayList<VariableNode>();
-    VariableNode arg;
+    ArrayList<Variable> args = new ArrayList<Variable>();
+    Variable arg;
     boolean hasOptionalArguments = false;
 }
 {
@@ -1759,7 +1759,7 @@ JAVACODE
 // This method is used for checking whether the argument list of a mixin is legal. No required
 // arguments should come after an optional argument. An argument is optional if it has a
 // default value.
-boolean checkMixinForOptionalArguments(VariableNode arg, boolean hasOptionalArguments){
+boolean checkMixinForOptionalArguments(Variable arg, boolean hasOptionalArguments){
     boolean argumentHasDefaultValue = (arg.getExpr() != null);
     if(argumentHasDefaultValue){
         return true;
@@ -1773,26 +1773,24 @@ boolean checkMixinForOptionalArguments(VariableNode arg, boolean hasOptionalArgu
     }
 }
 
-VariableNode mixinArg() :
+Variable mixinArg() :
 {
     String name;
-    Token variable = null;
     SassList l = null;
-    LexicalUnitImpl unit = null;
 }
 {
     name=variableName() (< COLON > (< S >)* {l = expressionSubList();} )?
     {
         SassListItem argItem = (l == null ? null : l.flatten());
-        VariableNode arg = new VariableNode(name, argItem, false);
+        Variable arg = new Variable(name, argItem);
         return arg;
     }
 }
 
-ArrayList<VariableNode> argValuelist() :
+ArrayList<Variable> argValuelist() :
 {
-    ArrayList<VariableNode> args = new ArrayList<VariableNode>();
-    VariableNode current;
+    ArrayList<Variable> args = new ArrayList<Variable>();
+    Variable current;
 }
 {
     (current = argValueListItem(){ args.add(current); }
@@ -1801,7 +1799,7 @@ ArrayList<VariableNode> argValuelist() :
     {return args;}
 }
 
-VariableNode argValueListItem():
+Variable argValueListItem():
 {
     LexicalUnitImpl unit;
     String name = null;
@@ -1813,8 +1811,7 @@ VariableNode argValueListItem():
     | ( value = expressionSubList() ) )
     {
         SassListItem flattenedValue = value.flatten();
-        VariableNode var = new VariableNode(name, flattenedValue, false);
-        return var;
+        return new Variable(name, flattenedValue);
     }
 }
 
@@ -1830,7 +1827,7 @@ void returnDirective() :
 void includeDirective() :
 {
     String name;
-    ArrayList<VariableNode> args=null;
+    ArrayList<Variable> args=null;
     boolean hasVariableArgs = false;
 }
 {
@@ -2631,7 +2628,7 @@ List<SassListItem> stringTerm(char op) :
  */
 LexicalUnitImpl function(char operator) :
 {Token n;
- List<VariableNode> items = null;
+ List<Variable> items = null;
  boolean hasVariableArguments = false;
  ActualArgumentList params;
 }

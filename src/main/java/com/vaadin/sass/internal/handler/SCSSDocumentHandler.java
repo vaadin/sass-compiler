@@ -26,20 +26,20 @@ import org.w3c.css.sac.SACMediaList;
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
+import com.vaadin.sass.internal.parser.Variable;
 import com.vaadin.sass.internal.selector.Selector;
-import com.vaadin.sass.internal.tree.VariableNode;
 
 public interface SCSSDocumentHandler extends DocumentHandler {
     ScssStylesheet getStyleSheet();
 
     void variable(String name, SassListItem value, boolean guarded);
 
-    void startMixinDirective(String name, Collection<VariableNode> args,
+    void startMixinDirective(String name, Collection<Variable> args,
             boolean hasVariableArgs);
 
     void endMixinDirective();
 
-    void startFunctionDirective(String name, Collection<VariableNode> args,
+    void startFunctionDirective(String name, Collection<Variable> args,
             boolean hasVariableArgs);
 
     void endFunctionDirective();
@@ -99,8 +99,7 @@ public interface SCSSDocumentHandler extends DocumentHandler {
 
     void returnDirective(SassListItem expr);
 
-    void startInclude(String name, List<VariableNode> args,
-            boolean hasVariableArgs);
+    void startInclude(String name, List<Variable> args, boolean hasVariableArgs);
 
     void endInclude();
 

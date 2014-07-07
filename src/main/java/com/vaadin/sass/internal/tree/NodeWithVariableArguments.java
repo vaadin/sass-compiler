@@ -19,6 +19,7 @@ import java.util.Collection;
 
 import com.vaadin.sass.internal.parser.ActualArgumentList;
 import com.vaadin.sass.internal.parser.SassList;
+import com.vaadin.sass.internal.parser.Variable;
 
 /**
  * NodeWithVariableArguments is used as a superclass for nodes that handle
@@ -39,8 +40,8 @@ public abstract class NodeWithVariableArguments extends Node implements
     private ActualArgumentList arglist;
     private String name;
 
-    public NodeWithVariableArguments(String name,
-            Collection<VariableNode> args, boolean hasVariableArgs) {
+    public NodeWithVariableArguments(String name, Collection<Variable> args,
+            boolean hasVariableArgs) {
         this.name = name;
         arglist = new ActualArgumentList(SassList.Separator.COMMA, args,
                 hasVariableArgs);

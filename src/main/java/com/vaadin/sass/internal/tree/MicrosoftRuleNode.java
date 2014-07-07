@@ -21,6 +21,7 @@ import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 import com.vaadin.sass.internal.parser.StringItem;
+import com.vaadin.sass.internal.parser.Variable;
 import com.vaadin.sass.internal.util.StringUtil;
 
 public class MicrosoftRuleNode extends Node implements IVariableNode {
@@ -45,7 +46,7 @@ public class MicrosoftRuleNode extends Node implements IVariableNode {
                 continue;
             }
             String stringValue = item.printState();
-            for (final VariableNode var : ScssStylesheet.getVariables()) {
+            for (final Variable var : ScssStylesheet.getVariables()) {
                 if (StringUtil.containsVariable(stringValue, var.getName())) {
                     variableReplaced = true;
                     stringValue = StringUtil.replaceVariable(stringValue,

@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.vaadin.sass.internal.ScssStylesheet;
-import com.vaadin.sass.internal.tree.VariableNode;
 
 /**
  * FormalArgumentList is used for representing the parameter list of a mixin or
@@ -39,15 +38,15 @@ import com.vaadin.sass.internal.tree.VariableNode;
  * @author Vaadin
  * 
  */
-public class FormalArgumentList implements Serializable, Iterable<VariableNode> {
+public class FormalArgumentList implements Serializable, Iterable<Variable> {
 
-    private ArrayList<VariableNode> arglist;
+    private ArrayList<Variable> arglist;
     private String variableArgumentName = null;
 
-    public FormalArgumentList(Collection<VariableNode> args,
+    public FormalArgumentList(Collection<Variable> args,
             boolean hasVariableArguments) {
         if (args != null) {
-            arglist = new ArrayList<VariableNode>(args);
+            arglist = new ArrayList<Variable>(args);
             if (hasVariableArguments) {
                 if (arglist.size() == 0) {
                     throw new ParseException(
@@ -56,24 +55,24 @@ public class FormalArgumentList implements Serializable, Iterable<VariableNode> 
                 variableArgumentName = arglist.get(args.size() - 1).getName();
             }
         } else {
-            arglist = new ArrayList<VariableNode>();
+            arglist = new ArrayList<Variable>();
         }
     }
 
     public FormalArgumentList replaceVariables() {
-        ArrayList<VariableNode> result = new ArrayList<VariableNode>();
-        for (final VariableNode arg : arglist) {
+        ArrayList<Variable> result = new ArrayList<Variable>();
+        for (final Variable arg : arglist) {
             SassListItem expr = arg.getExpr();
             if (expr != null) {
                 expr = expr.replaceVariables();
             }
-            for (final VariableNode var : ScssStylesheet.getVariables()) {
+            for (final Variable var : ScssStylesheet.getVariables()) {
                 if (arg.getName().equals(var.getName()) && expr == null) {
                     expr = var.getExpr();
                     break;
                 }
             }
-            result.add(new VariableNode(arg.getName(), expr, false));
+            result.add(new Variable(arg.getName(), expr));
         }
         return new FormalArgumentList(result, hasVariableArguments());
     }
@@ -124,8 +123,8 @@ public class FormalArgumentList implements Serializable, Iterable<VariableNode> 
     public FormalArgumentList replaceFormalArguments(
             ActualArgumentList actualArgumentList,
             boolean checkForUnsetParameters) {
-        ArrayList<VariableNode> result = initializeArgumentList(arglist);
-        List<VariableNode> unusedNamedActual = replaceNamedArguments(result,
+        ArrayList<Variable> result = initializeArgumentList(arglist);
+        List<Variable> unusedNamedActual = replaceNamedArguments(result,
                 actualArgumentList);
         List<SassListItem> unusedUnnamedActual = replaceUnnamedAndDefaultArguments(
                 result, actualArgumentList, checkForUnsetParameters);
@@ -134,8 +133,7 @@ public class FormalArgumentList implements Serializable, Iterable<VariableNode> 
             ArgumentList varArgContents = new ArgumentList(
                     actualArgumentList.getSeparator(), unusedUnnamedActual,
                     unusedNamedActual);
-            VariableNode varArg = new VariableNode(variableArgumentName,
-                    varArgContents, false);
+            Variable varArg = new Variable(variableArgumentName, varArgContents);
             result.set(result.size() - 1, varArg);
         } else {
             if (!unusedNamedActual.isEmpty() || !unusedUnnamedActual.isEmpty()) {
@@ -169,35 +167,35 @@ public class FormalArgumentList implements Serializable, Iterable<VariableNode> 
      *         argument was found. This is allowed to be nonempty when variable
      *         arguments are used.
      */
-    private List<VariableNode> replaceNamedArguments(
-            ArrayList<VariableNode> formalArguments,
+    private List<Variable> replaceNamedArguments(
+            ArrayList<Variable> formalArguments,
             ActualArgumentList actualArguments) {
-        ArrayList<VariableNode> unusedNamed = new ArrayList<VariableNode>();
-        for (VariableNode actualNode : actualArguments.getNamedVariables()) {
+        ArrayList<Variable> unusedNamed = new ArrayList<Variable>();
+        for (Variable actualArg : actualArguments.getNamedVariables()) {
             boolean actualUsed = false;
-            for (VariableNode formalNode : formalArguments) {
-                if (formalNode.getName().equals(actualNode.getName())
-                        && !actualNode.getName().equals(variableArgumentName)) {
-                    if (formalNode.getExpr() != null) {
+            for (Variable formalArg : formalArguments) {
+                if (formalArg.getName().equals(actualArg.getName())
+                        && !actualArg.getName().equals(variableArgumentName)) {
+                    if (formalArg.getExpr() != null) {
                         throw new ParseException(
                                 "The named argument $"
-                                        + formalNode.getName()
+                                        + formalArg.getName()
                                         + "appears more than once in the actual argument list: "
                                         + actualArguments, actualArguments);
                     }
                     actualUsed = true;
-                    formalNode.setExpr(actualNode.getExpr());
+                    formalArg.setExpr(actualArg.getExpr());
                 }
             }
             if (!actualUsed) {
                 if (!hasVariableArguments()) {
                     throw new ParseException(
                             "There is no formal argument corresponding to the actual argument "
-                                    + actualNode.getName()
+                                    + actualArg.getName()
                                     + " in the formal argument list " + this,
                             actualArguments);
                 }
-                unusedNamed.add(actualNode);
+                unusedNamed.add(actualArg);
             }
         }
         return unusedNamed;
@@ -231,7 +229,7 @@ public class FormalArgumentList implements Serializable, Iterable<VariableNode> 
      *         variable arguments are used.
      */
     private List<SassListItem> replaceUnnamedAndDefaultArguments(
-            ArrayList<VariableNode> formalArguments,
+            ArrayList<Variable> formalArguments,
             ActualArgumentList actualArguments, boolean checkForUnsetParameters) {
         // Replace unnamed arguments
         int formalIndex = getNextUnset(formalArguments, 0);
@@ -274,18 +272,18 @@ public class FormalArgumentList implements Serializable, Iterable<VariableNode> 
         return result;
     }
 
-    private static int getNextUnset(ArrayList<VariableNode> named, int i) {
+    private static int getNextUnset(ArrayList<Variable> named, int i) {
         while (i < named.size() && named.get(i).getExpr() != null) {
             i++;
         }
         return i;
     }
 
-    private static ArrayList<VariableNode> initializeArgumentList(
-            List<VariableNode> namedParameters) {
-        ArrayList<VariableNode> result = new ArrayList<VariableNode>();
-        for (VariableNode node : namedParameters) {
-            result.add(new VariableNode(node.getName(), null, false));
+    private static ArrayList<Variable> initializeArgumentList(
+            List<Variable> namedParameters) {
+        ArrayList<Variable> result = new ArrayList<Variable>();
+        for (Variable var : namedParameters) {
+            result.add(new Variable(var.getName(), null));
         }
         return result;
     }
@@ -299,7 +297,7 @@ public class FormalArgumentList implements Serializable, Iterable<VariableNode> 
     }
 
     @Override
-    public Iterator<VariableNode> iterator() {
+    public Iterator<Variable> iterator() {
         return arglist.iterator();
     }
 
@@ -307,11 +305,11 @@ public class FormalArgumentList implements Serializable, Iterable<VariableNode> 
         return arglist.size();
     }
 
-    public VariableNode get(int i) {
+    public Variable get(int i) {
         return arglist.get(i);
     }
 
-    public List<VariableNode> getArguments() {
+    public List<Variable> getArguments() {
         return Collections.unmodifiableList(arglist);
     }
 
@@ -319,7 +317,7 @@ public class FormalArgumentList implements Serializable, Iterable<VariableNode> 
     public String toString() {
         String result = "FormalArgumentList[";
         for (int i = 0; i < arglist.size(); i++) {
-            VariableNode item = arglist.get(i);
+            Variable item = arglist.get(i);
             result += "$" + item.getName() + ": ";
             if (item.getExpr() == null) {
                 result += "null";

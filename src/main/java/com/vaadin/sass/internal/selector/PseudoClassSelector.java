@@ -17,7 +17,7 @@ package com.vaadin.sass.internal.selector;
 
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
-import com.vaadin.sass.internal.tree.VariableNode;
+import com.vaadin.sass.internal.parser.Variable;
 
 /**
  * Single CSS3 pseudo-class selector such as ":active" or ":nth-child(2)".
@@ -63,7 +63,7 @@ public class PseudoClassSelector extends SimpleSelector {
 
     private String replaceInterpolation(String value) {
         String result = value;
-        for (VariableNode var : ScssStylesheet.getVariables()) {
+        for (Variable var : ScssStylesheet.getVariables()) {
             result = var.replaceInterpolation(result);
         }
         return result;
