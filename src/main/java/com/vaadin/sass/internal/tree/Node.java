@@ -36,7 +36,7 @@ public abstract class Node implements Serializable {
 
     private static final long serialVersionUID = 5914711715839294816L;
 
-    private ArrayList<Node> children;
+    private ArrayList<Node> children = null;
 
     private Node parentNode;
 
@@ -49,7 +49,6 @@ public abstract class Node implements Serializable {
             Collections.singleton(this));
 
     public Node() {
-        children = new ArrayList<Node>();
     }
 
     /**
@@ -69,10 +68,10 @@ public abstract class Node implements Serializable {
         if (newNodes != null && !newNodes.isEmpty()) {
             // try to find last node with "after" as its original node and
             // append after it
-            for (int i = children.size() - 1; i >= 0; --i) {
-                Node node = children.get(i);
+            for (int i = getChildren(false).size() - 1; i >= 0; --i) {
+                Node node = getChildren(false).get(i);
                 if (node == after || node.originalNodes.contains(after)) {
-                    children.addAll(i + 1, newNodes);
+                    getChildren(true).addAll(i + 1, newNodes);
                     for (final Node child : newNodes) {
                         child.removeFromParent();
                         child.setParentNode(this);
@@ -94,7 +93,7 @@ public abstract class Node implements Serializable {
      */
     public void appendChild(Node node) {
         if (node != null) {
-            children.add(node);
+            getChildren(true).add(node);
             node.removeFromParent();
             node.setParentNode(this);
         }
@@ -105,15 +104,24 @@ public abstract class Node implements Serializable {
      */
     public void removeFromParent() {
         if (getParentNode() != null) {
-            getParentNode().children.remove(this);
+            getParentNode().getChildren(true).remove(this);
             setParentNode(null);
         }
     }
 
-    // users should avoid relying on this being mutable - currently
-    // ExtendNodeHandler does
     public List<Node> getChildren() {
-        return children;
+        return Collections.unmodifiableList(getChildren(false));
+    }
+
+    private List<Node> getChildren(boolean create) {
+        if (children == null && create) {
+            children = new ArrayList<Node>();
+        }
+        if (children != null) {
+            return children;
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     /**

@@ -108,7 +108,8 @@ public class ExtendNodeHandler {
     }
 
     public static void modifyTree(Node node) throws Exception {
-        Iterator<Node> nodeIt = node.getChildren().iterator();
+        Iterator<Node> nodeIt = new ArrayList<Node>(node.getChildren())
+                .iterator();
 
         while (nodeIt.hasNext()) {
             final Node child = nodeIt.next();
@@ -139,7 +140,7 @@ public class ExtendNodeHandler {
 
                 // remove block if selector list is empty
                 if (selectorList.isEmpty()) {
-                    nodeIt.remove();
+                    child.removeFromParent();
                 } else {
                     blockNode.setSelectorList(selectorList);
                 }
