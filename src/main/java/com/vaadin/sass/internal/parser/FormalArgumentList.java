@@ -66,10 +66,10 @@ public class FormalArgumentList implements Serializable, Iterable<Variable> {
             if (expr != null) {
                 expr = expr.replaceVariables();
             }
-            for (final Variable var : ScssStylesheet.getVariables()) {
-                if (arg.getName().equals(var.getName()) && expr == null) {
+            if (expr == null) {
+                Variable var = ScssStylesheet.getVariable(arg.getName());
+                if (var != null) {
                     expr = var.getExpr();
-                    break;
                 }
             }
             result.add(new Variable(arg.getName(), expr));

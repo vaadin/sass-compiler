@@ -758,10 +758,9 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         if (getLexicalUnitType() == LexicalUnitImpl.SCSS_VARIABLE) {
             // replace simple variable
             String stringValue = getStringValue();
-            for (Variable var : ScssStylesheet.getVariables()) {
-                if (var.getName().equals(stringValue)) {
-                    return var.getExpr().replaceVariables();
-                }
+            Variable var = ScssStylesheet.getVariable(stringValue);
+            if (var != null) {
+                return var.getExpr().replaceVariables();
             }
         }
         return this;
