@@ -95,4 +95,14 @@ public class ImportNode extends Node {
         return styleSheet;
     }
 
+    @Override
+    public ImportNode copy() {
+        ScssStylesheet styleSheet = this.styleSheet;
+        this.styleSheet = null;
+        ImportNode copy = (ImportNode) super.copy();
+        this.styleSheet = styleSheet;
+        copy.styleSheet = styleSheet;
+        return copy;
+    }
+
 }
