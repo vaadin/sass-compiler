@@ -15,6 +15,8 @@
  */
 package com.vaadin.sass.internal.tree.controldirective;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,12 +36,14 @@ public class IfElseDefNode extends Node {
     }
 
     @Override
-    public void traverse() {
+    public Collection<Node> traverse() {
         try {
-            IfElseNodeHandler.traverse(this);
+            return IfElseNodeHandler.traverse(this);
         } catch (Exception e) {
             Logger.getLogger(IfElseDefNode.class.getName()).log(Level.SEVERE,
                     null, e);
+            // TODO is ignoring this appropriate?
+            return Collections.emptyList();
         }
     }
 

@@ -16,11 +16,14 @@
 
 package com.vaadin.sass.internal.tree;
 
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.vaadin.sass.internal.Scope;
 import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.parser.ActualArgumentList;
+import com.vaadin.sass.internal.parser.FormalArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassListItem;
@@ -29,74 +32,60 @@ import com.vaadin.sass.internal.parser.Variable;
 /**
  * Transient class representing a function call to a custom (user-defined)
  * function. This class is used to evaluate the function call and is discarded
- * after use. A FunctionNode does not have a parent in the stylesheet node tree.
+ * after use. A FunctionCall does not have a parent in the stylesheet node tree.
  */
-public class FunctionNode extends NodeWithVariableArguments {
-    private static final long serialVersionUID = -5383104165955523923L;
+public class FunctionCall {
 
-    private FunctionDefNode def;
-    private SassListItem value = null;
-
-    public FunctionNode(FunctionDefNode def, LexicalUnitImpl invocation) {
-        super(invocation.getFunctionName(), invocation.getParameterList());
-
-        this.def = def;
-        expandVariableArguments();
-    }
-
-    @Override
-    public String toString() {
-        return "Function Node: {name: " + getName() + ", args: " + getArglist()
-                + "}";
-    }
-
-    public SassListItem evaluate() {
-        traverse();
-        // already evaluated
-        if (value == null) {
-            throw new ParseException("Function " + getName()
-                    + " did not return a value", this);
-        }
-        return value;
-    }
-
-    @Override
-    public void traverse() {
+    public static SassListItem evaluate(FunctionDefNode def,
+            LexicalUnitImpl invocation) {
+        ActualArgumentList invocationArglist = invocation.getParameterList()
+                .expandVariableArguments();
+        SassListItem value = null;
         // only parameters are evaluated in current scope, body in
         // top-level scope
         try {
+            FormalArgumentList arglist = def.getArglist();
+            arglist = arglist.replaceFormalArguments(invocationArglist, true);
+            // replace variables in default values of parameters
+            arglist = arglist.replaceVariables();
+
             // copying is necessary as traversal modifies the parent of the
             // node
+            // TODO in the long term, should avoid full copy
             FunctionDefNode defCopy = def.copy();
-            defCopy.replacePossibleArguments(getArglist());
-            // replace variables in default values of parameters
-            defCopy.replaceVariables();
 
             // limit variable scope to the scope where the function was defined
-            Scope previousScope = ScssStylesheet.openVariableScope(defCopy
+            Scope previousScope = ScssStylesheet.openVariableScope(def
                     .getDefinitionScope());
             try {
-                for (Variable param : defCopy.getArglist()) {
+                for (Variable param : arglist) {
                     ScssStylesheet.addVariable(param);
                 }
 
                 // only contains variable nodes, return nodes and control
                 // structures
                 while (defCopy.getChildren().size() > 0) {
-                    defCopy.getChildren().get(0).traverse();
-                    if (defCopy.getChildren().get(0) instanceof ReturnNode) {
-                        ReturnNode returnNode = ((ReturnNode) defCopy
-                                .getChildren().get(0));
+                    Node firstChild = defCopy.getChildren().get(0);
+                    if (firstChild instanceof ReturnNode) {
+                        ReturnNode returnNode = ((ReturnNode) firstChild);
                         value = returnNode.evaluate();
                         break;
                     }
+                    defCopy.replaceNode(firstChild, new ArrayList<Node>(
+                            firstChild.traverse()));
                 }
             } finally {
                 ScssStylesheet.closeVariableScope(previousScope);
             }
         } catch (Exception e) {
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, e);
+            Logger.getLogger(FunctionCall.class.getName()).log(Level.SEVERE,
+                    null, e);
         }
+        if (value == null) {
+            throw new ParseException("Function " + invocation.getFunctionName()
+                    + " did not return a value", invocation);
+        }
+        return value;
     }
 
 }

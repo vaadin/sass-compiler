@@ -15,6 +15,8 @@
  */
 package com.vaadin.sass.internal.tree;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,9 +56,10 @@ public class ConsoleMessageNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void traverse() {
+    public Collection<Node> traverse() {
         Level level = warning ? Level.SEVERE : Level.INFO;
         Logger.getLogger(ConsoleMessageNode.class.getName())
                 .log(level, message);
+        return Collections.emptyList();
     }
 }

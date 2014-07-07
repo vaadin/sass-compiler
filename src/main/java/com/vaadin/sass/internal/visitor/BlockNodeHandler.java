@@ -17,12 +17,13 @@
 package com.vaadin.sass.internal.visitor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.selector.Selector;
 import com.vaadin.sass.internal.tree.BlockNode;
-import com.vaadin.sass.internal.tree.controldirective.TemporaryNode;
+import com.vaadin.sass.internal.tree.Node;
 
 /**
  * Handle nesting of blocks by moving child blocks to their parent, updating
@@ -45,18 +46,51 @@ import com.vaadin.sass.internal.tree.controldirective.TemporaryNode;
  */
 public class BlockNodeHandler {
 
-    public static void traverse(BlockNode node) {
+    public static Collection<Node> traverse(BlockNode node) {
 
         if (node.getChildren().size() == 0) {
-            // empty blocks are also removed later
-            node.removeFromParent();
-            return;
-        }
-        if (node.getParentNode() instanceof TemporaryNode) {
-            return;
+            return Collections.emptyList();
         }
 
-        if (node.getParentNode() instanceof BlockNode) {
+        ArrayList<Node> result = new ArrayList<Node>();
+        updateSelectors(node);
+
+        if (!node.getChildren().isEmpty()) {
+            ScssStylesheet.openVariableScope();
+            try {
+                ArrayList<Node> newChildren = new ArrayList<Node>();
+                for (Node child : new ArrayList<Node>(node.getChildren())) {
+                    Collection<Node> childTraversed = child.traverse();
+                    if (child instanceof BlockNode) {
+                        result.addAll(childTraversed);
+                    } else {
+                        for (Node n : childTraversed) {
+                            if (n instanceof BlockNode) {
+                                // already traversed
+                                result.add(n);
+                            } else {
+                                newChildren.add(n);
+                            }
+                        }
+                    }
+                }
+                // add the node with the remaining non-block children at the
+                // beginning
+                if (!newChildren.isEmpty()) {
+                    BlockNode newNode = new BlockNode(new ArrayList<Selector>(
+                            node.getSelectorList()), newChildren);
+                    result.add(0, newNode);
+                }
+            } finally {
+                ScssStylesheet.closeVariableScope();
+            }
+        }
+
+        return result;
+    }
+
+    private static void updateSelectors(BlockNode node) {
+        if (node.getNormalParentNode() instanceof BlockNode) {
             replaceParentSelectors(node);
 
         } else if (node.getSelectors().contains("&")) {
@@ -84,7 +118,7 @@ public class BlockNodeHandler {
     }
 
     private static void replaceParentSelectors(BlockNode node) {
-        BlockNode parentBlock = (BlockNode) node.getParentNode();
+        BlockNode parentBlock = (BlockNode) node.getNormalParentNode();
 
         ArrayList<Selector> newSelectors = new ArrayList<Selector>();
 
@@ -96,7 +130,5 @@ public class BlockNodeHandler {
 
         node.setSelectorList(newSelectors);
 
-        parentBlock.getParentNode().appendAfterNode(parentBlock,
-                Collections.singleton(node));
     }
 }

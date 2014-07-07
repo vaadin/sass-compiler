@@ -66,8 +66,8 @@ import com.vaadin.sass.internal.parser.function.TransparencyModificationFunction
 import com.vaadin.sass.internal.parser.function.TypeOfFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.UnitFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.UnitlessFunctionGenerator;
+import com.vaadin.sass.internal.tree.FunctionCall;
 import com.vaadin.sass.internal.tree.FunctionDefNode;
-import com.vaadin.sass.internal.tree.FunctionNode;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
 import com.vaadin.sass.internal.util.ColorUtil;
@@ -837,8 +837,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         FunctionDefNode functionDef = ScssStylesheet
                 .getFunctionDefinition(getFunctionName());
         if (functionDef != null) {
-            FunctionNode node = new FunctionNode(functionDef, this);
-            return node.evaluate();
+            return FunctionCall.evaluate(functionDef, this);
         }
         return null;
     }

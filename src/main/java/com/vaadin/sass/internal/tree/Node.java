@@ -26,6 +26,7 @@ import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.ActualArgumentList;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassListItem;
+import com.vaadin.sass.internal.tree.controldirective.TemporaryNode;
 import com.vaadin.sass.internal.util.DeepCopy;
 
 public abstract class Node implements Serializable {
@@ -40,19 +41,17 @@ public abstract class Node implements Serializable {
 
     private Node parentNode;
 
-    /**
-     * Nodes based on which this node was generated - either replacing them or
-     * appended after them. This is used to append new nodes after all already
-     * appended nodes based on the same node.
-     */
-    private Collection<Node> originalNodes = new ArrayList<Node>(
-            Collections.singleton(this));
-
     public Node() {
     }
 
+    // for internal use only - does not add the node to the children of parent!
+    @Deprecated
+    protected Node(Node parent) {
+        parentNode = parent;
+    }
+
     /**
-     * Replace the child oldNode with a collection of nodes.
+     * Replace the child oldChild with a collection of nodes.
      * 
      * @param oldChild
      *            child to replace
@@ -61,21 +60,22 @@ public abstract class Node implements Serializable {
      */
     public void replaceNode(Node oldChild, Collection<? extends Node> newNodes) {
         appendAfterNode(oldChild, newNodes);
-        oldChild.removeFromParent();
+        if (!newNodes.contains(oldChild)) {
+            oldChild.removeFromParent();
+        }
     }
 
-    public void appendAfterNode(Node after, Collection<? extends Node> newNodes) {
+    private void appendAfterNode(Node after, Collection<? extends Node> newNodes) {
         if (newNodes != null && !newNodes.isEmpty()) {
             // try to find last node with "after" as its original node and
             // append after it
             for (int i = getChildren(false).size() - 1; i >= 0; --i) {
                 Node node = getChildren(false).get(i);
-                if (node == after || node.originalNodes.contains(after)) {
+                if (node == after) {
                     getChildren(true).addAll(i + 1, newNodes);
                     for (final Node child : newNodes) {
                         child.removeFromParent();
-                        child.setParentNode(this);
-                        child.originalNodes.addAll(after.originalNodes);
+                        child.parentNode = this;
                     }
                     return;
                 }
@@ -91,26 +91,37 @@ public abstract class Node implements Serializable {
      * @param node
      *            new child to append
      */
+    // TODO this should be avoided except when constructing the node tree
     public void appendChild(Node node) {
         if (node != null) {
             getChildren(true).add(node);
             node.removeFromParent();
-            node.setParentNode(this);
+            node.parentNode = this;
         }
     }
 
     /**
      * Remove this node from its parent (if any).
      */
-    public void removeFromParent() {
+    private void removeFromParent() {
         if (getParentNode() != null) {
             getParentNode().getChildren(true).remove(this);
-            setParentNode(null);
+            parentNode = null;
         }
     }
 
     public List<Node> getChildren() {
         return Collections.unmodifiableList(getChildren(false));
+    }
+
+    // avoid calling this method whenever possible
+    @Deprecated
+    protected void setChildren(Collection<Node> newChildren) {
+        children = new ArrayList<Node>(newChildren);
+        // add new children
+        for (Node child : newChildren) {
+            child.parentNode = this;
+        }
     }
 
     private List<Node> getChildren(boolean create) {
@@ -130,9 +141,12 @@ public abstract class Node implements Serializable {
      * Traversing a node is allowed to modify the node, replace it with one or
      * more nodes at the same or later position in its parent and modify the
      * children of the node, but not modify or remove preceding nodes in its
-     * parent.
+     * parent. Traversing a node is also allowed to modify the definitions
+     * currently in scope as its side-effect.
+     * 
+     * @return nodes replacing the current node
      */
-    public abstract void traverse();
+    public abstract Collection<Node> traverse();
 
     /**
      * Prints out the current state of the node tree. Will return SCSS before
@@ -150,33 +164,62 @@ public abstract class Node implements Serializable {
         return parentNode;
     }
 
-    private void setParentNode(Node parentNode) {
-        this.parentNode = parentNode;
+    public Node getNormalParentNode() {
+        Node parent = getParentNode();
+        while (parent instanceof TemporaryNode) {
+            parent = parent.getParentNode();
+        }
+        return parent;
     }
 
+    /**
+     * Copy a node (deep copy including children).
+     * 
+     * The copy is detached from the original tree, with null as parent, and
+     * data that is not relevant to handling of function or mixin expansion is
+     * not copied.
+     * 
+     * @return
+     */
+    // TODO rework to use explicit copy methods in subclasses, avoid copying
+    // anything immutable
     public Node copy() {
         // these do not need to be copied
         Node oldParent = parentNode;
-        Collection<Node> oldOriginalNodes = originalNodes;
         parentNode = null;
-        originalNodes.clear();
 
         Node copy = (Node) DeepCopy.copy(this);
-        copy.parentNode = oldParent;
 
         parentNode = oldParent;
-        originalNodes = oldOriginalNodes;
         return copy;
     }
 
-    public void traverseChildren() {
-        ScssStylesheet.openVariableScope();
-        try {
-            for (Node child : new ArrayList<Node>(getChildren())) {
-                child.traverse();
+    public Collection<Node> traverseChildren() {
+        return traverseChildren(true);
+    }
+
+    protected Collection<Node> traverseChildren(boolean newScope) {
+        List<Node> children = getChildren();
+        if (!children.isEmpty()) {
+            if (newScope) {
+                ScssStylesheet.openVariableScope();
             }
-        } finally {
-            ScssStylesheet.closeVariableScope();
+            try {
+                ArrayList<Node> result = new ArrayList<Node>();
+                for (Node child : new ArrayList<Node>(children)) {
+                    result.addAll(child.traverse());
+                }
+                // TODO this ugly but hard to eliminate as long as some classes
+                // use traverseChildren() for its side-effects
+                setChildren(result);
+                return result;
+            } finally {
+                if (newScope) {
+                    ScssStylesheet.closeVariableScope();
+                }
+            }
+        } else {
+            return Collections.emptyList();
         }
     }
 

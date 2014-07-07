@@ -19,6 +19,7 @@ package com.vaadin.sass.internal.visitor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -32,10 +33,11 @@ import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.ImportNode;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.RuleNode;
+import com.vaadin.sass.internal.tree.controldirective.TemporaryNode;
 
 public class ImportNodeHandler {
 
-    public static void traverse(ImportNode importNode) {
+    public static Collection<Node> traverse(ImportNode importNode) {
         ScssStylesheet styleSheet = importNode.getStylesheet();
         // top-level case
         if (styleSheet == null) {
@@ -72,8 +74,6 @@ public class ImportNodeHandler {
                 }
 
                 importedChildren = new ArrayList<Node>(imported.getChildren());
-                importNode.getParentNode().replaceNode(importNode,
-                        importedChildren);
             } catch (CSSException e) {
                 Logger.getLogger(ImportNodeHandler.class.getName()).log(
                         Level.SEVERE, null, e);
@@ -83,12 +83,13 @@ public class ImportNodeHandler {
             }
 
             if (imported != null) {
-                // traverse the imported nodes normally
-                for (Node child : importedChildren) {
-                    child.traverse();
-                }
+                // traverse the imported nodes normally in the correct context
+                Node tempParent = new TemporaryNode(importNode.getParentNode(),
+                        importedChildren);
+                Collection<Node> result = tempParent.traverseChildren();
 
                 styleSheet.addSourceUris(imported.getSourceUris());
+                return result;
             }
         } else {
             if (styleSheet != importNode.getParentNode()) {
@@ -96,6 +97,7 @@ public class ImportNodeHandler {
                         "CSS imports can only be used at the top level, not as nested imports. Within style rules, use SCSS imports.");
             }
         }
+        return Collections.singleton((Node) importNode);
     }
 
     private static String getUrlPrefix(String url) {

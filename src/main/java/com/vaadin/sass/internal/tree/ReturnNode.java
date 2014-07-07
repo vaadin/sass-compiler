@@ -15,6 +15,9 @@
  */
 package com.vaadin.sass.internal.tree;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import com.vaadin.sass.internal.parser.SassListItem;
 
 public class ReturnNode extends Node implements IVariableNode {
@@ -31,9 +34,10 @@ public class ReturnNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void traverse() {
+    public Collection<Node> traverse() {
         // need to replace variables here to make sure all vars are in scope
         expr = evaluate();
+        return Collections.singleton((Node) this);
     }
 
     public SassListItem getExpr() {

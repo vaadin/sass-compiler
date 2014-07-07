@@ -84,21 +84,22 @@ public class ExtendNodeHandler {
      */
     private static Set<Extension> extendsMap = new LinkedHashSet<Extension>();
 
-    public static void traverse(ExtendNode node) throws Exception {
+    public static Collection<Node> traverse(ExtendNode node) throws Exception {
         for (Selector s : node.getList()) {
             if (!s.isSimple()) {
                 // @extend-selectors must not be nested
                 throw new ParseException(
                         "Nested selector not allowed in @extend-clause");
             }
-            if (node.getParentNode() instanceof BlockNode) {
+            if (node.getNormalParentNode() instanceof BlockNode) {
                 SimpleSelectorSequence extendSelector = s.firstSimple();
-                for (Selector sel : ((BlockNode) node.getParentNode())
+                for (Selector sel : ((BlockNode) node.getNormalParentNode())
                         .getSelectorList()) {
                     extendsMap.add(new Extension(extendSelector, sel));
                 }
             }
         }
+        return Collections.emptyList();
     }
 
     public static void clear() {
@@ -116,7 +117,9 @@ public class ExtendNodeHandler {
 
             if (child instanceof BlockNode) {
                 BlockNode blockNode = (BlockNode) child;
-                List<Selector> selectorList = blockNode.getSelectorList();
+                // need a copy as the selector list is modified below
+                List<Selector> selectorList = new ArrayList<Selector>(
+                        blockNode.getSelectorList());
                 SelectorSet newSelectors = new SelectorSet();
                 for (Selector selector : selectorList) {
                     newSelectors.addAll(createSelectorsForExtensions(selector,
@@ -140,7 +143,8 @@ public class ExtendNodeHandler {
 
                 // remove block if selector list is empty
                 if (selectorList.isEmpty()) {
-                    child.removeFromParent();
+                    blockNode.getParentNode().replaceNode(blockNode,
+                            Collections.<Node> emptyList());
                 } else {
                     blockNode.setSelectorList(selectorList);
                 }

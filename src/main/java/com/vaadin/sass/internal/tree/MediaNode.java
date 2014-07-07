@@ -16,6 +16,9 @@
 
 package com.vaadin.sass.internal.tree;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.w3c.css.sac.SACMediaList;
 
 public class MediaNode extends Node {
@@ -47,8 +50,9 @@ public class MediaNode extends Node {
     }
 
     @Override
-    public void traverse() {
+    public Collection<Node> traverse() {
         traverseChildren();
+        return Collections.singleton((Node) this);
     }
 
     private String buildString(BuildStringStrategy strategy, boolean indent) {

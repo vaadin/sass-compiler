@@ -38,7 +38,6 @@ import com.vaadin.sass.internal.parser.Variable;
 import com.vaadin.sass.internal.resolver.ClassloaderResolver;
 import com.vaadin.sass.internal.resolver.FilesystemResolver;
 import com.vaadin.sass.internal.resolver.ScssStylesheetResolver;
-import com.vaadin.sass.internal.tree.BlockNode;
 import com.vaadin.sass.internal.tree.FunctionDefNode;
 import com.vaadin.sass.internal.tree.MixinDefNode;
 import com.vaadin.sass.internal.tree.Node;
@@ -252,7 +251,6 @@ public class ScssStylesheet extends Node {
 
         traverse();
         ExtendNodeHandler.modifyTree(this);
-        removeEmptyBlocks(this);
     }
 
     public static void defineFunction(FunctionDefNode function) {
@@ -293,8 +291,9 @@ public class ScssStylesheet extends Node {
      * parent.
      */
     @Override
-    public void traverse() {
+    public Collection<Node> traverse() {
         traverseChildren();
+        return Collections.singleton((Node) this);
     }
 
     /**
@@ -350,17 +349,6 @@ public class ScssStylesheet extends Node {
      */
     public static void closeVariableScope() {
         scope = scope.getParent();
-    }
-
-    public void removeEmptyBlocks(Node node) {
-        // depth first for avoiding re-checking parents of removed nodes
-        for (Node child : new ArrayList<Node>(node.getChildren())) {
-            removeEmptyBlocks(child);
-        }
-        if (node instanceof BlockNode && node.getChildren().isEmpty()) {
-            // remove empty block
-            node.removeFromParent();
-        }
     }
 
     /**

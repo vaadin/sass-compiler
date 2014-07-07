@@ -15,6 +15,9 @@
  */
 package com.vaadin.sass.internal.tree;
 
+import java.util.Collection;
+import java.util.Collections;
+
 public class FontFaceNode extends Node {
 
     @Override
@@ -28,8 +31,9 @@ public class FontFaceNode extends Node {
     }
 
     @Override
-    public void traverse() {
+    public Collection<Node> traverse() {
         traverseChildren();
+        return Collections.singleton((Node) this);
     }
 
     private String buildString(BuildStringStrategy strategy) {

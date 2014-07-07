@@ -16,6 +16,8 @@
 package com.vaadin.sass.internal.tree;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.SassListItem;
@@ -71,8 +73,9 @@ public class MicrosoftRuleNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void traverse() {
+    public Collection<Node> traverse() {
         replaceVariables();
         traverseChildren();
+        return Collections.singleton((Node) this);
     }
 }

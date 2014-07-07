@@ -16,6 +16,8 @@
 
 package com.vaadin.sass.internal.tree.controldirective;
 
+import java.util.Collection;
+
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.visitor.ForNodeHandler;
@@ -60,8 +62,8 @@ public class ForNode extends Node {
     }
 
     @Override
-    public void traverse() {
-        ForNodeHandler.traverse(this);
+    public Collection<Node> traverse() {
+        return ForNodeHandler.traverse(this);
     }
 
 }

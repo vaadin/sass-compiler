@@ -16,6 +16,9 @@
 
 package com.vaadin.sass.internal.tree;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 
 public class KeyframesNode extends Node implements IVariableNode {
@@ -39,9 +42,10 @@ public class KeyframesNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void traverse() {
+    public Collection<Node> traverse() {
         replaceVariables();
         traverseChildren();
+        return Collections.singleton((Node) this);
     }
 
     @Override

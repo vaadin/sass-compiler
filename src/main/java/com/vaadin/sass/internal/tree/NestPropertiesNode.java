@@ -17,6 +17,7 @@
 package com.vaadin.sass.internal.tree;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
@@ -45,8 +46,8 @@ public class NestPropertiesNode extends Node implements IVariableNode {
         return "Nest properties node [ name = " + name + " ]";
     }
 
-    public List<RuleNode> unNesting() {
-        List<RuleNode> result = new ArrayList<RuleNode>();
+    public Collection<Node> unNesting() {
+        List<Node> result = new ArrayList<Node>();
         for (Node child : getChildren()) {
             RuleNode createNewRuleNodeFromChild = createNewRuleNodeFromChild((RuleNode) child);
             result.add(createNewRuleNodeFromChild);
@@ -74,9 +75,9 @@ public class NestPropertiesNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void traverse() {
+    public Collection<Node> traverse() {
         traverseChildren();
-        NestedNodeHandler.traverse(this);
+        return NestedNodeHandler.traverse(this);
     }
 
     @Override

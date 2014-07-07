@@ -16,6 +16,8 @@
 
 package com.vaadin.sass.internal.tree;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,15 +61,16 @@ public class ExtendNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void traverse() {
+    public Collection<Node> traverse() {
         try {
             // TODO here or later?
             traverseChildren();
-            ExtendNodeHandler.traverse(this);
-            removeFromParent();
+            return ExtendNodeHandler.traverse(this);
         } catch (Exception e) {
             Logger.getLogger(ExtendNode.class.getName()).log(Level.SEVERE,
                     null, e);
+            // TODO is it correct to ignore the exception?
+            return Collections.emptyList();
         }
     }
 }

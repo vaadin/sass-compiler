@@ -16,6 +16,8 @@
 
 package com.vaadin.sass.internal.tree;
 
+import java.util.Collection;
+
 import org.w3c.css.sac.SACMediaList;
 
 import com.vaadin.sass.internal.ScssStylesheet;
@@ -83,8 +85,8 @@ public class ImportNode extends Node {
     }
 
     @Override
-    public void traverse() {
-        ImportNodeHandler.traverse(this);
+    public Collection<Node> traverse() {
+        return ImportNodeHandler.traverse(this);
     }
 
     public void setStylesheet(ScssStylesheet styleSheet) {

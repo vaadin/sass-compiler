@@ -15,8 +15,8 @@
  */
 package com.vaadin.sass.internal.visitor;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
 
 import org.w3c.flute.parser.ParseException;
 
@@ -26,10 +26,12 @@ import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.controldirective.ElseNode;
 import com.vaadin.sass.internal.tree.controldirective.IfElseDefNode;
 import com.vaadin.sass.internal.tree.controldirective.IfNode;
+import com.vaadin.sass.internal.tree.controldirective.TemporaryNode;
 
 public class IfElseNodeHandler {
 
-    public static void traverse(IfElseDefNode node) throws Exception {
+    public static Collection<Node> traverse(IfElseDefNode node)
+            throws Exception {
         for (final Node child : node.getChildren()) {
             if (child instanceof IfNode) {
                 SassListItem expression = ((IfNode) child).getExpression();
@@ -37,8 +39,7 @@ public class IfElseNodeHandler {
                 expression = expression.evaluateFunctionsAndExpressions(true);
 
                 if (BinaryOperator.isTrue(expression)) {
-                    replaceDefNodeWithCorrectChild(node, child);
-                    break;
+                    return traverseChild(node.getParentNode(), child);
                 }
             } else {
                 if (!(child instanceof ElseNode)
@@ -47,21 +48,18 @@ public class IfElseNodeHandler {
                     throw new ParseException(
                             "Invalid @if/@else in scss file for " + node);
                 } else {
-                    replaceDefNodeWithCorrectChild(node, child);
-                    break;
+                    return traverseChild(node.getParentNode(), child);
                 }
             }
         }
-        // in case the node hasn't been removed already
-        node.removeFromParent();
+        // no matching branch
+        return Collections.emptyList();
     }
 
-    private static void replaceDefNodeWithCorrectChild(
-            IfElseDefNode ifElseNode, final Node child) {
-        List<Node> nodesToAdd = new ArrayList<Node>(child.getChildren());
-        ifElseNode.getParentNode().replaceNode(ifElseNode, nodesToAdd);
-        for (Node node : nodesToAdd) {
-            node.traverse();
-        }
+    private static Collection<Node> traverseChild(Node parent, Node child) {
+        TemporaryNode tempParent = new TemporaryNode(parent,
+                child.getChildren());
+        return tempParent.traverse();
     }
+
 }

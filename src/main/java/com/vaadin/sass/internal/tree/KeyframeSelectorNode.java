@@ -16,6 +16,9 @@
 
 package com.vaadin.sass.internal.tree;
 
+import java.util.Collection;
+import java.util.Collections;
+
 public class KeyframeSelectorNode extends Node {
     private String selector;
 
@@ -35,8 +38,9 @@ public class KeyframeSelectorNode extends Node {
     }
 
     @Override
-    public void traverse() {
+    public Collection<Node> traverse() {
         traverseChildren();
+        return Collections.singleton((Node) this);
     }
 
     public String buildString(BuildStringStrategy strategy) {

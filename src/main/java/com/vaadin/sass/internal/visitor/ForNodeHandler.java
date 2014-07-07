@@ -27,11 +27,7 @@ import com.vaadin.sass.internal.tree.controldirective.ForNode;
 
 public class ForNodeHandler extends LoopNodeHandler {
 
-    public static void traverse(ForNode node) {
-        replaceForNode(node);
-    }
-
-    private static void replaceForNode(ForNode forNode) {
+    public static Collection<Node> traverse(ForNode forNode) {
         int fromInt = getInt(forNode.getFrom());
         int toInt = getInt(forNode.getTo());
         if (forNode.isExclusive()) {
@@ -44,7 +40,7 @@ public class ForNodeHandler extends LoopNodeHandler {
                     .getColumnNumber(), idx);
             indices.add(new Variable(forNode.getVariableName(), idxUnit));
         }
-        replaceLoopNode(forNode, indices);
+        return replaceLoopNode(forNode, indices);
     }
 
     private static int getInt(SassListItem item) {

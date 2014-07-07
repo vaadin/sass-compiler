@@ -16,6 +16,9 @@
 
 package com.vaadin.sass.internal.tree;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 
@@ -84,18 +87,17 @@ public class RuleNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void traverse() {
+    public Collection<Node> traverse() {
         /*
-         * "replaceVariables(ScssStylesheet.getVariables());" seems duplicated
-         * and can be extracted out of if, but it is not.
-         * containsArithmeticalOperator must be called before replaceVariables.
-         * Because for the "/" operator, it needs to see if its predecessor or
-         * successor is a Variable or not, to determine it is an arithmetic
-         * operator.
+         * containsArithmeticalOperator() must be called before
+         * replaceVariables. Because for the "/" operator, it needs to see if
+         * its predecessor or successor is a Variable or not, to determine it is
+         * an arithmetic operator.
          */
         boolean hasOperators = value.containsArithmeticalOperator();
         replaceVariables();
         value = value.evaluateFunctionsAndExpressions(hasOperators);
+        return Collections.singleton((Node) this);
     }
 
     private String buildString(BuildStringStrategy strategy) {

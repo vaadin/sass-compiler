@@ -1,0 +1,18 @@
+@mixin valo-spinner {
+  spinner: here;
+  .v-ie8 & {
+    ie8: here;
+  }
+}
+
+.indicator {
+  indicator: main;
+}
+
+.indeterminate {
+  @include valo-spinner;
+  
+  .wrapper {
+    display: none;
+  }
+}

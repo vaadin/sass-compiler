@@ -16,6 +16,8 @@
 
 package com.vaadin.sass.internal.tree.controldirective;
 
+import java.util.Collection;
+
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.visitor.WhileNodeHandler;
@@ -38,8 +40,8 @@ public class WhileNode extends Node {
     }
 
     @Override
-    public void traverse() {
-        WhileNodeHandler.traverse(this);
+    public Collection<Node> traverse() {
+        return WhileNodeHandler.traverse(this);
     }
 
 }

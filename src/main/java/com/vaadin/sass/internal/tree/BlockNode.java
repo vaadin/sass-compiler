@@ -17,6 +17,8 @@
 package com.vaadin.sass.internal.tree;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,14 +30,19 @@ public class BlockNode extends Node implements IVariableNode {
 
     private static final long serialVersionUID = 5742962631468325048L;
 
-    List<Selector> selectorList;
+    private List<Selector> selectorList;
 
     public BlockNode(List<Selector> selectorList) {
         this.selectorList = selectorList;
     }
 
+    public BlockNode(List<Selector> selectorList, Collection<Node> children) {
+        this(selectorList);
+        setChildren(children);
+    }
+
     public List<Selector> getSelectorList() {
-        return selectorList;
+        return Collections.unmodifiableList(selectorList);
     }
 
     public void setSelectorList(List<Selector> selectorList) {
@@ -80,15 +87,17 @@ public class BlockNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void traverse() {
+    public Collection<Node> traverse() {
+        ArrayList<Node> result = new ArrayList<Node>();
         try {
             replaceVariables();
-            BlockNodeHandler.traverse(this);
-            traverseChildren();
+            result.addAll(BlockNodeHandler.traverse(this));
         } catch (Exception e) {
             Logger.getLogger(BlockNode.class.getName()).log(Level.SEVERE, null,
                     e);
+            // TODO is it correct to ignore the exception
         }
+        return result;
     }
 
     private String buildString(boolean indent, BuildStringStrategy strategy) {

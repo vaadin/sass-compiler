@@ -18,6 +18,7 @@ package com.vaadin.sass.internal.tree;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.util.DeepCopy;
@@ -77,10 +78,10 @@ public class MixinDefNode extends DefNode {
     }
 
     @Override
-    public void traverse() {
+    public Collection<Node> traverse() {
         ScssStylesheet.defineMixin(this);
         setDefinitionScope(ScssStylesheet.getCurrentScope());
-        removeFromParent();
+        return Collections.emptyList();
     }
 
 }

@@ -19,15 +19,19 @@
  */
 package com.vaadin.sass.internal.tree;
 
+import java.util.Collection;
+import java.util.Collections;
+
 public class ContentNode extends Node {
 
     @Override
-    public void traverse() {
+    public Collection<Node> traverse() {
         /*
          * ContentNode is basically just a placeholder for some content which
          * will be included. So for traverse of this node, it does nothing. it
          * will be replaced when traversing MixinDefNode which contains it.
          */
+        return Collections.singleton((Node) this);
     }
 
 }

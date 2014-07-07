@@ -16,54 +16,82 @@
 package com.vaadin.sass.internal.selector;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
-public class SimpleSelectorSequence extends ArrayList<SimpleSelector> implements
-        SelectorSegment {
+/**
+ * Immutable simple list of simple selector segments (e.g. "a.foo.bar" consists
+ * of "a", ".foo" and ".bar").
+ * 
+ * For full selectors (e.g. "a.foo .bar") see {@link Selector}.
+ */
+public class SimpleSelectorSequence implements SelectorSegment {
+
+    private List<SimpleSelector> selectors;
 
     public SimpleSelectorSequence() {
-        super();
+        selectors = Collections.emptyList();
     }
 
-    public SimpleSelectorSequence(Collection<SimpleSelector> seq) {
-        super(seq);
+    /**
+     * Constructs a {@link SimpleSelectorSequence} from a list of simple
+     * selectors.
+     * 
+     * @param seq
+     *            list of simple selectors
+     */
+    public SimpleSelectorSequence(List<SimpleSelector> seq) {
+        // TODO this could be optimized by not always creating a new list, but
+        // that would open the possibility of the caller e.g. accidentally
+        // giving a list that is backing/backed by another list or otherwise
+        // shared
+        selectors = Collections.unmodifiableList(new ArrayList<SimpleSelector>(
+                seq));
     }
 
     public SimpleSelectorSequence(SimpleSelectorSequence prior,
             SimpleSelector simpleSelector) {
+        ArrayList<SimpleSelector> list = new ArrayList<SimpleSelector>();
         if (prior != null) {
-            addAll(prior);
+            list.addAll(prior.selectors);
         }
-        add(simpleSelector);
+        list.add(simpleSelector);
+        selectors = Collections.unmodifiableList(list);
     }
 
     public SimpleSelectorSequence(SimpleSelector simpleSelector,
             SimpleSelectorSequence tail) {
-        add(simpleSelector);
+        ArrayList<SimpleSelector> list = new ArrayList<SimpleSelector>();
+        list.add(simpleSelector);
         if (tail != null) {
-            addAll(tail);
+            list.addAll(tail.selectors);
         }
+        selectors = Collections.unmodifiableList(list);
     }
 
     /**
      * Returns this \ that, set-theoretically
      */
     public SimpleSelectorSequence difference(SimpleSelectorSequence that) {
-        SimpleSelectorSequence seq = new SimpleSelectorSequence(this);
-        seq.removeAll(that);
-        return seq;
+        ArrayList<SimpleSelector> result = new ArrayList<SimpleSelector>(
+                selectors);
+        result.removeAll(that.selectors);
+        return new SimpleSelectorSequence(result);
     }
 
     /**
      * Returns this followed by all elements in that but not in this
      */
     public SimpleSelectorSequence union(SimpleSelectorSequence that) {
-        SimpleSelectorSequence union = new SimpleSelectorSequence(this);
-        union.addAll(that.difference(this));
-        union.ensureOrdering();
-        return union;
+        ArrayList<SimpleSelector> union = new ArrayList<SimpleSelector>(
+                selectors);
+        ArrayList<SimpleSelector> newEntries = new ArrayList<SimpleSelector>(
+                that.selectors);
+        newEntries.removeAll(selectors);
+        union.addAll(newEntries);
+        ensureOrdering(union);
+        return new SimpleSelectorSequence(union);
     }
 
     /**
@@ -71,8 +99,11 @@ public class SimpleSelectorSequence extends ArrayList<SimpleSelector> implements
      * selector, if present, appears first in list. Also ensures that
      * pseudoclass-selectors and pseudoelement-selectors, if present, appear
      * next to last / last in list. Mutating for efficiency.
+     * 
+     * @param list
+     *            the simple selector list to sort
      */
-    private void ensureOrdering() {
+    private static void ensureOrdering(ArrayList<SimpleSelector> list) {
 
         Comparator<SimpleSelector> c = new Comparator<SimpleSelector>() {
 
@@ -93,7 +124,7 @@ public class SimpleSelectorSequence extends ArrayList<SimpleSelector> implements
                 return getOrdinal(it) - getOrdinal(that);
             }
         };
-        Collections.sort(this, c);
+        Collections.sort(list, c);
     }
 
     /**
@@ -156,7 +187,7 @@ public class SimpleSelectorSequence extends ArrayList<SimpleSelector> implements
      */
     private boolean cannotMatchAnything() {
         IdSelector id = null;
-        for (SimpleSelector s : this) {
+        for (SimpleSelector s : selectors) {
             if (s instanceof IdSelector) {
                 if (id == null) {
                     id = (IdSelector) s;
@@ -171,14 +202,30 @@ public class SimpleSelectorSequence extends ArrayList<SimpleSelector> implements
     }
 
     public TypeSelector getTypeSelector() {
-        SimpleSelector head = get(0);
+        SimpleSelector head = selectors.get(0);
         return head instanceof TypeSelector ? (TypeSelector) head : null;
     }
 
     public SimpleSelectorSequence getNonTypeSelectors() {
-        SimpleSelector head = get(0);
-        return head instanceof TypeSelector ? new SimpleSelectorSequence(
-                subList(1, size())) : this;
+        SimpleSelector head = selectors.get(0);
+        if (head instanceof TypeSelector) {
+            // note that the sublist may be backed by the original list
+            List<SimpleSelector> tail = selectors.subList(1, selectors.size());
+            return new SimpleSelectorSequence(tail);
+        } else {
+            return this;
+        }
+    }
+
+    // optimization - note that the result is backed by selectors of this
+    private List<SimpleSelector> getNonTypeSelectorList() {
+        SimpleSelector head = selectors.get(0);
+        if (head instanceof TypeSelector) {
+            // note that the sublist may be backed by the original list
+            return selectors.subList(1, selectors.size());
+        } else {
+            return selectors;
+        }
     }
 
     /**
@@ -190,24 +237,24 @@ public class SimpleSelectorSequence extends ArrayList<SimpleSelector> implements
     public boolean subsumes(SimpleSelectorSequence that) {
         TypeSelector ts = getTypeSelector();
         if (ts == null || ts.equals(UniversalSelector.it)) {
-            return that.getNonTypeSelectors()
-                    .containsAll(getNonTypeSelectors());
+            return that.getNonTypeSelectorList().containsAll(
+                    getNonTypeSelectorList());
         }
-        return that.containsAll(this);
+        return that.selectors.containsAll(selectors);
     }
 
     public SimpleSelectorSequence replaceVariables() {
-        SimpleSelectorSequence newSeq = new SimpleSelectorSequence();
-        for (SimpleSelector s : this) {
-            newSeq.add(s.replaceVariables());
+        ArrayList<SimpleSelector> list = new ArrayList<SimpleSelector>();
+        for (SimpleSelector s : selectors) {
+            list.add(s.replaceVariables());
         }
-        return newSeq;
+        return new SimpleSelectorSequence(list);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (SimpleSelector s : this) {
+        for (SimpleSelector s : selectors) {
             sb.append(s.toString());
         }
         return sb.toString();
@@ -217,25 +264,38 @@ public class SimpleSelectorSequence extends ArrayList<SimpleSelector> implements
      * Returns the same sequence, but without type selector if one was present.
      */
     public SimpleSelectorSequence withoutTypeSelector() {
-        SimpleSelectorSequence seq = new SimpleSelectorSequence();
-        for (SimpleSelector sel : this) {
+        ArrayList<SimpleSelector> list = new ArrayList<SimpleSelector>();
+        for (SimpleSelector sel : selectors) {
             if (!(sel instanceof TypeSelector)) {
-                seq.add(sel);
+                list.add(sel);
             }
         }
-        return seq;
+        return new SimpleSelectorSequence(list);
     }
 
     /**
      * Returns whether this selector contains a placeholder (%-selector)
      */
     public boolean isPlaceholder() {
-        for (SimpleSelector s : this) {
+        for (SimpleSelector s : selectors) {
             if (s instanceof PlaceholderSelector) {
                 return true;
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !obj.getClass().equals(getClass())) {
+            return false;
+        }
+        return selectors.equals(((SimpleSelectorSequence) obj).selectors);
+    }
+
+    @Override
+    public int hashCode() {
+        return selectors.hashCode();
     }
 
 }

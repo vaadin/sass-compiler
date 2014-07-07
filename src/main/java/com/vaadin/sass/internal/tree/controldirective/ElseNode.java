@@ -15,6 +15,8 @@
  */
 package com.vaadin.sass.internal.tree.controldirective;
 
+import java.util.Collection;
+
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.Node;
 
@@ -26,8 +28,8 @@ public class ElseNode extends Node implements IfElseNode {
     }
 
     @Override
-    public void traverse() {
-
+    public Collection<Node> traverse() {
+        return traverseChildren();
     }
 
 }

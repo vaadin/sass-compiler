@@ -21,6 +21,7 @@ import java.util.List;
 
 import com.vaadin.sass.internal.parser.ParseException;
 
+// note: a Selector is effectively immutable - only methods creating a new selector can modify its parts directly
 public class Selector implements Serializable {
 
     /*

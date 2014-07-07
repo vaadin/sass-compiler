@@ -1302,13 +1302,13 @@ Selector selector() :
 SimpleSelectorSequence simple_selector_sequence() :
 {
   SimpleSelector simple = null;
-  SimpleSelectorSequence seq = new SimpleSelectorSequence();
+  ArrayList<SimpleSelector> list = new ArrayList<SimpleSelector>();
 }
 {
-  ((simple=simple_nontype_selector() { seq.add(simple); })+
-   | simple=type_selector() { seq.add(simple); } (simple=simple_nontype_selector() { seq.add(simple); })*)
+  ((simple=simple_nontype_selector() { list.add(simple); })+
+   | simple=type_selector() { list.add(simple); } (simple=simple_nontype_selector() { list.add(simple); })*)
   {
-    return seq;
+    return new SimpleSelectorSequence(list);
   }
 }
 

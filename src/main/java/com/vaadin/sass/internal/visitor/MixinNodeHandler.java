@@ -16,7 +16,7 @@
 
 package com.vaadin.sass.internal.visitor;
 
-import java.util.ArrayList;
+import java.util.Collection;
 
 import com.vaadin.sass.internal.Scope;
 import com.vaadin.sass.internal.ScssStylesheet;
@@ -25,24 +25,27 @@ import com.vaadin.sass.internal.parser.Variable;
 import com.vaadin.sass.internal.tree.MixinDefNode;
 import com.vaadin.sass.internal.tree.MixinNode;
 import com.vaadin.sass.internal.tree.Node;
+import com.vaadin.sass.internal.tree.controldirective.TemporaryNode;
 
 public class MixinNodeHandler {
 
-    public static void traverse(MixinNode node) throws ParseException {
-        replaceMixins(node);
+    public static Collection<Node> traverse(MixinNode node)
+            throws ParseException {
+        return replaceMixins(node);
     }
 
-    private static void replaceMixins(MixinNode node) throws ParseException {
+    private static Collection<Node> replaceMixins(MixinNode node)
+            throws ParseException {
         MixinDefNode mixinDef = ScssStylesheet.getMixinDefinition(node
                 .getName());
         if (mixinDef == null) {
             throw new ParseException("Mixin Definition: " + node.getName()
                     + " not found");
         }
-        replaceMixinNode(node, mixinDef);
+        return replaceMixinNode(node, mixinDef);
     }
 
-    private static void replaceMixinNode(MixinNode mixinNode,
+    private static Collection<Node> replaceMixinNode(MixinNode mixinNode,
             MixinDefNode mixinDef) {
         MixinDefNode defClone = mixinDef.copy();
 
@@ -65,12 +68,10 @@ public class MixinNodeHandler {
                 ScssStylesheet.addVariable(evaluated);
             }
             // traverse child nodes in this scope
-            ArrayList<Node> children = new ArrayList<Node>(
+            // use correct parent with intermediate TemporaryNode
+            Node tempParent = new TemporaryNode(mixinNode.getParentNode(),
                     defClone.getChildren());
-            mixinNode.getParentNode().replaceNode(mixinNode, children);
-            for (Node child : children) {
-                child.traverse();
-            }
+            return tempParent.traverse();
         } finally {
             ScssStylesheet.closeVariableScope(previousScope);
         }

@@ -1,0 +1,15 @@
+.indicator {
+	indicator: main;
+}
+
+.indeterminate {
+	spinner: here;
+}
+
+.v-ie8 .indeterminate {
+	ie8: here;
+}
+
+.indeterminate .wrapper {
+	display: none;
+}

@@ -16,6 +16,7 @@
 package com.vaadin.sass.internal.tree;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.Variable;
@@ -32,10 +33,10 @@ public class FunctionDefNode extends DefNode {
     }
 
     @Override
-    public void traverse() {
+    public Collection<Node> traverse() {
         ScssStylesheet.defineFunction(this);
         setDefinitionScope(ScssStylesheet.getCurrentScope());
-        removeFromParent();
+        return Collections.emptyList();
     }
 
 }

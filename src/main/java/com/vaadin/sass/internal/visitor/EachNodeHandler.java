@@ -25,13 +25,13 @@ import com.vaadin.sass.internal.tree.controldirective.EachDefNode;
 
 public class EachNodeHandler extends LoopNodeHandler {
 
-    public static void traverse(EachDefNode eachNode) {
+    public static Collection<Node> traverse(EachDefNode eachNode) {
         Collection<Variable> loopVariables = new ArrayList<Variable>();
         for (final SassListItem var : eachNode.getVariables()) {
             loopVariables.add(new Variable(eachNode.getVariableName()
                     .substring(1), var));
         }
-        replaceLoopNode(eachNode, loopVariables);
+        return replaceLoopNode(eachNode, loopVariables);
     }
 
 }

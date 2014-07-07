@@ -16,12 +16,14 @@
 package com.vaadin.sass.internal.visitor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 import com.vaadin.sass.internal.expression.BinaryOperator;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.IVariableNode;
 import com.vaadin.sass.internal.tree.Node;
+import com.vaadin.sass.internal.tree.controldirective.TemporaryNode;
 import com.vaadin.sass.internal.tree.controldirective.WhileNode;
 
 public class WhileNodeHandler {
@@ -32,8 +34,9 @@ public class WhileNodeHandler {
      * @param whileNode
      *            node to replace
      */
-    public static void traverse(WhileNode whileNode) {
+    public static Collection<Node> traverse(WhileNode whileNode) {
         Node parent = whileNode.getParentNode();
+        ArrayList<Node> result = new ArrayList<Node>();
         while (evaluateCondition(whileNode)) {
             ArrayList<Node> nodes = iteration(whileNode);
             if (nodes.size() == 0) {
@@ -41,13 +44,10 @@ public class WhileNodeHandler {
                         "@while loop iteration did nothing, infinite loop",
                         whileNode);
             }
-            parent.appendAfterNode(whileNode, nodes);
-
-            for (Node node : nodes) {
-                node.traverse();
-            }
+            TemporaryNode temp = new TemporaryNode(parent, nodes);
+            result.addAll(temp.traverse());
         }
-        whileNode.removeFromParent();
+        return result;
     }
 
     private static boolean evaluateCondition(WhileNode whileNode) {

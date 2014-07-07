@@ -16,8 +16,11 @@
 
 package com.vaadin.sass.internal.tree;
 
+import java.util.Collection;
+import java.util.Collections;
+
 public class CommentNode extends Node {
-    private String comment;
+    private final String comment;
 
     public CommentNode(String comment) {
         this.comment = comment;
@@ -25,10 +28,6 @@ public class CommentNode extends Node {
 
     public String getComment() {
         return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
     }
 
     @Override
@@ -42,7 +41,7 @@ public class CommentNode extends Node {
     }
 
     @Override
-    public void traverse() {
-        // Not used in CommentNode
+    public Collection<Node> traverse() {
+        return Collections.singleton((Node) this);
     }
 }
