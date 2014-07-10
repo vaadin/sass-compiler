@@ -811,7 +811,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     @Override
     public SassListItem evaluateFunctionsAndExpressions(
             boolean evaluateArithmetics) {
-        if (params != null) {
+        if (params != null && !"calc".equals(getFunctionName())) {
             SCSSFunctionGenerator generator = getGenerator(getFunctionName());
             LexicalUnitImpl copy = this;
             if (!"if".equals(getFunctionName())) {

@@ -1,0 +1,5 @@
+.x {
+  a: calc(100% - 1px);
+  $x: unquote("100% - 1px");
+  x: calc(#{$x});
+}
