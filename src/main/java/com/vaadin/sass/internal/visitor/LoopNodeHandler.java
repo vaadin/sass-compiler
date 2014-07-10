@@ -18,7 +18,7 @@ package com.vaadin.sass.internal.visitor;
 import java.util.Collection;
 import java.util.List;
 
-import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.Variable;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.controldirective.TemporaryNode;
@@ -51,15 +51,16 @@ public abstract class LoopNodeHandler {
 
     private static void iteration(List<Node> loopChildren,
             TemporaryNode newParent, Variable loopVar) {
-        ScssStylesheet.openVariableScope();
+        ScssContext context = newParent.getContext();
+        context.openVariableScope();
         try {
-            ScssStylesheet.addVariable(loopVar);
+            context.addVariable(loopVar);
             for (final Node child : loopChildren) {
                 Node copy = child.copy();
                 newParent.appendAndTraverse(copy);
             }
         } finally {
-            ScssStylesheet.closeVariableScope();
+            context.closeVariableScope();
         }
     }
 }

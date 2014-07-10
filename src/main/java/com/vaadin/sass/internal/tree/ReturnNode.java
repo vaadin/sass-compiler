@@ -35,7 +35,7 @@ public class ReturnNode extends Node implements IVariableNode {
 
     @Override
     public void replaceVariables() {
-        expr = expr.replaceVariables();
+        expr = expr.replaceVariables(getContext());
     }
 
     @Override
@@ -59,8 +59,8 @@ public class ReturnNode extends Node implements IVariableNode {
     public SassListItem evaluate() {
         SassListItem expr = getExpr();
         boolean arith = expr.containsArithmeticalOperator();
-        expr = expr.replaceVariables();
-        expr = expr.evaluateFunctionsAndExpressions(arith);
+        expr = expr.replaceVariables(getContext());
+        expr = expr.evaluateFunctionsAndExpressions(getContext(), arith);
         return expr;
     }
 

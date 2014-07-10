@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.selector.Selector;
 import com.vaadin.sass.internal.tree.BlockNode;
@@ -56,7 +57,8 @@ public class BlockNodeHandler {
         updateSelectors(node);
 
         if (!node.getChildren().isEmpty()) {
-            ScssStylesheet.openVariableScope();
+            ScssContext context = node.getContext();
+            context.openVariableScope();
             try {
                 ArrayList<Node> newChildren = new ArrayList<Node>();
                 for (Node child : new ArrayList<Node>(node.getChildren())) {
@@ -82,7 +84,7 @@ public class BlockNodeHandler {
                     result.add(0, newNode);
                 }
             } finally {
-                ScssStylesheet.closeVariableScope();
+                context.closeVariableScope();
             }
         }
 

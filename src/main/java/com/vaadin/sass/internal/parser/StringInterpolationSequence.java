@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.vaadin.sass.internal.ScssContext;
+
 /**
  * StringInterpolationSequence is used for representing sequences consisting of
  * strings and interpolation.
@@ -76,15 +78,18 @@ public class StringInterpolationSequence implements Serializable {
      * variables occurring in expressions. Also replaces functions, arithmetic
      * expressions and interpolation if all variables have been set.
      * 
+     * @param context
+     *            current compilation context
      * @return A new StringInterpolationSequence.
      */
-    public StringInterpolationSequence replaceVariables() {
+    public StringInterpolationSequence replaceVariables(ScssContext context) {
         if (!containsInterpolation()) {
             return this;
         }
-        SassList resultList = items.replaceVariables();
+        SassList resultList = items.replaceVariables(context);
         if (!resultList.containsVariable()) {
-            resultList = resultList.evaluateFunctionsAndExpressions(false);
+            resultList = resultList.evaluateFunctionsAndExpressions(context,
+                    false);
             resultList = replaceInterpolation(resultList);
         }
         return new StringInterpolationSequence(resultList);

@@ -19,6 +19,7 @@ package com.vaadin.sass.internal.expression;
 import java.util.List;
 import java.util.Stack;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.expression.exception.ArithmeticException;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.SCSSLexicalUnit;
@@ -42,13 +43,15 @@ public class ArithmeticExpressionEvaluator {
                 rightOperand));
     }
 
-    private Object createExpression(List<SassListItem> terms) {
+    private Object createExpression(ScssContext context,
+            List<SassListItem> terms) {
         SassListItem current = null;
         boolean afterOperand = false;
         Stack<Object> operands = new Stack<Object>();
         Stack<Object> operators = new Stack<Object>();
         inputTermLoop: for (int i = 0; i < terms.size(); ++i) {
-            current = terms.get(i).evaluateFunctionsAndExpressions(true);
+            current = terms.get(i).evaluateFunctionsAndExpressions(context,
+                    true);
             if (SassExpression.isWhitespace(current)) {
                 continue;
             }
@@ -106,9 +109,9 @@ public class ArithmeticExpressionEvaluator {
         return expression;
     }
 
-    public SassListItem evaluate(List<SassListItem> terms) {
+    public SassListItem evaluate(ScssContext context, List<SassListItem> terms) {
         Object result = ArithmeticExpressionEvaluator.get().createExpression(
-                terms);
+                context, terms);
         if (result instanceof BinaryExpression) {
             return ((BinaryExpression) result).eval();
         }

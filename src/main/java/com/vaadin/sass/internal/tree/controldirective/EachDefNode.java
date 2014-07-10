@@ -62,7 +62,7 @@ public class EachDefNode extends Node implements IVariableNode {
 
     @Override
     public void replaceVariables() {
-        list = list.replaceVariables();
+        list = list.replaceVariables(getContext());
     }
 
     @Override

@@ -15,6 +15,7 @@
  */
 package com.vaadin.sass.internal.selector;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 
 /**
@@ -39,8 +40,8 @@ public class IdSelector extends SimpleSelector {
     }
 
     @Override
-    public IdSelector replaceVariables() {
-        return new IdSelector(value.replaceVariables());
+    public IdSelector replaceVariables(ScssContext context) {
+        return new IdSelector(value.replaceVariables(context));
     }
 
 }

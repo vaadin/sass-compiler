@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.Variable;
 import com.vaadin.sass.internal.util.StringUtil;
 
@@ -37,7 +36,7 @@ public class ConsoleMessageNode extends Node implements IVariableNode {
     @Override
     public void replaceVariables() {
         // interpolation of variable names in the string
-        for (final Variable var : ScssStylesheet.getVariables()) {
+        for (final Variable var : getContext().getVariables()) {
             if (StringUtil.containsVariable(message, var.getName())) {
                 message = StringUtil.replaceVariable(message, var.getName(),
                         var.getExpr().printState());

@@ -15,6 +15,7 @@
  */
 package com.vaadin.sass.internal.parser.function;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.SassListItem;
 
@@ -26,7 +27,7 @@ public class DefaultFunctionGenerator implements SCSSFunctionGenerator {
     }
 
     @Override
-    public SassListItem compute(LexicalUnitImpl function) {
+    public SassListItem compute(ScssContext context, LexicalUnitImpl function) {
         return function;
 
     }

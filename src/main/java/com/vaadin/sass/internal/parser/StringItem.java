@@ -17,7 +17,7 @@ package com.vaadin.sass.internal.parser;
 
 import java.io.Serializable;
 
-import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
 
 /**
@@ -50,19 +50,19 @@ public class StringItem implements SassListItem, Serializable {
     }
 
     @Override
-    public SassListItem evaluateFunctionsAndExpressions(
+    public SassListItem evaluateFunctionsAndExpressions(ScssContext context,
             boolean evaluateArithmetics) {
         return this;
     }
 
     @Override
-    public SassListItem replaceVariables() {
+    public SassListItem replaceVariables(ScssContext context) {
         // Handle a quoted string containing simple interpolation.
         if (value.length() > 1
                 && ((value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"') || (value
                         .charAt(0) == '\'' && value.charAt(value.length() - 1) == '\''))) {
             String stringValue = value;
-            for (Variable var : ScssStylesheet.getVariables()) {
+            for (Variable var : context.getVariables()) {
                 stringValue = var.replaceInterpolation(stringValue);
             }
             return new StringItem(stringValue);

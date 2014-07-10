@@ -66,7 +66,7 @@ public class VariableNode extends Node implements Definition, IVariableNode {
 
     @Override
     public void replaceVariables() {
-        variable.setExpr(variable.getExpr().replaceVariables());
+        variable.setExpr(variable.getExpr().replaceVariables(getContext()));
     }
 
     @Override
@@ -80,7 +80,7 @@ public class VariableNode extends Node implements Definition, IVariableNode {
         boolean hasOperator = variable.getExpr().containsArithmeticalOperator();
         replaceVariables();
         variable.setExpr(variable.getExpr().evaluateFunctionsAndExpressions(
-                hasOperator));
+                getContext(), hasOperator));
         VariableNodeHandler.traverse(this);
         return Collections.emptyList();
     }

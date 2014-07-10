@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.ActualArgumentList;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassListItem;
@@ -202,7 +202,7 @@ public abstract class Node implements Serializable {
         List<Node> children = getChildren();
         if (!children.isEmpty()) {
             if (newScope) {
-                ScssStylesheet.openVariableScope();
+                getContext().openVariableScope();
             }
             try {
                 ArrayList<Node> result = new ArrayList<Node>();
@@ -215,12 +215,16 @@ public abstract class Node implements Serializable {
                 return result;
             } finally {
                 if (newScope) {
-                    ScssStylesheet.closeVariableScope();
+                    getContext().closeVariableScope();
                 }
             }
         } else {
             return Collections.emptyList();
         }
+    }
+
+    public ScssContext getContext() {
+        return ScssContext.get();
     }
 
     public static interface BuildStringStrategy {

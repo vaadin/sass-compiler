@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.ScssContext;
 
 /**
  * FormalArgumentList is used for representing the parameter list of a mixin or
@@ -59,15 +59,15 @@ public class FormalArgumentList implements Serializable, Iterable<Variable> {
         }
     }
 
-    public FormalArgumentList replaceVariables() {
+    public FormalArgumentList replaceVariables(ScssContext context) {
         ArrayList<Variable> result = new ArrayList<Variable>();
         for (final Variable arg : arglist) {
             SassListItem expr = arg.getExpr();
             if (expr != null) {
-                expr = expr.replaceVariables();
+                expr = expr.replaceVariables(context);
             }
             if (expr == null) {
-                Variable var = ScssStylesheet.getVariable(arg.getName());
+                Variable var = context.getVariable(arg.getName());
                 if (var != null) {
                     expr = var.getExpr();
                 }

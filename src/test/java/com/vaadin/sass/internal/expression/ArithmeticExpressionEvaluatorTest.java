@@ -21,6 +21,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.w3c.css.sac.LexicalUnit;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.expression.exception.ArithmeticException;
 import com.vaadin.sass.internal.expression.exception.IncompatibleUnitsException;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
@@ -30,7 +31,10 @@ public class ArithmeticExpressionEvaluatorTest {
     private ArithmeticExpressionEvaluator evaluator = new ArithmeticExpressionEvaluator();
 
     private LexicalUnitImpl evaluate(SassListItem... terms) {
-        return (LexicalUnitImpl) evaluator.evaluate(Arrays.asList(terms));
+        // clean context every time - no variables etc.
+        ScssContext context = new ScssContext();
+        return (LexicalUnitImpl) evaluator.evaluate(context,
+                Arrays.asList(terms));
     }
 
     private final LexicalUnitImpl operand2 = LexicalUnitImpl.createInteger(0,

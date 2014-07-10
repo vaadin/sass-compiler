@@ -19,7 +19,7 @@ package com.vaadin.sass.internal.visitor;
 import java.util.Collection;
 
 import com.vaadin.sass.internal.Scope;
-import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.Variable;
 import com.vaadin.sass.internal.tree.MixinDefNode;
@@ -36,8 +36,8 @@ public class MixinNodeHandler {
 
     private static Collection<Node> replaceMixins(MixinNode node)
             throws ParseException {
-        MixinDefNode mixinDef = ScssStylesheet.getMixinDefinition(node
-                .getName());
+        MixinDefNode mixinDef = node.getContext().getMixinDefinition(
+                node.getName());
         if (mixinDef == null) {
             throw new ParseException("Mixin Definition: " + node.getName()
                     + " not found");
@@ -58,14 +58,16 @@ public class MixinNodeHandler {
 
         // parameters have been evaluated in parent scope, rest should be
         // in the scope where the mixin was defined
-        Scope previousScope = ScssStylesheet.openVariableScope(defClone
+        ScssContext context = mixinNode.getContext();
+        Scope previousScope = context.openVariableScope(
+                defClone
                 .getDefinitionScope());
         try {
             // add variables from argList
             for (Variable var : defClone.getArglist().getArguments()) {
                 Variable evaluated = new Variable(var.getName(), var.getExpr()
-                        .evaluateFunctionsAndExpressions(true));
-                ScssStylesheet.addVariable(evaluated);
+                        .evaluateFunctionsAndExpressions(context, true));
+                context.addVariable(evaluated);
             }
             // traverse child nodes in this scope
             // use correct parent with intermediate TemporaryNode
@@ -73,7 +75,7 @@ public class MixinNodeHandler {
                     defClone.getChildren());
             return tempParent.traverse();
         } finally {
-            ScssStylesheet.closeVariableScope(previousScope);
+            context.closeVariableScope(previousScope);
         }
     }
 }

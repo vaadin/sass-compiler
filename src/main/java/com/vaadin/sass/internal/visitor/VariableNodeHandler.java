@@ -16,7 +16,7 @@
 
 package com.vaadin.sass.internal.visitor;
 
-import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.SCSSLexicalUnit;
 import com.vaadin.sass.internal.parser.SassListItem;
@@ -26,15 +26,16 @@ import com.vaadin.sass.internal.tree.VariableNode;
 public class VariableNodeHandler {
 
     public static void traverse(VariableNode node) {
-        Variable variable = ScssStylesheet.getVariable(node.getName());
+        ScssContext context = node.getContext();
+        Variable variable = context.getVariable(node.getName());
         if (!node.isGuarded() || variable == null || variable.getExpr() == null) {
-            ScssStylesheet.setVariable(node.getVariable());
+            context.setVariable(node.getVariable());
         } else { // Handle the case where a variable has the value SCSS_NULL
             SassListItem value = variable.getExpr();
             if (value instanceof LexicalUnitImpl) {
                 LexicalUnitImpl unit = (LexicalUnitImpl) value;
                 if (unit.getLexicalUnitType() == SCSSLexicalUnit.SCSS_NULL) {
-                    ScssStylesheet.setVariable(node.getVariable());
+                    context.setVariable(node.getVariable());
                 }
             }
         }

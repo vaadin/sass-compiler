@@ -17,6 +17,7 @@ package com.vaadin.sass.internal.parser;
 
 import java.io.Serializable;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
 
 /**
@@ -72,19 +73,18 @@ public class Interpolation implements SassListItem, Serializable {
     }
 
     @Override
-    public Interpolation evaluateFunctionsAndExpressions(
+    public Interpolation evaluateFunctionsAndExpressions(ScssContext context,
             boolean evaluateArithmetics) {
         // Interpolation ignores evaluateArithmetics - whether there are
         // arithmetic operations has been determined in the constructor.
-        return new Interpolation(
-                expression
-                        .evaluateFunctionsAndExpressions(this.evaluateArithmetics),
-                getLineNumber(), getColumnNumber());
+        return new Interpolation(expression.evaluateFunctionsAndExpressions(
+                context, this.evaluateArithmetics), getLineNumber(),
+                getColumnNumber());
     }
 
     @Override
-    public Interpolation replaceVariables() {
-        return new Interpolation(expression.replaceVariables(),
+    public Interpolation replaceVariables(ScssContext context) {
+        return new Interpolation(expression.replaceVariables(context),
                 getLineNumber(), getColumnNumber(), evaluateArithmetics);
     }
 

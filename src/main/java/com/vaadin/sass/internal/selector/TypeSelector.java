@@ -15,6 +15,7 @@
  */
 package com.vaadin.sass.internal.selector;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 
 /**
@@ -39,7 +40,7 @@ public class TypeSelector extends SimpleSelector {
     }
 
     @Override
-    public TypeSelector replaceVariables() {
-        return new TypeSelector(localName.replaceVariables());
+    public TypeSelector replaceVariables(ScssContext context) {
+        return new TypeSelector(localName.replaceVariables(context));
     }
 }

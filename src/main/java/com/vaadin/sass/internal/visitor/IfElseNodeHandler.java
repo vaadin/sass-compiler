@@ -20,6 +20,7 @@ import java.util.Collections;
 
 import org.w3c.flute.parser.ParseException;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.expression.BinaryOperator;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.Node;
@@ -32,11 +33,13 @@ public class IfElseNodeHandler {
 
     public static Collection<Node> traverse(IfElseDefNode node)
             throws Exception {
+        ScssContext context = node.getContext();
         for (final Node child : node.getChildren()) {
             if (child instanceof IfNode) {
                 SassListItem expression = ((IfNode) child).getExpression();
-                expression = expression.replaceVariables();
-                expression = expression.evaluateFunctionsAndExpressions(true);
+                expression = expression.replaceVariables(context);
+                expression = expression.evaluateFunctionsAndExpressions(
+                        context, true);
 
                 if (BinaryOperator.isTrue(expression)) {
                     return traverseChild(node.getParentNode(), child);

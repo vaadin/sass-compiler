@@ -15,6 +15,7 @@
  */
 package com.vaadin.sass.internal.selector;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 
 /**
@@ -85,11 +86,12 @@ public class AttributeSelector extends SimpleSelector {
     }
 
     @Override
-    public AttributeSelector replaceVariables() {
-        StringInterpolationSequence newAttribute = attribute.replaceVariables();
+    public AttributeSelector replaceVariables(ScssContext context) {
+        StringInterpolationSequence newAttribute = attribute
+                .replaceVariables(context);
         StringInterpolationSequence newValue = null;
         if (value != null) {
-            newValue = value.replaceVariables();
+            newValue = value.replaceVariables(context);
         }
         return new AttributeSelector(newAttribute, matchRelation, newValue);
     }

@@ -15,6 +15,7 @@
  */
 package com.vaadin.sass.internal.selector;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 
 /**
@@ -40,7 +41,8 @@ public class PseudoElementSelector extends SimpleSelector {
     }
 
     @Override
-    public PseudoElementSelector replaceVariables() {
-        return new PseudoElementSelector(pseudoElement.replaceVariables());
+    public PseudoElementSelector replaceVariables(ScssContext context) {
+        return new PseudoElementSelector(
+                pseudoElement.replaceVariables(context));
     }
 }

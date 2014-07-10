@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.w3c.css.sac.LexicalUnit;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.expression.ArithmeticExpressionEvaluator;
 import com.vaadin.sass.internal.expression.BinaryOperator;
 import com.vaadin.sass.internal.tree.Node;
@@ -202,24 +203,25 @@ public class SassExpression implements SassListItem, Serializable {
     }
 
     @Override
-    public SassListItem evaluateFunctionsAndExpressions(
+    public SassListItem evaluateFunctionsAndExpressions(ScssContext context,
             boolean evaluateArithmetics) {
         List<SassListItem> list = new ArrayList<SassListItem>();
         for (SassListItem item : items) {
-            list.add(item.evaluateFunctionsAndExpressions(evaluateArithmetics));
+            list.add(item.evaluateFunctionsAndExpressions(context,
+                    evaluateArithmetics));
         }
         if (list.size() == 0 || !evaluateArithmetics) {
             return new SassExpression(list);
         } else {
-            return ArithmeticExpressionEvaluator.get().evaluate(list);
+            return ArithmeticExpressionEvaluator.get().evaluate(context, list);
         }
     }
 
     @Override
-    public SassExpression replaceVariables() {
+    public SassExpression replaceVariables(ScssContext context) {
         List<SassListItem> list = new ArrayList<SassListItem>();
         for (SassListItem item : items) {
-            list.add(item.replaceVariables());
+            list.add(item.replaceVariables(context));
         }
         return new SassExpression(list);
     }

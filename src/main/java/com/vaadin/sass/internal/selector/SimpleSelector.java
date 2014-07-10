@@ -17,6 +17,8 @@ package com.vaadin.sass.internal.selector;
 
 import java.io.Serializable;
 
+import com.vaadin.sass.internal.ScssContext;
+
 /**
  * Simple CSS3 selector such as an id selector or an attribute selector.
  * 
@@ -30,7 +32,7 @@ import java.io.Serializable;
  */
 public abstract class SimpleSelector implements Serializable {
 
-    public SimpleSelector replaceVariables() {
+    public SimpleSelector replaceVariables(ScssContext context) {
         return this;
     }
 

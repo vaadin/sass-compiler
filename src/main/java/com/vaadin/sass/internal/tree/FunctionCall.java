@@ -21,7 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.vaadin.sass.internal.Scope;
-import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.ActualArgumentList;
 import com.vaadin.sass.internal.parser.FormalArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
@@ -43,11 +43,12 @@ public class FunctionCall {
         SassListItem value = null;
         // only parameters are evaluated in current scope, body in
         // top-level scope
+        ScssContext context = def.getContext();
         try {
             FormalArgumentList arglist = def.getArglist();
             arglist = arglist.replaceFormalArguments(invocationArglist, true);
             // replace variables in default values of parameters
-            arglist = arglist.replaceVariables();
+            arglist = arglist.replaceVariables(context);
 
             // copying is necessary as traversal modifies the parent of the
             // node
@@ -55,11 +56,11 @@ public class FunctionCall {
             FunctionDefNode defCopy = def.copy();
 
             // limit variable scope to the scope where the function was defined
-            Scope previousScope = ScssStylesheet.openVariableScope(def
+            Scope previousScope = context.openVariableScope(def
                     .getDefinitionScope());
             try {
                 for (Variable param : arglist) {
-                    ScssStylesheet.addVariable(param);
+                    context.addVariable(param);
                 }
 
                 // only contains variable nodes, return nodes and control
@@ -75,7 +76,7 @@ public class FunctionCall {
                             firstChild.traverse()));
                 }
             } finally {
-                ScssStylesheet.closeVariableScope(previousScope);
+                context.closeVariableScope(previousScope);
             }
         } catch (Exception e) {
             Logger.getLogger(FunctionCall.class.getName()).log(Level.SEVERE,

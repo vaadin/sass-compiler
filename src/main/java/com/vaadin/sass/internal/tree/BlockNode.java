@@ -78,7 +78,7 @@ public class BlockNode extends Node implements IVariableNode {
 
         ArrayList<Selector> newSelectorList = new ArrayList<Selector>();
         for (Selector s : selectorList) {
-            newSelectorList.add(s.replaceVariables());
+            newSelectorList.add(s.replaceVariables(getContext()));
         }
         selectorList = newSelectorList;
     }

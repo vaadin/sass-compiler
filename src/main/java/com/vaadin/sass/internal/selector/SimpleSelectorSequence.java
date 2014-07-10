@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import com.vaadin.sass.internal.ScssContext;
+
 /**
  * Immutable simple list of simple selector segments (e.g. "a.foo.bar" consists
  * of "a", ".foo" and ".bar").
@@ -243,10 +245,10 @@ public class SimpleSelectorSequence implements SelectorSegment {
         return that.selectors.containsAll(selectors);
     }
 
-    public SimpleSelectorSequence replaceVariables() {
+    public SimpleSelectorSequence replaceVariables(ScssContext context) {
         ArrayList<SimpleSelector> list = new ArrayList<SimpleSelector>();
         for (SimpleSelector s : selectors) {
-            list.add(s.replaceVariables());
+            list.add(s.replaceVariables(context));
         }
         return new SimpleSelectorSequence(list);
     }

@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
 
@@ -191,21 +192,23 @@ public class SassList implements SassListItem, Iterable<SassListItem>,
     }
 
     @Override
-    public SassList evaluateFunctionsAndExpressions(boolean evaluateArithmetics) {
+    public SassList evaluateFunctionsAndExpressions(ScssContext context,
+            boolean evaluateArithmetics) {
         List<SassListItem> list = new ArrayList<SassListItem>();
         for (SassListItem item : this) {
-            list.add(item.evaluateFunctionsAndExpressions(evaluateArithmetics));
+            list.add(item.evaluateFunctionsAndExpressions(context,
+                    evaluateArithmetics));
         }
         return new SassList(getSeparator(), list);
     }
 
     @Override
-    public SassList replaceVariables() {
+    public SassList replaceVariables(ScssContext context) {
         // The actual replacing happens in LexicalUnitImpl, which also
         // implements SassListItem.
         List<SassListItem> list = new ArrayList<SassListItem>();
         for (SassListItem item : this) {
-            list.add(item.replaceVariables());
+            list.add(item.replaceVariables(context));
         }
         return new SassList(getSeparator(), list);
     }

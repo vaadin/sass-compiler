@@ -34,23 +34,15 @@ import com.vaadin.sass.internal.handler.SCSSErrorHandler;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.Parser;
 import com.vaadin.sass.internal.parser.SCSSParseException;
-import com.vaadin.sass.internal.parser.Variable;
 import com.vaadin.sass.internal.resolver.ClassloaderResolver;
 import com.vaadin.sass.internal.resolver.FilesystemResolver;
 import com.vaadin.sass.internal.resolver.ScssStylesheetResolver;
-import com.vaadin.sass.internal.tree.FunctionDefNode;
-import com.vaadin.sass.internal.tree.MixinDefNode;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.visitor.ExtendNodeHandler;
 
 public class ScssStylesheet extends Node {
 
     private static final long serialVersionUID = 3849790204404961608L;
-
-    @Deprecated
-    private static ScssStylesheet mainStyleSheet = null;
-
-    private static Scope scope = new Scope();
 
     private File file;
 
@@ -243,22 +235,16 @@ public class ScssStylesheet extends Node {
      * @throws Exception
      */
     public void compile() throws Exception {
-        // reset compilation state
-        mainStyleSheet = this;
-        // top-level scope has definitions by parser
-        scope = new Scope();
-        ExtendNodeHandler.clear();
-
-        traverse();
-        ExtendNodeHandler.modifyTree(this);
-    }
-
-    public static void defineFunction(FunctionDefNode function) {
-        scope.defineFunction(function);
-    }
-
-    public static void defineMixin(MixinDefNode mixin) {
-        scope.defineMixin(mixin);
+        // reset compilation state to be sure we start from a clean situation -
+        // normally this should not be necessary
+        ScssContext.clear();
+        try {
+            traverse();
+            ExtendNodeHandler.modifyTree(this);
+        } finally {
+            // clean up compilation state to free up memory
+            ScssContext.clear();
+        }
     }
 
     /**
@@ -278,10 +264,6 @@ public class ScssStylesheet extends Node {
         return "Stylesheet node [" + buildString(TO_STRING_STRATEGY) + "]";
     }
 
-    public static ScssStylesheet get() {
-        return mainStyleSheet;
-    }
-
     /**
      * Traverses a node and its children recursively, calling all the
      * appropriate handlers via {@link Node#traverse()}.
@@ -294,100 +276,6 @@ public class ScssStylesheet extends Node {
     public Collection<Node> traverse() {
         traverseChildren();
         return Collections.singleton((Node) this);
-    }
-
-    /**
-     * Switch to a new sub-scope of a specific scope. Any variables created
-     * after opening a new scope are only valid until the scope is closed,
-     * whereas variables from the parent scope(s) that are modified will keep
-     * their new values even after closing the inner scope.
-     * 
-     * When using this method, the scope must be closed with
-     * {@link #closeVariableScope(Scope)} with the return value of this method
-     * as its parameter.
-     * 
-     * @return previous scope
-     */
-    public static Scope openVariableScope(Scope parent) {
-        Scope previousScope = scope;
-        scope = new Scope(parent);
-        return previousScope;
-    }
-
-    /**
-     * End a scope for variables, removing all active variables that only
-     * existed in the new scope.
-     */
-    public static void closeVariableScope(Scope newScope) {
-        scope = newScope;
-    }
-
-    /**
-     * Returns the current scope. The returned value should be treated as opaque
-     * and only used as a parameter to {@link #openVariableScope(Scope)}.
-     * 
-     * @return current scope
-     */
-    public static Scope getCurrentScope() {
-        return scope;
-    }
-
-    /**
-     * Start a new scope for variables. Any variables created after opening a
-     * new scope are only valid until the scope is closed, at which time they
-     * are replaced with their old values, whereas variables from outside the
-     * current scope that are modified will keep their new values even after
-     * closing the inner scope.
-     */
-    public static void openVariableScope() {
-        scope = new Scope(scope);
-    }
-
-    /**
-     * End a scope for variables, removing all active variables that only
-     * existed in the new scope.
-     */
-    public static void closeVariableScope() {
-        scope = scope.getParent();
-    }
-
-    /**
-     * Set the value of a variable that may be in the innermost scope or an
-     * outer scope. The new value will be set in the scope in which the variable
-     * was defined, or in the current scope if the variable was not set.
-     * 
-     * @param node
-     *            variable to set
-     */
-    public static void setVariable(Variable node) {
-        scope.setVariable(node);
-    }
-
-    /**
-     * Add a scope specific local variable, typically a function or mixin
-     * parameter.
-     * 
-     * @param node
-     *            variable to add
-     */
-    public static void addVariable(Variable node) {
-        scope.addVariable(node);
-    }
-
-    public static Variable getVariable(String string) {
-        return scope.getVariable(string);
-    }
-
-    public static Iterable<Variable> getVariables() {
-        return scope.getVariables();
-    }
-
-    public static MixinDefNode getMixinDefinition(String name) {
-        return scope.getMixinDefinition(name);
-    }
-
-    public static FunctionDefNode getFunctionDefinition(String name) {
-        return scope.getFunctionDefinition(name);
     }
 
     public void setFile(File file) {

@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.ParseException;
 
 // note: a Selector is effectively immutable - only methods creating a new selector can modify its parts directly
@@ -222,13 +223,13 @@ public class Selector implements Serializable {
     /**
      * Replace variables with their values (textually) in subselectors
      */
-    public Selector replaceVariables() {
+    public Selector replaceVariables(ScssContext context) {
         // It would be sensible to rethink the whole handling of interpolations
         Selector sel = new Selector();
         for (SelectorSegment segment : parts) {
             if (segment instanceof SimpleSelectorSequence) {
                 SimpleSelectorSequence seq = (SimpleSelectorSequence) segment;
-                seq = seq.replaceVariables();
+                seq = seq.replaceVariables(context);
                 sel.parts.add(seq);
             } else {
                 sel.parts.add(segment);

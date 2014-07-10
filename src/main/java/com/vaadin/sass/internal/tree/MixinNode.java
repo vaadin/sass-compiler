@@ -80,8 +80,8 @@ public class MixinNode extends Node implements IVariableNode {
      */
     @Override
     public void replaceVariables() {
-        arglist = arglist.replaceVariables();
-        arglist = arglist.evaluateFunctionsAndExpressions(true);
+        arglist = arglist.replaceVariables(getContext());
+        arglist = arglist.evaluateFunctionsAndExpressions(getContext(), true);
     }
 
     @Override

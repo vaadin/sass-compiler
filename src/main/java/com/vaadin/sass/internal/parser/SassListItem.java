@@ -15,6 +15,7 @@
  */
 package com.vaadin.sass.internal.parser;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
 
 /**
@@ -70,12 +71,15 @@ public interface SassListItem {
      *            the parameter lists of functions will be evaluated even if
      *            evaluateArithmetics is false.
      * 
+     * @param context
+     *            the compilation context in which to evaluate functions,
+     *            variables etc.
      * @return For single values, the result of the arithmetic expression or
      *         function. For a list, a copy of the list where the arithmetic
      *         expressions and functions have been replaced with their evaluated
      *         values.
      */
-    public SassListItem evaluateFunctionsAndExpressions(
+    public SassListItem evaluateFunctionsAndExpressions(ScssContext context,
             boolean evaluateArithmetics);
 
     /**
@@ -83,10 +87,13 @@ public interface SassListItem {
      * occurrences of variables have been replaced by the values in the current
      * variable scope. Does not modify this item.
      * 
+     * @param context
+     *            the compilation context in which to evaluate functions,
+     *            variables etc.
      * @return A SassListItem where all occurrences of variables have been
      *         replaced by their values.
      */
-    public SassListItem replaceVariables();
+    public SassListItem replaceVariables(ScssContext context);
 
     /**
      * Updates all url's of this item by, e.g., adding the prefix to an url not

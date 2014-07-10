@@ -15,6 +15,7 @@
  */
 package com.vaadin.sass.internal.selector;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 
 /**
@@ -31,7 +32,7 @@ public class UniversalSelector extends TypeSelector {
     }
 
     @Override
-    public UniversalSelector replaceVariables() {
+    public UniversalSelector replaceVariables(ScssContext context) {
         return this;
     }
 

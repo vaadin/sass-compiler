@@ -15,31 +15,60 @@
  */
 package com.vaadin.sass.internal.parser.function;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.expression.BinaryOperator;
+import com.vaadin.sass.internal.parser.ActualArgumentList;
 import com.vaadin.sass.internal.parser.FormalArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
+import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassListItem;
 
-public class IfFunctionGenerator extends AbstractFunctionGenerator {
+public class IfFunctionGenerator implements SCSSFunctionGenerator {
 
     private static String[] argumentNames = { "condition", "if-true",
             "if-false" };
 
+    private String[] functionNames;
+    private FormalArgumentList arguments;
+
     public IfFunctionGenerator() {
-        super(createArgumentList(argumentNames, false), "if");
+        arguments = AbstractFunctionGenerator.createArgumentList(argumentNames,
+                false);
+        functionNames = new String[] { "if" };
     }
 
     @Override
-    protected SassListItem computeForArgumentList(LexicalUnitImpl function,
+    public String[] getFunctionNames() {
+        return functionNames;
+    }
+
+    @Override
+    public SassListItem compute(ScssContext context, LexicalUnitImpl function) {
+        ActualArgumentList args = function.getParameterList();
+        FormalArgumentList functionArguments;
+        try {
+            functionArguments = arguments.replaceFormalArguments(args, true);
+        } catch (ParseException e) {
+            throw new ParseException("Error in parameters of function "
+                    + function.getFunctionName() + "(), line "
+                    + function.getLineNumber() + ", column "
+                    + function.getColumnNumber() + ": [" + e.getMessage() + "]");
+        }
+        return computeForArgumentList(context, function, functionArguments);
+    }
+
+    protected SassListItem computeForArgumentList(ScssContext context,
+            LexicalUnitImpl function,
             FormalArgumentList actualArguments) {
-        SassListItem firstParam = getParam(actualArguments, "condition")
-                .evaluateFunctionsAndExpressions(true);
+        SassListItem firstParam = AbstractFunctionGenerator.getParam(
+                actualArguments, "condition").evaluateFunctionsAndExpressions(
+                context, true);
         if (BinaryOperator.isTrue(firstParam)) {
-            return getParam(actualArguments, "if-true")
-                    .evaluateFunctionsAndExpressions(true);
+            return AbstractFunctionGenerator.getParam(actualArguments,
+                    "if-true").evaluateFunctionsAndExpressions(context, true);
         } else {
-            return getParam(actualArguments, "if-false")
-                    .evaluateFunctionsAndExpressions(true);
+            return AbstractFunctionGenerator.getParam(actualArguments,
+                    "if-false").evaluateFunctionsAndExpressions(context, true);
         }
     }
 }

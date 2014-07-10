@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
 
 import org.w3c.css.sac.LexicalUnit;
 
-import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.expression.exception.IncompatibleUnitsException;
 import com.vaadin.sass.internal.parser.function.AbsFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.AdjustColorFunctionGenerator;
@@ -728,39 +728,39 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     }
 
     @Override
-    public SassListItem replaceVariables() {
+    public SassListItem replaceVariables(ScssContext context) {
         LexicalUnitImpl lui = this;
 
         // replace function parameters (if any)
-        lui = lui.replaceParams();
+        lui = lui.replaceParams(context);
 
         // replace parameters in string value
         if (lui.getLexicalUnitType() == LexicalUnitImpl.SCSS_VARIABLE) {
-            return lui.replaceSimpleVariable();
+            return lui.replaceSimpleVariable(context);
         } else if (containsInterpolation()) {
-            return lui.replaceInterpolation();
+            return lui.replaceInterpolation(context);
         }
         return lui;
     }
 
-    private LexicalUnitImpl replaceParams() {
+    private LexicalUnitImpl replaceParams(ScssContext context) {
         ActualArgumentList params = getParameterList();
         if (params != null) {
             LexicalUnitImpl copy = copy();
-            copy.setParameterList(params.replaceVariables());
+            copy.setParameterList(params.replaceVariables(context));
             return copy;
         } else {
             return this;
         }
     }
 
-    private SassListItem replaceSimpleVariable() {
+    private SassListItem replaceSimpleVariable(ScssContext context) {
         if (getLexicalUnitType() == LexicalUnitImpl.SCSS_VARIABLE) {
             // replace simple variable
             String stringValue = getStringValue();
-            Variable var = ScssStylesheet.getVariable(stringValue);
+            Variable var = context.getVariable(stringValue);
             if (var != null) {
-                return var.getExpr().replaceVariables();
+                return var.getExpr().replaceVariables(context);
             }
         }
         return this;
@@ -770,13 +770,13 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         return s != null && s.containsInterpolation();
     }
 
-    private SassListItem replaceInterpolation() {
+    private SassListItem replaceInterpolation(ScssContext context) {
         // replace interpolation
         if (containsInterpolation()) {
             // handle Interpolation objects
-            StringInterpolationSequence sis = s.replaceVariables();
+            StringInterpolationSequence sis = s.replaceVariables(context);
             // handle strings with interpolation
-            for (Variable var : ScssStylesheet.getVariables()) {
+            for (Variable var : context.getVariables()) {
                 if (!sis.containsInterpolation()) {
                     break;
                 }
@@ -788,9 +788,9 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
                         && !checkLexicalUnitType(expr,
                                 LexicalUnitImpl.SAC_STRING_VALUE)) {
                     // no more replacements needed, use data type of expr
-                    return expr.replaceVariables();
+                    return expr.replaceVariables(context);
                 } else if (stringValue.contains(interpolation)) {
-                    String replacementString = expr.replaceVariables()
+                    String replacementString = expr.replaceVariables(context)
                             .unquotedString();
                     sis = new StringInterpolationSequence(
                             stringValue.replaceAll(
@@ -808,17 +808,17 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     }
 
     @Override
-    public SassListItem evaluateFunctionsAndExpressions(
+    public SassListItem evaluateFunctionsAndExpressions(ScssContext context,
             boolean evaluateArithmetics) {
         if (params != null && !"calc".equals(getFunctionName())) {
             SCSSFunctionGenerator generator = getGenerator(getFunctionName());
             LexicalUnitImpl copy = this;
             if (!"if".equals(getFunctionName())) {
                 copy = createFunction(line, column, fname,
-                        params.evaluateFunctionsAndExpressions(true));
+                        params.evaluateFunctionsAndExpressions(context, true));
             }
             if (generator == null) {
-                SassListItem result = copy.replaceCustomFunctions();
+                SassListItem result = copy.replaceCustomFunctions(context);
                 if (result != null) {
                     return result;
                 }
@@ -826,14 +826,14 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
             if (generator == null) {
                 generator = DEFAULT_SERIALIZER;
             }
-            return generator.compute(copy);
+            return generator.compute(context, copy);
         } else {
             return this;
         }
     }
 
-    private SassListItem replaceCustomFunctions() {
-        FunctionDefNode functionDef = ScssStylesheet
+    private SassListItem replaceCustomFunctions(ScssContext context) {
+        FunctionDefNode functionDef = context
                 .getFunctionDefinition(getFunctionName());
         if (functionDef != null) {
             return FunctionCall.evaluate(functionDef, this);

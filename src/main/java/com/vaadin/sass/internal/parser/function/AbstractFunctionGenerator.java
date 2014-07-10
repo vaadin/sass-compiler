@@ -17,6 +17,7 @@ package com.vaadin.sass.internal.parser.function;
 
 import java.util.ArrayList;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.ActualArgumentList;
 import com.vaadin.sass.internal.parser.FormalArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
@@ -51,8 +52,12 @@ public abstract class AbstractFunctionGenerator implements
         return functionNames;
     }
 
+    protected FormalArgumentList getArguments() {
+        return arguments;
+    }
+
     @Override
-    public SassListItem compute(LexicalUnitImpl function) {
+    public SassListItem compute(ScssContext context, LexicalUnitImpl function) {
         ActualArgumentList args = function.getParameterList();
         FormalArgumentList functionArguments;
         try {

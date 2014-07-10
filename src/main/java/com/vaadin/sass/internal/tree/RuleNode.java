@@ -90,8 +90,8 @@ public class RuleNode extends Node implements IVariableNode {
 
     @Override
     public void replaceVariables() {
-        variable = variable.replaceVariables();
-        value = value.replaceVariables();
+        variable = variable.replaceVariables(getContext());
+        value = value.replaceVariables(getContext());
     }
 
     @Override
@@ -104,7 +104,8 @@ public class RuleNode extends Node implements IVariableNode {
          */
         boolean hasOperators = value.containsArithmeticalOperator();
         replaceVariables();
-        value = value.evaluateFunctionsAndExpressions(hasOperators);
+        value = value.evaluateFunctionsAndExpressions(getContext(),
+                hasOperators);
         return Collections.singleton((Node) this);
     }
 

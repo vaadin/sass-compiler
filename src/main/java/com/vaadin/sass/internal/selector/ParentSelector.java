@@ -15,6 +15,7 @@
  */
 package com.vaadin.sass.internal.selector;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 
 /**
@@ -34,7 +35,7 @@ public class ParentSelector extends TypeSelector {
     }
 
     @Override
-    public ParentSelector replaceVariables() {
+    public ParentSelector replaceVariables(ScssContext context) {
         return this;
     }
 }

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.SassList.Separator;
 import com.vaadin.sass.internal.tree.Node.BuildStringStrategy;
 
@@ -151,23 +152,23 @@ public class ActualArgumentList implements Serializable {
         return this;
     }
 
-    public ActualArgumentList replaceVariables() {
-        ArgumentList newArgList = arglist.replaceVariables();
+    public ActualArgumentList replaceVariables(ScssContext context) {
+        ArgumentList newArgList = arglist.replaceVariables(context);
         SassListItem newVarArg = null;
         if (hasVariableArguments()) {
-            newVarArg = variableArgument.replaceVariables();
+            newVarArg = variableArgument.replaceVariables(context);
         }
         return new ActualArgumentList(newArgList, newVarArg);
     }
 
     public ActualArgumentList evaluateFunctionsAndExpressions(
-            boolean evaluateArithmetics) {
-        ArgumentList newArgList = arglist
-                .evaluateFunctionsAndExpressions(evaluateArithmetics);
+            ScssContext context, boolean evaluateArithmetics) {
+        ArgumentList newArgList = arglist.evaluateFunctionsAndExpressions(
+                context, evaluateArithmetics);
         SassListItem newVarArg = null;
         if (hasVariableArguments()) {
-            newVarArg = variableArgument
-                    .evaluateFunctionsAndExpressions(evaluateArithmetics);
+            newVarArg = variableArgument.evaluateFunctionsAndExpressions(
+                    context, evaluateArithmetics);
         }
         return new ActualArgumentList(newArgList, newVarArg);
     }

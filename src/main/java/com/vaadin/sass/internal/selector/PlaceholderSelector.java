@@ -15,6 +15,7 @@
  */
 package com.vaadin.sass.internal.selector;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 
 /**
@@ -38,7 +39,7 @@ public class PlaceholderSelector extends SimpleSelector {
     }
 
     @Override
-    public PlaceholderSelector replaceVariables() {
-        return new PlaceholderSelector(value.replaceVariables());
+    public PlaceholderSelector replaceVariables(ScssContext context) {
+        return new PlaceholderSelector(value.replaceVariables(context));
     }
 }

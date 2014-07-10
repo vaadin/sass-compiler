@@ -49,7 +49,7 @@ public class IfNode extends Node implements IfElseNode, IVariableNode {
 
     @Override
     public void replaceVariables() {
-        expression = expression.replaceVariables();
+        expression = expression.replaceVariables(getContext());
     }
 
     @Override

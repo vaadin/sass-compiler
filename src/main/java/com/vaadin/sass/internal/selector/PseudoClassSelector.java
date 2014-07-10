@@ -15,7 +15,7 @@
  */
 package com.vaadin.sass.internal.selector;
 
-import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 import com.vaadin.sass.internal.parser.Variable;
 
@@ -52,18 +52,20 @@ public class PseudoClassSelector extends SimpleSelector {
     }
 
     @Override
-    public PseudoClassSelector replaceVariables() {
+    public PseudoClassSelector replaceVariables(ScssContext context) {
         if (argument == null) {
-            return new PseudoClassSelector(pseudoClass.replaceVariables());
+            return new PseudoClassSelector(
+                    pseudoClass.replaceVariables(context));
         } else {
-            return new PseudoClassSelector(pseudoClass.replaceVariables(),
-                    replaceInterpolation(argument));
+            return new PseudoClassSelector(
+                    pseudoClass.replaceVariables(context),
+                    replaceInterpolation(context, argument));
         }
     }
 
-    private String replaceInterpolation(String value) {
+    private String replaceInterpolation(ScssContext context, String value) {
         String result = value;
-        for (Variable var : ScssStylesheet.getVariables()) {
+        for (Variable var : context.getVariables()) {
             result = var.replaceInterpolation(result);
         }
         return result;

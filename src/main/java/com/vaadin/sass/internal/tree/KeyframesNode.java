@@ -56,7 +56,7 @@ public class KeyframesNode extends Node implements IVariableNode {
 
     @Override
     public void replaceVariables() {
-        animationName = animationName.replaceVariables();
+        animationName = animationName.replaceVariables(getContext());
     }
 
     private String buildString(BuildStringStrategy strategy) {

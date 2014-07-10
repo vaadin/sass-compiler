@@ -18,6 +18,7 @@ package com.vaadin.sass.internal.visitor;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassListItem;
@@ -28,8 +29,9 @@ import com.vaadin.sass.internal.tree.controldirective.ForNode;
 public class ForNodeHandler extends LoopNodeHandler {
 
     public static Collection<Node> traverse(ForNode forNode) {
-        int fromInt = getInt(forNode.getFrom());
-        int toInt = getInt(forNode.getTo());
+        ScssContext context = forNode.getContext();
+        int fromInt = getInt(context, forNode.getFrom());
+        int toInt = getInt(context, forNode.getTo());
         if (forNode.isExclusive()) {
             toInt = toInt - 1;
         }
@@ -43,9 +45,10 @@ public class ForNodeHandler extends LoopNodeHandler {
         return replaceLoopNode(forNode, indices);
     }
 
-    private static int getInt(SassListItem item) {
-        item = item.replaceVariables();
-        SassListItem value = item.evaluateFunctionsAndExpressions(true);
+    private static int getInt(ScssContext context, SassListItem item) {
+        item = item.replaceVariables(context);
+        SassListItem value = item
+                .evaluateFunctionsAndExpressions(context, true);
         if (value instanceof LexicalUnitImpl
                 && ((LexicalUnitImpl) value).isNumber()) {
             return ((LexicalUnitImpl) value).getIntegerValue();

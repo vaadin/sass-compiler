@@ -63,7 +63,7 @@ public abstract class DefNode extends Node implements Definition, IVariableNode 
 
     @Override
     public void replaceVariables() {
-        arglist = arglist.replaceVariables();
+        arglist = arglist.replaceVariables(getContext());
     }
 
     public void replacePossibleArguments(ActualArgumentList actualArgumentList) {

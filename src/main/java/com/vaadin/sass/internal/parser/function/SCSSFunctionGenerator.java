@@ -15,6 +15,7 @@
  */
 package com.vaadin.sass.internal.parser.function;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.SassListItem;
 
@@ -46,9 +47,11 @@ public interface SCSSFunctionGenerator {
      * Both the input and the output of the method should be separate from any
      * chain of lexical units.
      * 
+     * @param context
+     *            current compilation context
      * @param function
      *            Function lexical unit to print its state
      * @return SassListItem the value of the function
      */
-    SassListItem compute(LexicalUnitImpl function);
+    SassListItem compute(ScssContext context, LexicalUnitImpl function);
 }
