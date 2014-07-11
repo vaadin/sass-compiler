@@ -13,3 +13,11 @@
 .test1 .middle1 .seriousError1 {
 	border-width: 3px;
 }
+
+.test2 .error2, .test2 .middle2 .seriousError2 {
+	border: 1px #f00;
+	background-color: #fdd; 
+}
+.test2 .middle2 .seriousError2 {
+	border-width: 3px;
+}

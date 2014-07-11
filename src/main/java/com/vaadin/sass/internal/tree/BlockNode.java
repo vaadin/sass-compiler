@@ -33,6 +33,9 @@ public class BlockNode extends Node implements IVariableNode {
 
     private List<Selector> selectorList;
 
+    // combined selectors of the parent node, used to handle @extends
+    private List<Selector> parentSelectors;
+
     public BlockNode(List<Selector> selectorList) {
         this.selectorList = selectorList;
     }
@@ -45,15 +48,30 @@ public class BlockNode extends Node implements IVariableNode {
     // for use by copy() only
     private BlockNode(BlockNode blockNode) {
         super(blockNode);
-        selectorList = new ArrayList<Selector>(blockNode.selectorList);
+        selectorList = blockNode.selectorList;
+        parentSelectors = blockNode.parentSelectors;
     }
 
+    /**
+     * Returns unmodifiable selector list of the block
+     * 
+     * @return selector list
+     */
     public List<Selector> getSelectorList() {
-        return Collections.unmodifiableList(selectorList);
+        return selectorList;
     }
 
+    /**
+     * Sets the selector list for the node.
+     * 
+     * The selector list instance must not be modified after being given as a
+     * parameter here.
+     * 
+     * @param selectorList
+     *            new selector list
+     */
     public void setSelectorList(List<Selector> selectorList) {
-        this.selectorList = selectorList;
+        this.selectorList = Collections.unmodifiableList(selectorList);
     }
 
     public String buildString(boolean indent) {
@@ -81,7 +99,7 @@ public class BlockNode extends Node implements IVariableNode {
         for (Selector s : selectorList) {
             newSelectorList.add(s.replaceVariables(context));
         }
-        selectorList = newSelectorList;
+        setSelectorList(newSelectorList);
     }
 
     public String getSelectors() {
@@ -134,6 +152,26 @@ public class BlockNode extends Node implements IVariableNode {
     @Override
     public BlockNode copy() {
         return new BlockNode(this);
+    }
+
+    /**
+     * Returns the parent selector list.
+     * 
+     * @return parent selector list or null
+     */
+    public List<Selector> getParentSelectors() {
+        return parentSelectors;
+    }
+
+    /**
+     * Sets the selector list of the parent node. The list must not be modified
+     * after giving it as a parameter here.
+     * 
+     * @param parentSelectors
+     *            parent selector list or null
+     */
+    public void setParentSelectors(List<Selector> parentSelectors) {
+        this.parentSelectors = parentSelectors;
     }
 
 }

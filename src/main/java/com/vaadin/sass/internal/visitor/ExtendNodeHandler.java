@@ -50,10 +50,13 @@ public class ExtendNodeHandler {
                         "Nested selector not allowed in @extend-clause");
             }
             if (node.getNormalParentNode() instanceof BlockNode) {
+                BlockNode parentBlock = (BlockNode) node.getNormalParentNode();
                 SimpleSelectorSequence extendSelector = s.firstSimple();
-                for (Selector sel : ((BlockNode) node.getNormalParentNode())
-                        .getSelectorList()) {
-                    context.addExtension(new Extension(extendSelector, sel));
+                for (Selector sel : parentBlock.getSelectorList()) {
+                    Collection<Selector> ctx = parentBlock
+                            .getParentSelectors();
+                    context.addExtension(
+                            new Extension(extendSelector, sel, ctx));
                 }
             }
         }
@@ -75,18 +78,14 @@ public class ExtendNodeHandler {
                         blockNode.getSelectorList());
                 SelectorSet newSelectors = new SelectorSet();
                 for (Selector selector : selectorList) {
+                    // keep order while avoiding duplicates
+                    newSelectors.add(selector);
                     newSelectors.addAll(createSelectorsForExtensions(selector,
                             context.getExtensions()));
                 }
 
-                // remove any selector duplicated in the initial list of
-                // selectors
-                newSelectors.removeAll(selectorList);
-
-                selectorList.addAll(newSelectors);
-
                 // remove all placeholder selectors
-                Iterator<Selector> it = selectorList.iterator();
+                Iterator<Selector> it = newSelectors.iterator();
                 while (it.hasNext()) {
                     Selector s = it.next();
                     if (s.isPlaceholder()) {
@@ -95,11 +94,12 @@ public class ExtendNodeHandler {
                 }
 
                 // remove block if selector list is empty
-                if (selectorList.isEmpty()) {
+                if (newSelectors.isEmpty()) {
                     blockNode.getParentNode().replaceNode(blockNode,
                             Collections.<Node> emptyList());
                 } else {
-                    blockNode.setSelectorList(selectorList);
+                    blockNode.setSelectorList(new ArrayList<Selector>(
+                            newSelectors));
                 }
             }
         }
@@ -149,8 +149,7 @@ public class ExtendNodeHandler {
         List<Selector> newSelectors = new ArrayList<Selector>();
         List<Extension> extensionsForNewSelectors = new ArrayList<Extension>();
         for (Extension extension : extendsMap) {
-            newSelectors.add(target.replace(extension.extendSelector,
-                    extension.replacingSelector));
+            newSelectors.add(target.replace(extension));
             extensionsForNewSelectors.add(extension);
         }
         current.addAll(newSelectors);

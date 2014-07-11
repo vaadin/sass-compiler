@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.junit.Assert;
 import org.junit.runner.RunWith;
@@ -35,19 +36,19 @@ public class AutomaticSassTestsBroken extends AbstractDirectoryScanningSassTests
     }
 
     private static URL getResourceURLInternal(String path) {
-        URL url = AutomaticSassTestsBroken.class.getResource("/automaticbroken"
+        return AutomaticSassTestsBroken.class.getResource("/automaticbroken"
                 + path);
-        if (url == null) {
-            throw new RuntimeException(
-                    "Could not locate /automaticbroken using classloader");
-        }
-        return url;
     }
 
     @TestFactory
     public static Collection<String> getScssResourceNames()
             throws URISyntaxException, IOException {
-        return getScssResourceNames(getResourceURLInternal(""));
+        URL directoryUrl = getResourceURLInternal("");
+        if (directoryUrl != null) {
+            return getScssResourceNames(directoryUrl);
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     @Override

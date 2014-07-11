@@ -24,3 +24,18 @@
 		}
 	}
 }
+
+.test2{
+ 	.error2 {
+  		border: 1px #f00;
+  		background-color: #fdd;
+	}
+}
+.test2{
+	.middle2{
+ 		.seriousError2 {
+  			@extend .error2;
+  			border-width: 3px;
+		}
+	}
+}

@@ -17,10 +17,12 @@ package com.vaadin.sass.internal.selector;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.ParseException;
+import com.vaadin.sass.internal.visitor.Extension;
 
 // note: a Selector is effectively immutable - only methods creating a new selector can modify its parts directly
 public class Selector implements Serializable {
@@ -255,23 +257,23 @@ public class Selector implements Serializable {
      * instances of extendSelector in this with extending and returns the new
      * copy of this.
      * 
-     * @param extendSelector
-     *            selector in @extend clause (simple selector sequence to be
-     *            replaced)
-     * @param extending
-     *            selectors replacing the extendSelector
+     * @param extension
+     *            information about extend selector, extending selector and
+     *            context
      * @return new selector replacing this
      */
-    public Selector replace(SimpleSelectorSequence extendSelector,
-            Selector extending) {
+    public Selector replace(Extension extension) {
         Selector sel = new Selector();
         List<SelectorSegment> previousSegments = new ArrayList<SelectorSegment>();
         for (SelectorSegment segment : parts) {
             if (segment instanceof SimpleSelectorSequence
-                    && extendSelector.equals(segment)) {
+                    && extension.extendSelector.equals(segment)) {
                 // handle nested @extend
-                Selector newExtending = extending
+                Selector newExtending = extension.replacingSelector
                         .removePrefix(previousSegments);
+                if (extension.context != null) {
+                    newExtending = newExtending.removePrefix(extension.context);
+                }
                 // simply replace the whole part
                 sel.parts.addAll(newExtending.parts);
                 // stop keeping track of previous segments to avoid
@@ -291,11 +293,12 @@ public class Selector implements Serializable {
         // if last part of result is a partial match, use SSS.unify()
         // TODO this is limited/broken
         SimpleSelectorSequence seq = sel.lastSimple();
-        SimpleSelectorSequence lastUnified = seq.unify(extendSelector,
-                extending.lastSimple());
+        SimpleSelectorSequence lastUnified = seq.unify(
+                extension.extendSelector,
+                extension.replacingSelector.lastSimple());
         if (lastUnified != null) {
             sel.parts.remove(sel.parts.size() - 1);
-            sel.parts.addAll(extending.parts);
+            sel.parts.addAll(extension.replacingSelector.parts);
             sel.parts.set(sel.parts.size() - 1, lastUnified);
         }
 
@@ -320,6 +323,37 @@ public class Selector implements Serializable {
             }
         }
         return new Selector(parts.subList(toRemove.size(), parts.size()));
+    }
+
+    /**
+     * Remove toRemove segments from this selector and returns the updated
+     * selector. If any entry on toRemove is a prefix of this, its segments are
+     * removed from this and other prefixes are not checked. Otherwise, this is
+     * returned unmodified.
+     * 
+     * @param toRemove
+     *            selectors one of which to remove or empty collection if none
+     * @return new selector or this if no modifications are needed
+     */
+    private Selector removePrefix(Collection<Selector> toRemove) {
+        for (Selector sel : toRemove) {
+            if (hasPrefix(sel)) {
+                return removePrefix(sel.parts);
+            }
+        }
+        return this;
+    }
+
+    private boolean hasPrefix(Selector prefix) {
+        if (parts.size() < prefix.parts.size()) {
+            return false;
+        }
+        for (int i = 0; i < prefix.parts.size(); ++i) {
+            if (!parts.get(i).equals(prefix.parts.get(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override

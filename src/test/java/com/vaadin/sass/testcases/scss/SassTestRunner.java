@@ -27,6 +27,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.Parameterized;
 import org.junit.runners.model.FrameworkMethod;
@@ -104,6 +106,15 @@ public class SassTestRunner extends BlockJUnit4ClassRunner {
         }
 
         return tests;
+    }
+
+    // overridden not to complain about missing test methods
+    @Override
+    @Deprecated
+    protected void validateInstanceMethods(List<Throwable> errors) {
+        validatePublicVoidNoArgMethods(After.class, false, errors);
+        validatePublicVoidNoArgMethods(Before.class, false, errors);
+        validateTestMethods(errors);
     }
 
     private static class ParameterizedFrameworkMethod extends FrameworkMethod {

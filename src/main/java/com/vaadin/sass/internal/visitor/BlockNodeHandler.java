@@ -61,10 +61,11 @@ public class BlockNodeHandler {
             try {
                 ArrayList<Node> newChildren = new ArrayList<Node>();
                 for (Node child : new ArrayList<Node>(node.getChildren())) {
-                    Collection<Node> childTraversed = child.traverse(context);
                     if (child instanceof BlockNode) {
-                        result.addAll(childTraversed);
+                        ((BlockNode) child).setParentSelectors(node.getSelectorList());
+                        result.addAll(child.traverse(context));
                     } else {
+                        Collection<Node> childTraversed = child.traverse(context);
                         for (Node n : childTraversed) {
                             if (n instanceof BlockNode) {
                                 // already traversed
@@ -80,6 +81,7 @@ public class BlockNodeHandler {
                 if (!newChildren.isEmpty()) {
                     BlockNode newNode = new BlockNode(new ArrayList<Selector>(
                             node.getSelectorList()), newChildren);
+                    newNode.setParentSelectors(node.getParentSelectors());
                     result.add(0, newNode);
                 }
             } finally {
