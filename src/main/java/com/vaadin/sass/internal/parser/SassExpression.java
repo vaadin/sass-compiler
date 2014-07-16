@@ -21,6 +21,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import org.w3c.css.sac.LexicalUnit;
+
 import com.vaadin.sass.internal.expression.ArithmeticExpressionEvaluator;
 import com.vaadin.sass.internal.expression.BinaryOperator;
 import com.vaadin.sass.internal.tree.Node;
@@ -270,8 +272,14 @@ public class SassExpression implements SassListItem, Serializable {
         return (LexicalUnitImpl) items.get(0);
     }
 
-    public static boolean isWhitespace(SassListItem unit) {
-        return unit.printState().matches("\\s+");
+    public static boolean isWhitespace(SassListItem item) {
+        // optimization as this is called very frequently
+        if (item instanceof LexicalUnitImpl) {
+            LexicalUnitImpl unit = (LexicalUnitImpl) item;
+            return unit.getLexicalUnitType() == LexicalUnit.SAC_IDENT
+                    && unit.getStringValue().matches("\\s+");
+        }
+        return item.printState().matches("\\s+");
     }
 
     @Override
