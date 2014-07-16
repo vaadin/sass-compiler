@@ -19,6 +19,7 @@ package com.vaadin.sass.internal.tree.controldirective;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.tree.Node;
 
 /**
@@ -48,26 +49,26 @@ public class TemporaryNode extends Node {
     }
 
     @Override
-    public Collection<Node> traverseChildren() {
-        return traverseChildren(false);
+    public Collection<Node> traverseChildren(ScssContext context) {
+        return traverseChildren(context, false);
     }
 
     // ugly but restricts the scope of manipulation of node hierarchy
-    public void appendAndTraverse(Node node) {
+    public void appendAndTraverse(ScssContext context, Node node) {
         // node needs to be appended before traversal so it can access its
         // parent and grandparent
         appendChild(node);
-        replaceNode(node, new ArrayList<Node>(node.traverse()));
+        replaceNode(node, new ArrayList<Node>(node.traverse(context)));
     }
 
     @Override
-    public Collection<Node> traverse() {
+    public Collection<Node> traverse(ScssContext context) {
         // this is like traverseChildren(false) except that this does not modify
         // the child list of the node
         ArrayList<Node> children = new ArrayList<Node>(getChildren());
         ArrayList<Node> result = new ArrayList<Node>();
         for (Node node : children) {
-            result.addAll(node.traverse());
+            result.addAll(node.traverse(context));
         }
         return result;
     }

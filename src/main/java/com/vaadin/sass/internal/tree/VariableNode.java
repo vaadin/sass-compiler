@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import com.vaadin.sass.internal.Definition;
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.parser.Variable;
 import com.vaadin.sass.internal.visitor.VariableNodeHandler;
@@ -65,12 +66,12 @@ public class VariableNode extends Node implements Definition, IVariableNode {
     }
 
     @Override
-    public void replaceVariables() {
-        variable.setExpr(variable.getExpr().replaceVariables(getContext()));
+    public void replaceVariables(ScssContext context) {
+        variable.setExpr(variable.getExpr().replaceVariables(context));
     }
 
     @Override
-    public Collection<Node> traverse() {
+    public Collection<Node> traverse(ScssContext context) {
         /*
          * containsArithmeticalOperator() must be called before
          * replaceVariables. Because for the "/" operator, it needs to see if
@@ -78,10 +79,10 @@ public class VariableNode extends Node implements Definition, IVariableNode {
          * an arithmetic operator.
          */
         boolean hasOperator = variable.getExpr().containsArithmeticalOperator();
-        replaceVariables();
+        replaceVariables(context);
         variable.setExpr(variable.getExpr().evaluateFunctionsAndExpressions(
-                getContext(), hasOperator));
-        VariableNodeHandler.traverse(this);
+                context, hasOperator));
+        VariableNodeHandler.traverse(context, this);
         return Collections.emptyList();
     }
 

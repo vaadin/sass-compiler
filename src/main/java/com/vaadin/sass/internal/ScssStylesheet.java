@@ -235,16 +235,9 @@ public class ScssStylesheet extends Node {
      * @throws Exception
      */
     public void compile() throws Exception {
-        // reset compilation state to be sure we start from a clean situation -
-        // normally this should not be necessary
-        ScssContext.clear();
-        try {
-            traverse();
-            ExtendNodeHandler.modifyTree(this);
-        } finally {
-            // clean up compilation state to free up memory
-            ScssContext.clear();
-        }
+        ScssContext context = new ScssContext();
+        traverse(context);
+        ExtendNodeHandler.modifyTree(context, this);
     }
 
     /**
@@ -273,8 +266,8 @@ public class ScssStylesheet extends Node {
      * parent.
      */
     @Override
-    public Collection<Node> traverse() {
-        traverseChildren();
+    public Collection<Node> traverse(ScssContext context) {
+        traverseChildren(context);
         return Collections.singleton((Node) this);
     }
 

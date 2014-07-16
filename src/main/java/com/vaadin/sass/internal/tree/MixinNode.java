@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.ActualArgumentList;
 import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.Variable;
@@ -79,9 +80,9 @@ public class MixinNode extends Node implements IVariableNode {
      * name.
      */
     @Override
-    public void replaceVariables() {
-        arglist = arglist.replaceVariables(getContext());
-        arglist = arglist.evaluateFunctionsAndExpressions(getContext(), true);
+    public void replaceVariables(ScssContext context) {
+        arglist = arglist.replaceVariables(context);
+        arglist = arglist.evaluateFunctionsAndExpressions(context, true);
     }
 
     @Override
@@ -94,24 +95,24 @@ public class MixinNode extends Node implements IVariableNode {
         return "Mixin node [" + printState() + "]";
     }
 
-    protected void replaceVariablesForChildren() {
+    protected void replaceVariablesForChildren(ScssContext context) {
         for (Node child : getChildren()) {
             if (child instanceof IVariableNode) {
-                ((IVariableNode) child).replaceVariables();
+                ((IVariableNode) child).replaceVariables(context);
             }
         }
     }
 
     @Override
-    public Collection<Node> traverse() {
+    public Collection<Node> traverse(ScssContext context) {
         try {
-            replaceVariables();
+            replaceVariables(context);
             expandVariableArguments();
             // for the content block, use the scope where it is defined
             // (consistent with sass-lang)
-            replaceVariablesForChildren();
+            replaceVariablesForChildren(context);
             // inner scope is managed by MixinNodeHandler
-            return MixinNodeHandler.traverse(this);
+            return MixinNodeHandler.traverse(context, this);
         } catch (Exception e) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, e);
             // TODO is ignoring this exception appropriate?

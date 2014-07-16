@@ -25,8 +25,7 @@ import com.vaadin.sass.internal.tree.VariableNode;
 
 public class VariableNodeHandler {
 
-    public static void traverse(VariableNode node) {
-        ScssContext context = node.getContext();
+    public static void traverse(ScssContext context, VariableNode node) {
         Variable variable = context.getVariable(node.getName());
         if (!node.isGuarded() || variable == null || variable.getExpr() == null) {
             context.setVariable(node.getVariable());

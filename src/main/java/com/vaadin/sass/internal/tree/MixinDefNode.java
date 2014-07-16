@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.Variable;
 
 public class MixinDefNode extends DefNode {
@@ -80,9 +81,9 @@ public class MixinDefNode extends DefNode {
     }
 
     @Override
-    public Collection<Node> traverse() {
-        getContext().defineMixin(this);
-        setDefinitionScope(getContext().getCurrentScope());
+    public Collection<Node> traverse(ScssContext context) {
+        context.defineMixin(this);
+        setDefinitionScope(context.getCurrentScope());
         return Collections.emptyList();
     }
 

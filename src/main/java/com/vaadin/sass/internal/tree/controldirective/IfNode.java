@@ -17,6 +17,7 @@ package com.vaadin.sass.internal.tree.controldirective;
 
 import java.util.Collection;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.IVariableNode;
@@ -48,13 +49,13 @@ public class IfNode extends Node implements IfElseNode, IVariableNode {
     }
 
     @Override
-    public void replaceVariables() {
-        expression = expression.replaceVariables(getContext());
+    public void replaceVariables(ScssContext context) {
+        expression = expression.replaceVariables(context);
     }
 
     @Override
-    public Collection<Node> traverse() {
-        return traverseChildren();
+    public Collection<Node> traverse(ScssContext context) {
+        return traverseChildren(context);
     }
 
     @Override

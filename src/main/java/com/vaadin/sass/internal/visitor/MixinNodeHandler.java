@@ -29,36 +29,35 @@ import com.vaadin.sass.internal.tree.controldirective.TemporaryNode;
 
 public class MixinNodeHandler {
 
-    public static Collection<Node> traverse(MixinNode node)
+    public static Collection<Node> traverse(ScssContext context, MixinNode node)
             throws ParseException {
-        return replaceMixins(node);
+        return replaceMixins(context, node);
     }
 
-    private static Collection<Node> replaceMixins(MixinNode node)
+    private static Collection<Node> replaceMixins(ScssContext context,
+            MixinNode node)
             throws ParseException {
-        MixinDefNode mixinDef = node.getContext().getMixinDefinition(
-                node.getName());
+        MixinDefNode mixinDef = context.getMixinDefinition(node.getName());
         if (mixinDef == null) {
             throw new ParseException("Mixin Definition: " + node.getName()
                     + " not found");
         }
-        return replaceMixinNode(node, mixinDef);
+        return replaceMixinNode(context, node, mixinDef);
     }
 
-    private static Collection<Node> replaceMixinNode(MixinNode mixinNode,
-            MixinDefNode mixinDef) {
+    private static Collection<Node> replaceMixinNode(ScssContext context,
+            MixinNode mixinNode, MixinDefNode mixinDef) {
         MixinDefNode defClone = mixinDef.copy();
 
         defClone.replaceContentDirective(mixinNode);
 
         if (!mixinDef.getArglist().isEmpty()) {
             defClone.replacePossibleArguments(mixinNode.getArglist());
-            defClone.replaceVariables();
+            defClone.replaceVariables(context);
         }
 
         // parameters have been evaluated in parent scope, rest should be
         // in the scope where the mixin was defined
-        ScssContext context = mixinNode.getContext();
         Scope previousScope = context.openVariableScope(
                 defClone
                 .getDefinitionScope());
@@ -73,7 +72,7 @@ public class MixinNodeHandler {
             // use correct parent with intermediate TemporaryNode
             Node tempParent = new TemporaryNode(mixinNode.getParentNode(),
                     defClone.getChildren());
-            return tempParent.traverse();
+            return tempParent.traverse(context);
         } finally {
             context.closeVariableScope(previousScope);
         }

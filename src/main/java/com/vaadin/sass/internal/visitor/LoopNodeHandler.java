@@ -31,33 +31,34 @@ public abstract class LoopNodeHandler {
     /**
      * Replace a loop node (e.g. ForNode) with the expanded set of nodes.
      * 
+     * @param context
+     *            current compilation context
      * @param loopNode
      *            node to replace
      * @param loopVariables
      *            iterable of the loop variable instances for each iteration -
      *            typically a collection for a fixed iteration count loop
      */
-    protected static Collection<Node> replaceLoopNode(Node loopNode,
-            Iterable<Variable> loopVariables) {
+    protected static Collection<Node> replaceLoopNode(ScssContext context,
+            Node loopNode, Iterable<Variable> loopVariables) {
         // the type of this node does not matter much as long as it can have
         // children that can be traversed
         TemporaryNode tempParent = new TemporaryNode(loopNode.getParentNode());
         for (final Variable var : loopVariables) {
-            iteration(loopNode.getChildren(), tempParent, var);
+            iteration(context, loopNode.getChildren(), tempParent, var);
         }
         // the newly created nodes have already been traversed
         return tempParent.getChildren();
     }
 
-    private static void iteration(List<Node> loopChildren,
+    private static void iteration(ScssContext context, List<Node> loopChildren,
             TemporaryNode newParent, Variable loopVar) {
-        ScssContext context = newParent.getContext();
         context.openVariableScope();
         try {
             context.addVariable(loopVar);
             for (final Node child : loopChildren) {
                 Node copy = child.copy();
-                newParent.appendAndTraverse(copy);
+                newParent.appendAndTraverse(context, copy);
             }
         } finally {
             context.closeVariableScope();

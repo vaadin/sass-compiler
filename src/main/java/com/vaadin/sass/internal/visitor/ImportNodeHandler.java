@@ -27,6 +27,7 @@ import java.util.logging.Logger;
 
 import org.w3c.css.sac.CSSException;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassListItem;
@@ -37,7 +38,8 @@ import com.vaadin.sass.internal.tree.controldirective.TemporaryNode;
 
 public class ImportNodeHandler {
 
-    public static Collection<Node> traverse(ImportNode importNode) {
+    public static Collection<Node> traverse(ScssContext context,
+            ImportNode importNode) {
         ScssStylesheet styleSheet = importNode.getStylesheet();
         // top-level case
         if (styleSheet == null) {
@@ -86,7 +88,7 @@ public class ImportNodeHandler {
                 // traverse the imported nodes normally in the correct context
                 Node tempParent = new TemporaryNode(importNode.getParentNode(),
                         importedChildren);
-                Collection<Node> result = tempParent.traverseChildren();
+                Collection<Node> result = tempParent.traverseChildren(context);
 
                 styleSheet.addSourceUris(imported.getSourceUris());
                 return result;

@@ -19,6 +19,7 @@ import java.util.Collection;
 
 import com.vaadin.sass.internal.Definition;
 import com.vaadin.sass.internal.Scope;
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.ActualArgumentList;
 import com.vaadin.sass.internal.parser.FormalArgumentList;
 import com.vaadin.sass.internal.parser.Variable;
@@ -62,8 +63,8 @@ public abstract class DefNode extends Node implements Definition, IVariableNode 
     }
 
     @Override
-    public void replaceVariables() {
-        arglist = arglist.replaceVariables(getContext());
+    public void replaceVariables(ScssContext context) {
+        arglist = arglist.replaceVariables(context);
     }
 
     public void replacePossibleArguments(ActualArgumentList actualArgumentList) {

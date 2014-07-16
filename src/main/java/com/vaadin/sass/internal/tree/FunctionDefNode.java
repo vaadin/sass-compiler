@@ -18,6 +18,7 @@ package com.vaadin.sass.internal.tree;
 import java.util.Collection;
 import java.util.Collections;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.Variable;
 
 public class FunctionDefNode extends DefNode {
@@ -36,9 +37,9 @@ public class FunctionDefNode extends DefNode {
     }
 
     @Override
-    public Collection<Node> traverse() {
-        getContext().defineFunction(this);
-        setDefinitionScope(getContext().getCurrentScope());
+    public Collection<Node> traverse(ScssContext context) {
+        context.defineFunction(this);
+        setDefinitionScope(context.getCurrentScope());
         return Collections.emptyList();
     }
 

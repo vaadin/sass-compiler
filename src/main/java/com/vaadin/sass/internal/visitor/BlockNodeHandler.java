@@ -47,7 +47,7 @@ import com.vaadin.sass.internal.tree.Node;
  */
 public class BlockNodeHandler {
 
-    public static Collection<Node> traverse(BlockNode node) {
+    public static Collection<Node> traverse(ScssContext context, BlockNode node) {
 
         if (node.getChildren().size() == 0) {
             return Collections.emptyList();
@@ -57,12 +57,11 @@ public class BlockNodeHandler {
         updateSelectors(node);
 
         if (!node.getChildren().isEmpty()) {
-            ScssContext context = node.getContext();
             context.openVariableScope();
             try {
                 ArrayList<Node> newChildren = new ArrayList<Node>();
                 for (Node child : new ArrayList<Node>(node.getChildren())) {
-                    Collection<Node> childTraversed = child.traverse();
+                    Collection<Node> childTraversed = child.traverse(context);
                     if (child instanceof BlockNode) {
                         result.addAll(childTraversed);
                     } else {

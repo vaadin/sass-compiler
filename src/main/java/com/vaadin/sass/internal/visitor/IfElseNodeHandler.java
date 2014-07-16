@@ -31,9 +31,9 @@ import com.vaadin.sass.internal.tree.controldirective.TemporaryNode;
 
 public class IfElseNodeHandler {
 
-    public static Collection<Node> traverse(IfElseDefNode node)
+    public static Collection<Node> traverse(ScssContext context,
+            IfElseDefNode node)
             throws Exception {
-        ScssContext context = node.getContext();
         for (final Node child : node.getChildren()) {
             if (child instanceof IfNode) {
                 SassListItem expression = ((IfNode) child).getExpression();
@@ -42,7 +42,7 @@ public class IfElseNodeHandler {
                         context, true);
 
                 if (BinaryOperator.isTrue(expression)) {
-                    return traverseChild(node.getParentNode(), child);
+                    return traverseChild(context, node.getParentNode(), child);
                 }
             } else {
                 if (!(child instanceof ElseNode)
@@ -51,7 +51,7 @@ public class IfElseNodeHandler {
                     throw new ParseException(
                             "Invalid @if/@else in scss file for " + node);
                 } else {
-                    return traverseChild(node.getParentNode(), child);
+                    return traverseChild(context, node.getParentNode(), child);
                 }
             }
         }
@@ -59,10 +59,11 @@ public class IfElseNodeHandler {
         return Collections.emptyList();
     }
 
-    private static Collection<Node> traverseChild(Node parent, Node child) {
+    private static Collection<Node> traverseChild(ScssContext context,
+            Node parent, Node child) {
         TemporaryNode tempParent = new TemporaryNode(parent,
                 child.getChildren());
-        return tempParent.traverse();
+        return tempParent.traverse(context);
     }
 
 }

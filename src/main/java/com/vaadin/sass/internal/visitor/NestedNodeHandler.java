@@ -18,6 +18,7 @@ package com.vaadin.sass.internal.visitor;
 
 import java.util.Collection;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.tree.NestPropertiesNode;
 import com.vaadin.sass.internal.tree.Node;
 
@@ -42,8 +43,9 @@ import com.vaadin.sass.internal.tree.Node;
  */
 public class NestedNodeHandler {
 
-    public static Collection<Node> traverse(NestPropertiesNode node) {
-        node.replaceVariables();
+    public static Collection<Node> traverse(ScssContext context,
+            NestPropertiesNode node) {
+        node.replaceVariables(context);
         return node.unNesting();
     }
 }

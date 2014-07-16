@@ -36,14 +36,13 @@ import com.vaadin.sass.internal.parser.Variable;
  */
 public class FunctionCall {
 
-    public static SassListItem evaluate(FunctionDefNode def,
-            LexicalUnitImpl invocation) {
+    public static SassListItem evaluate(ScssContext context,
+            FunctionDefNode def, LexicalUnitImpl invocation) {
         ActualArgumentList invocationArglist = invocation.getParameterList()
                 .expandVariableArguments();
         SassListItem value = null;
         // only parameters are evaluated in current scope, body in
         // top-level scope
-        ScssContext context = def.getContext();
         try {
             FormalArgumentList arglist = def.getArglist();
             arglist = arglist.replaceFormalArguments(invocationArglist, true);
@@ -69,11 +68,11 @@ public class FunctionCall {
                     Node firstChild = defCopy.getChildren().get(0);
                     if (firstChild instanceof ReturnNode) {
                         ReturnNode returnNode = ((ReturnNode) firstChild);
-                        value = returnNode.evaluate();
+                        value = returnNode.evaluate(context);
                         break;
                     }
                     defCopy.replaceNode(firstChild, new ArrayList<Node>(
-                            firstChild.traverse()));
+                            firstChild.traverse(context)));
                 }
             } finally {
                 context.closeVariableScope(previousScope);

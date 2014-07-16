@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.selector.Selector;
 import com.vaadin.sass.internal.selector.SelectorSet;
@@ -40,7 +41,8 @@ public class ExtendNodeHandler {
      * lost.
      */
 
-    public static Collection<Node> traverse(ExtendNode node) throws Exception {
+    public static Collection<Node> traverse(ScssContext context, ExtendNode node)
+            throws Exception {
         for (Selector s : node.getList()) {
             if (!s.isSimple()) {
                 // @extend-selectors must not be nested
@@ -51,15 +53,15 @@ public class ExtendNodeHandler {
                 SimpleSelectorSequence extendSelector = s.firstSimple();
                 for (Selector sel : ((BlockNode) node.getNormalParentNode())
                         .getSelectorList()) {
-                    node.getContext().addExtension(
-                            new Extension(extendSelector, sel));
+                    context.addExtension(new Extension(extendSelector, sel));
                 }
             }
         }
         return Collections.emptyList();
     }
 
-    public static void modifyTree(Node node) throws Exception {
+    public static void modifyTree(ScssContext context, Node node)
+            throws Exception {
         Iterator<Node> nodeIt = new ArrayList<Node>(node.getChildren())
                 .iterator();
 
@@ -74,7 +76,7 @@ public class ExtendNodeHandler {
                 SelectorSet newSelectors = new SelectorSet();
                 for (Selector selector : selectorList) {
                     newSelectors.addAll(createSelectorsForExtensions(selector,
-                            node.getContext().getExtensions()));
+                            context.getExtensions()));
                 }
 
                 // remove any selector duplicated in the initial list of

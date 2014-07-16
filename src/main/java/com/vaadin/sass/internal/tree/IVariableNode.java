@@ -15,8 +15,10 @@
  */
 package com.vaadin.sass.internal.tree;
 
+import com.vaadin.sass.internal.ScssContext;
+
 public interface IVariableNode {
 
-    public void replaceVariables();
+    public void replaceVariables(ScssContext context);
 
 }

@@ -22,6 +22,8 @@ package com.vaadin.sass.internal.tree;
 import java.util.Collection;
 import java.util.Collections;
 
+import com.vaadin.sass.internal.ScssContext;
+
 public class ContentNode extends Node {
 
     public ContentNode() {
@@ -32,7 +34,7 @@ public class ContentNode extends Node {
     }
 
     @Override
-    public Collection<Node> traverse() {
+    public Collection<Node> traverse(ScssContext context) {
         /*
          * ContentNode is basically just a placeholder for some content which
          * will be included. So for traverse of this node, it does nothing. it

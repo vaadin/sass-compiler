@@ -18,6 +18,7 @@ package com.vaadin.sass.internal.tree;
 import java.util.Collection;
 import java.util.Collections;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.Variable;
 import com.vaadin.sass.internal.util.StringUtil;
 
@@ -53,8 +54,8 @@ public class SimpleNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void replaceVariables() {
-        for (final Variable var : getContext().getVariables()) {
+    public void replaceVariables(ScssContext context) {
+        for (final Variable var : context.getVariables()) {
             if (StringUtil.containsVariable(text, var.getName())) {
                 text = StringUtil.replaceVariable(text, var.getName(), var
                         .getExpr().printState());
@@ -63,8 +64,8 @@ public class SimpleNode extends Node implements IVariableNode {
     }
 
     @Override
-    public Collection<Node> traverse() {
-        replaceVariables();
+    public Collection<Node> traverse(ScssContext context) {
+        replaceVariables(context);
         return Collections.singleton((Node) this);
     }
 

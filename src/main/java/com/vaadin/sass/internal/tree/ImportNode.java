@@ -20,6 +20,7 @@ import java.util.Collection;
 
 import org.w3c.css.sac.SACMediaList;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.visitor.ImportNodeHandler;
 
@@ -93,8 +94,8 @@ public class ImportNode extends Node {
     }
 
     @Override
-    public Collection<Node> traverse() {
-        return ImportNodeHandler.traverse(this);
+    public Collection<Node> traverse(ScssContext context) {
+        return ImportNodeHandler.traverse(context, this);
     }
 
     public void setStylesheet(ScssStylesheet styleSheet) {

@@ -41,21 +41,6 @@ public class ScssContext {
      */
     private Set<Extension> extendsSet = new LinkedHashSet<Extension>();
 
-    // TODO ideally should not need ThreadLocal
-    private static ThreadLocal<ScssContext> context = new ThreadLocal<ScssContext>();
-    public static ScssContext get() {
-        ScssContext ctx = context.get();
-        if (ctx == null) {
-            ctx = new ScssContext();
-            context.set(ctx);
-        }
-        return ctx;
-    }
-
-    public static void clear() {
-        context.set(null);
-    }
-
     public void defineFunction(FunctionDefNode function) {
         scope.defineFunction(function);
     }

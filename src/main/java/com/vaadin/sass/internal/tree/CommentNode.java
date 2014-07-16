@@ -19,6 +19,8 @@ package com.vaadin.sass.internal.tree;
 import java.util.Collection;
 import java.util.Collections;
 
+import com.vaadin.sass.internal.ScssContext;
+
 public class CommentNode extends Node {
     private final String comment;
 
@@ -41,7 +43,7 @@ public class CommentNode extends Node {
     }
 
     @Override
-    public Collection<Node> traverse() {
+    public Collection<Node> traverse(ScssContext context) {
         return Collections.singleton((Node) this);
     }
 

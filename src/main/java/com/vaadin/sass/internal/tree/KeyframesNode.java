@@ -19,6 +19,7 @@ package com.vaadin.sass.internal.tree;
 import java.util.Collection;
 import java.util.Collections;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 
 public class KeyframesNode extends Node implements IVariableNode {
@@ -48,15 +49,15 @@ public class KeyframesNode extends Node implements IVariableNode {
     }
 
     @Override
-    public Collection<Node> traverse() {
-        replaceVariables();
-        traverseChildren();
+    public Collection<Node> traverse(ScssContext context) {
+        replaceVariables(context);
+        traverseChildren(context);
         return Collections.singleton((Node) this);
     }
 
     @Override
-    public void replaceVariables() {
-        animationName = animationName.replaceVariables(getContext());
+    public void replaceVariables(ScssContext context) {
+        animationName = animationName.replaceVariables(context);
     }
 
     private String buildString(BuildStringStrategy strategy) {

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.selector.Selector;
 import com.vaadin.sass.internal.visitor.ExtendNodeHandler;
 
@@ -49,7 +50,7 @@ public class ExtendNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void replaceVariables() {
+    public void replaceVariables(ScssContext context) {
 
     }
 
@@ -68,11 +69,11 @@ public class ExtendNode extends Node implements IVariableNode {
     }
 
     @Override
-    public Collection<Node> traverse() {
+    public Collection<Node> traverse(ScssContext context) {
         try {
             // TODO here or later?
-            traverseChildren();
-            return ExtendNodeHandler.traverse(this);
+            traverseChildren(context);
+            return ExtendNodeHandler.traverse(context, this);
         } catch (Exception e) {
             Logger.getLogger(ExtendNode.class.getName()).log(Level.SEVERE,
                     null, e);

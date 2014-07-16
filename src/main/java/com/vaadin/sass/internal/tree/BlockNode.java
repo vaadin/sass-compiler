@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.selector.Selector;
 import com.vaadin.sass.internal.visitor.BlockNodeHandler;
 
@@ -70,7 +71,7 @@ public class BlockNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void replaceVariables() {
+    public void replaceVariables(ScssContext context) {
 
         if (selectorList == null || selectorList.isEmpty()) {
             return;
@@ -78,7 +79,7 @@ public class BlockNode extends Node implements IVariableNode {
 
         ArrayList<Selector> newSelectorList = new ArrayList<Selector>();
         for (Selector s : selectorList) {
-            newSelectorList.add(s.replaceVariables(getContext()));
+            newSelectorList.add(s.replaceVariables(context));
         }
         selectorList = newSelectorList;
     }
@@ -93,11 +94,11 @@ public class BlockNode extends Node implements IVariableNode {
     }
 
     @Override
-    public Collection<Node> traverse() {
+    public Collection<Node> traverse(ScssContext context) {
         ArrayList<Node> result = new ArrayList<Node>();
         try {
-            replaceVariables();
-            result.addAll(BlockNodeHandler.traverse(this));
+            replaceVariables(context);
+            result.addAll(BlockNodeHandler.traverse(context, this));
         } catch (Exception e) {
             Logger.getLogger(BlockNode.class.getName()).log(Level.SEVERE, null,
                     e);

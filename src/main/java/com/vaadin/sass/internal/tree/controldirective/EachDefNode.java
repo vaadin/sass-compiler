@@ -18,6 +18,7 @@ package com.vaadin.sass.internal.tree.controldirective;
 
 import java.util.Collection;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.IVariableNode;
@@ -61,14 +62,14 @@ public class EachDefNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void replaceVariables() {
-        list = list.replaceVariables(getContext());
+    public void replaceVariables(ScssContext context) {
+        list = list.replaceVariables(context);
     }
 
     @Override
-    public Collection<Node> traverse() {
-        replaceVariables();
-        return EachNodeHandler.traverse(this);
+    public Collection<Node> traverse(ScssContext context) {
+        replaceVariables(context);
+        return EachNodeHandler.traverse(context, this);
     }
 
     @Override

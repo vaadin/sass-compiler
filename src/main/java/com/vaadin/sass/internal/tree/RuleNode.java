@@ -19,6 +19,7 @@ package com.vaadin.sass.internal.tree;
 import java.util.Collection;
 import java.util.Collections;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 
@@ -89,13 +90,13 @@ public class RuleNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void replaceVariables() {
-        variable = variable.replaceVariables(getContext());
-        value = value.replaceVariables(getContext());
+    public void replaceVariables(ScssContext context) {
+        variable = variable.replaceVariables(context);
+        value = value.replaceVariables(context);
     }
 
     @Override
-    public Collection<Node> traverse() {
+    public Collection<Node> traverse(ScssContext context) {
         /*
          * containsArithmeticalOperator() must be called before
          * replaceVariables. Because for the "/" operator, it needs to see if
@@ -103,9 +104,8 @@ public class RuleNode extends Node implements IVariableNode {
          * an arithmetic operator.
          */
         boolean hasOperators = value.containsArithmeticalOperator();
-        replaceVariables();
-        value = value.evaluateFunctionsAndExpressions(getContext(),
-                hasOperators);
+        replaceVariables(context);
+        value = value.evaluateFunctionsAndExpressions(context, hasOperators);
         return Collections.singleton((Node) this);
     }
 

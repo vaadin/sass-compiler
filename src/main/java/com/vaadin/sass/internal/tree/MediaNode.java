@@ -21,6 +21,8 @@ import java.util.Collections;
 
 import org.w3c.css.sac.SACMediaList;
 
+import com.vaadin.sass.internal.ScssContext;
+
 public class MediaNode extends Node {
     private static final long serialVersionUID = 2502097081457509523L;
 
@@ -55,8 +57,8 @@ public class MediaNode extends Node {
     }
 
     @Override
-    public Collection<Node> traverse() {
-        traverseChildren();
+    public Collection<Node> traverse(ScssContext context) {
+        traverseChildren(context);
         return Collections.singleton((Node) this);
     }
 

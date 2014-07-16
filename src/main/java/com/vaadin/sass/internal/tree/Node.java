@@ -143,9 +143,11 @@ public abstract class Node implements Serializable {
      * parent. Traversing a node is also allowed to modify the definitions
      * currently in scope as its side-effect.
      * 
+     * @param context
+     *            current compilation context
      * @return nodes replacing the current node
      */
-    public abstract Collection<Node> traverse();
+    public abstract Collection<Node> traverse(ScssContext context);
 
     /**
      * Prints out the current state of the node tree. Will return SCSS before
@@ -194,20 +196,21 @@ public abstract class Node implements Serializable {
         return result;
     }
 
-    public Collection<Node> traverseChildren() {
-        return traverseChildren(true);
+    public Collection<Node> traverseChildren(ScssContext context) {
+        return traverseChildren(context, true);
     }
 
-    protected Collection<Node> traverseChildren(boolean newScope) {
+    protected Collection<Node> traverseChildren(ScssContext context,
+            boolean newScope) {
         List<Node> children = getChildren();
         if (!children.isEmpty()) {
             if (newScope) {
-                getContext().openVariableScope();
+                context.openVariableScope();
             }
             try {
                 ArrayList<Node> result = new ArrayList<Node>();
                 for (Node child : new ArrayList<Node>(children)) {
-                    result.addAll(child.traverse());
+                    result.addAll(child.traverse(context));
                 }
                 // TODO this ugly but hard to eliminate as long as some classes
                 // use traverseChildren() for its side-effects
@@ -215,16 +218,12 @@ public abstract class Node implements Serializable {
                 return result;
             } finally {
                 if (newScope) {
-                    getContext().closeVariableScope();
+                    context.closeVariableScope();
                 }
             }
         } else {
             return Collections.emptyList();
         }
-    }
-
-    public ScssContext getContext() {
-        return ScssContext.get();
     }
 
     public static interface BuildStringStrategy {

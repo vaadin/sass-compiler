@@ -19,6 +19,8 @@ package com.vaadin.sass.internal.tree;
 import java.util.Collection;
 import java.util.Collections;
 
+import com.vaadin.sass.internal.ScssContext;
+
 public class KeyframeSelectorNode extends Node {
     private String selector;
 
@@ -43,8 +45,8 @@ public class KeyframeSelectorNode extends Node {
     }
 
     @Override
-    public Collection<Node> traverse() {
-        traverseChildren();
+    public Collection<Node> traverse(ScssContext context) {
+        traverseChildren(context);
         return Collections.singleton((Node) this);
     }
 

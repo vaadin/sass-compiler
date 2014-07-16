@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.visitor.IfElseNodeHandler;
 
@@ -43,9 +44,9 @@ public class IfElseDefNode extends Node {
     }
 
     @Override
-    public Collection<Node> traverse() {
+    public Collection<Node> traverse(ScssContext context) {
         try {
-            return IfElseNodeHandler.traverse(this);
+            return IfElseNodeHandler.traverse(context, this);
         } catch (Exception e) {
             Logger.getLogger(IfElseDefNode.class.getName()).log(Level.SEVERE,
                     null, e);

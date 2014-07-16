@@ -836,7 +836,7 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         FunctionDefNode functionDef = context
                 .getFunctionDefinition(getFunctionName());
         if (functionDef != null) {
-            return FunctionCall.evaluate(functionDef, this);
+            return FunctionCall.evaluate(context, functionDef, this);
         }
         return null;
     }

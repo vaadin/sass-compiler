@@ -18,6 +18,7 @@ package com.vaadin.sass.internal.visitor;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.parser.Variable;
 import com.vaadin.sass.internal.tree.Node;
@@ -25,13 +26,14 @@ import com.vaadin.sass.internal.tree.controldirective.EachDefNode;
 
 public class EachNodeHandler extends LoopNodeHandler {
 
-    public static Collection<Node> traverse(EachDefNode eachNode) {
+    public static Collection<Node> traverse(ScssContext context,
+            EachDefNode eachNode) {
         Collection<Variable> loopVariables = new ArrayList<Variable>();
         for (final SassListItem var : eachNode.getVariables()) {
             loopVariables.add(new Variable(eachNode.getVariableName()
                     .substring(1), var));
         }
-        return replaceLoopNode(eachNode, loopVariables);
+        return replaceLoopNode(context, eachNode, loopVariables);
     }
 
 }

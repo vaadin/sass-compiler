@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 import com.vaadin.sass.internal.visitor.NestedNodeHandler;
 
@@ -70,19 +71,19 @@ public class NestPropertiesNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void replaceVariables() {
-        name = name.replaceVariables(getContext());
+    public void replaceVariables(ScssContext context) {
+        name = name.replaceVariables(context);
         for (Node child : getChildren()) {
             if (child instanceof RuleNode) {
-                ((RuleNode) child).replaceVariables();
+                ((RuleNode) child).replaceVariables(context);
             }
         }
     }
 
     @Override
-    public Collection<Node> traverse() {
-        traverseChildren();
-        return NestedNodeHandler.traverse(this);
+    public Collection<Node> traverse(ScssContext context) {
+        traverseChildren(context);
+        return NestedNodeHandler.traverse(context, this);
     }
 
     @Override

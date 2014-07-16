@@ -18,6 +18,7 @@ package com.vaadin.sass.internal.tree;
 import java.util.Collection;
 import java.util.Collections;
 
+import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.SassListItem;
 
 public class ReturnNode extends Node implements IVariableNode {
@@ -34,14 +35,14 @@ public class ReturnNode extends Node implements IVariableNode {
     }
 
     @Override
-    public void replaceVariables() {
-        expr = expr.replaceVariables(getContext());
+    public void replaceVariables(ScssContext context) {
+        expr = expr.replaceVariables(context);
     }
 
     @Override
-    public Collection<Node> traverse() {
+    public Collection<Node> traverse(ScssContext context) {
         // need to replace variables here to make sure all vars are in scope
-        expr = evaluate();
+        expr = evaluate(context);
         return Collections.singleton((Node) this);
     }
 
@@ -56,11 +57,11 @@ public class ReturnNode extends Node implements IVariableNode {
      * 
      * This method does not modify the ReturnNode itself.
      */
-    public SassListItem evaluate() {
+    public SassListItem evaluate(ScssContext context) {
         SassListItem expr = getExpr();
         boolean arith = expr.containsArithmeticalOperator();
-        expr = expr.replaceVariables(getContext());
-        expr = expr.evaluateFunctionsAndExpressions(getContext(), arith);
+        expr = expr.replaceVariables(context);
+        expr = expr.evaluateFunctionsAndExpressions(context, arith);
         return expr;
     }
 

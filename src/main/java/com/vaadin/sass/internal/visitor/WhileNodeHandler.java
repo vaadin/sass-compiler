@@ -32,51 +32,55 @@ public class WhileNodeHandler {
     /**
      * Replace a WhileNode with the expanded set of nodes.
      * 
+     * @param context
+     *            current compilation context
      * @param whileNode
      *            node to replace
      */
-    public static Collection<Node> traverse(WhileNode whileNode) {
+    public static Collection<Node> traverse(ScssContext context,
+            WhileNode whileNode) {
         Node parent = whileNode.getParentNode();
         ArrayList<Node> result = new ArrayList<Node>();
-        while (evaluateCondition(whileNode)) {
-            ArrayList<Node> nodes = iteration(whileNode);
+        while (evaluateCondition(context, whileNode)) {
+            ArrayList<Node> nodes = iteration(context, whileNode);
             if (nodes.size() == 0) {
                 throw new ParseException(
                         "@while loop iteration did nothing, infinite loop",
                         whileNode);
             }
             TemporaryNode temp = new TemporaryNode(parent, nodes);
-            result.addAll(temp.traverse());
+            result.addAll(temp.traverse(context));
         }
         return result;
     }
 
-    private static boolean evaluateCondition(WhileNode whileNode) {
+    private static boolean evaluateCondition(ScssContext context,
+            WhileNode whileNode) {
         SassListItem condition = whileNode.getCondition();
-        ScssContext context = whileNode.getContext();
         condition = condition.replaceVariables(context);
         condition = condition.evaluateFunctionsAndExpressions(context, true);
         return BinaryOperator.isTrue(condition);
     }
 
-    private static ArrayList<Node> iteration(WhileNode whileNode) {
+    private static ArrayList<Node> iteration(ScssContext context,
+            WhileNode whileNode) {
         ArrayList<Node> nodes = new ArrayList<Node>();
         for (final Node child : whileNode.getChildren()) {
             Node copy = child.copy();
-            replaceVariables(copy);
+            replaceVariables(context, copy);
             nodes.add(copy);
         }
         return nodes;
     }
 
-    private static void replaceVariables(Node copy) {
+    private static void replaceVariables(ScssContext context, Node copy) {
         if (copy instanceof IVariableNode) {
             IVariableNode n = (IVariableNode) copy;
-            n.replaceVariables();
+            n.replaceVariables(context);
         }
 
         for (Node c : copy.getChildren()) {
-            replaceVariables(c);
+            replaceVariables(context, c);
         }
     }
 
