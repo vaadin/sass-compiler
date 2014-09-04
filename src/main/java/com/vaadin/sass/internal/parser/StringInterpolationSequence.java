@@ -135,11 +135,11 @@ public class StringInterpolationSequence implements Serializable {
 
     @Override
     public String toString() {
-        String result = "";
+        StringBuilder result = new StringBuilder();
         for (SassListItem item : items) {
-            result += item.printState();
+            result.append(item.printState());
         }
-        return result;
+        return result.toString();
     }
 
     /**

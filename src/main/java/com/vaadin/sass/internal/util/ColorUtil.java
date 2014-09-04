@@ -19,6 +19,7 @@ package com.vaadin.sass.internal.util;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 import org.w3c.css.sac.LexicalUnit;
 
@@ -30,6 +31,8 @@ import com.vaadin.sass.internal.parser.SassList.Separator;
 
 public class ColorUtil {
 
+    private static final Pattern HEX_COLOR_PATTERN = Pattern
+            .compile("#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})");
     private static Map<String, String> colorNameToHex = new HashMap<String, String>();
     private static Map<String, String> hexToColorName = new HashMap<String, String>();
 
@@ -297,7 +300,7 @@ public class ColorUtil {
      * @return true if string represents a hexadecimal color
      */
     public static boolean isHexColor(String string) {
-        return string.matches("#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})");
+        return HEX_COLOR_PATTERN.matcher(string).matches();
     }
 
     /**

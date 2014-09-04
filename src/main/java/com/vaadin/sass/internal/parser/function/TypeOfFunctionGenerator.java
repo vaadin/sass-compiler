@@ -19,6 +19,7 @@ import com.vaadin.sass.internal.parser.FormalArgumentList;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassListItem;
+import com.vaadin.sass.internal.util.ColorUtil;
 
 public class TypeOfFunctionGenerator extends AbstractFunctionGenerator {
 
@@ -47,8 +48,7 @@ public class TypeOfFunctionGenerator extends AbstractFunctionGenerator {
             } else if (unit.getLexicalUnitType() == LexicalUnitImpl.SAC_RGBCOLOR) {
                 type = "color";
             } else if (unit.getLexicalUnitType() == LexicalUnitImpl.SAC_IDENT
-                    && unit.getStringValue().matches(
-                            "#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})")) {
+                    && ColorUtil.isHexColor(unit.getStringValue())) {
                 // TODO support also named colors
                 type = "color";
             } else if (unit.getLexicalUnitType() == LexicalUnitImpl.SAC_FUNCTION) {
