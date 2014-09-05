@@ -53,10 +53,8 @@ public class ExtendNodeHandler {
                 BlockNode parentBlock = (BlockNode) node.getNormalParentNode();
                 SimpleSelectorSequence extendSelector = s.firstSimple();
                 for (Selector sel : parentBlock.getSelectorList()) {
-                    Collection<Selector> ctx = parentBlock
-                            .getParentSelectors();
-                    context.addExtension(
-                            new Extension(extendSelector, sel, ctx));
+                    Collection<Selector> ctx = parentBlock.getParentSelectors();
+                    context.addExtension(new Extension(extendSelector, sel, ctx));
                 }
             }
         }
@@ -138,31 +136,24 @@ public class ExtendNodeHandler {
     /**
      * Create all selector extensions matching target. Mutable collection for
      * efficiency. Recursively applied to generated selectors.
-     * 
-     * Optimization: May be inefficient since we may unify the same selector
-     * several times. It would be a good idea to cache unifications in a map as
-     * we go along.
      */
     private static void createSelectorsForExtensionsRecursively(
             Selector target, SelectorSet current, Iterable<Extension> extendsMap) {
 
-        List<Selector> newSelectors = new ArrayList<Selector>();
-        List<Extension> extensionsForNewSelectors = new ArrayList<Extension>();
-        for (Extension extension : extendsMap) {
-            newSelectors.add(target.replace(extension));
-            extensionsForNewSelectors.add(extension);
-        }
-        current.addAll(newSelectors);
+        SelectorSet newSelectors = new SelectorSet();
 
         for (Extension extension : extendsMap) {
-            Collection<Extension> singleExt = Collections.singleton(extension);
-            for (int i = 0; i < newSelectors.size(); ++i) {
-                // avoid infinite loops
-                if (extensionsForNewSelectors.get(i) != extension) {
-                    createSelectorsForExtensionsRecursively(
-                            newSelectors.get(i), current, singleExt);
-                }
+            Selector replaced = target.replace(extension);
+            boolean newSelector = current.add(replaced);
+            if (newSelector && !replaced.equals(target)) {
+                newSelectors.add(replaced);
             }
         }
+
+        for (Selector newSelector : newSelectors) {
+            createSelectorsForExtensionsRecursively(newSelector, current,
+                    extendsMap);
+        }
+
     }
 }
