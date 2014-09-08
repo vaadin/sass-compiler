@@ -37,6 +37,7 @@ import com.vaadin.sass.internal.ScssContext;
 public class StringInterpolationSequence implements Serializable {
     private boolean containsInterpolation = false;
     private SassList items;
+    private String toString;
 
     /**
      * Creates a new StringInterpolationSequence containing only the given item.
@@ -135,11 +136,14 @@ public class StringInterpolationSequence implements Serializable {
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder();
-        for (SassListItem item : items) {
-            result.append(item.printState());
+        if (toString == null) {
+            StringBuilder result = new StringBuilder();
+            for (SassListItem item : items) {
+                result.append(item.printState());
+            }
+            toString = result.toString();
         }
-        return result.toString();
+        return toString;
     }
 
     /**
