@@ -38,7 +38,8 @@ import com.vaadin.sass.internal.visitor.MixinNodeHandler;
  * 
  * @author Vaadin
  */
-public class MixinNode extends Node implements IVariableNode {
+public class MixinNode extends Node implements IVariableNode,
+        NodeWithUrlContent {
     private static final long serialVersionUID = 4725008226813110658L;
 
     // these are the actual parameter values, not whether the definition node
@@ -123,6 +124,13 @@ public class MixinNode extends Node implements IVariableNode {
     @Override
     public MixinNode copy() {
         return new MixinNode(this);
+    }
+
+    @Override
+    public NodeWithUrlContent updateUrl(String prefix) {
+         MixinNode newInstance = copy();
+         newInstance.arglist = arglist.updateUrl(prefix);
+         return newInstance;
     }
 
 }

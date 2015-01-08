@@ -50,6 +50,20 @@ public abstract class Node implements Serializable {
     }
 
     /**
+     * Replace the child at the given position with another node.
+     * 
+     * @param index
+     *            the position of the old node that is to be replaced
+     * @param newChild
+     *            replacing node
+     */
+    public void replaceNodeAt(int index, Node newChild) {
+        newChild.removeFromParent();
+        newChild.parentNode = this;
+        children.set(index, newChild);
+    }
+
+    /**
      * Replace the child oldChild with a collection of nodes.
      * 
      * @param oldChild

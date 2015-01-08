@@ -231,10 +231,12 @@ public class SassExpression implements SassListItem, Serializable {
     }
 
     @Override
-    public void updateUrl(String prefix) {
+    public SassExpression updateUrl(String prefix) {
+        List<SassListItem> newItems = new ArrayList<SassListItem>(items.size());
         for (SassListItem item : items) {
-            item.updateUrl(prefix);
+            newItems.add(item.updateUrl(prefix));
         }
+        return new SassExpression(newItems);
     }
 
     @Override

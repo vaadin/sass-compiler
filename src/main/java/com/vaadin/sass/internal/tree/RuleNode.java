@@ -23,7 +23,7 @@ import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.parser.StringInterpolationSequence;
 
-public class RuleNode extends Node implements IVariableNode {
+public class RuleNode extends Node implements IVariableNode, NodeWithUrlContent {
     private static final long serialVersionUID = 6653493127869037022L;
 
     StringInterpolationSequence variable;
@@ -129,5 +129,15 @@ public class RuleNode extends Node implements IVariableNode {
     @Override
     public RuleNode copy() {
         return new RuleNode(this);
+    }
+
+    @Override
+    public RuleNode updateUrl(String prefix) {
+        if (getValue() != null) {
+            RuleNode newInstance = copy();
+            newInstance.value = getValue().updateUrl(prefix);
+            return newInstance;
+        }
+        return this;
     }
 }

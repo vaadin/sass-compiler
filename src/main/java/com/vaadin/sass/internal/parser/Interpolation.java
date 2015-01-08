@@ -89,8 +89,9 @@ public class Interpolation implements SassListItem, Serializable {
     }
 
     @Override
-    public void updateUrl(String prefix) {
-        expression.updateUrl(prefix);
+    public Interpolation updateUrl(String prefix) {
+        return new Interpolation(expression.updateUrl(prefix), getLineNumber(),
+                getColumnNumber(), evaluateArithmetics);
     }
 
     @Override

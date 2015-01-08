@@ -331,4 +331,17 @@ public class FormalArgumentList implements Serializable, Iterable<Variable> {
         result += "]";
         return result;
     }
+
+    public FormalArgumentList updateUrl(String prefix) {
+        ArrayList<Variable> newArgList = new ArrayList<Variable>(arglist.size());
+        for (Variable var : getArguments()) {
+            if (var.getExpr() != null) {
+                newArgList.add(new Variable(var.getName(), var.getExpr()
+                        .updateUrl(prefix), var.isGuarded()));
+            } else {
+                newArgList.add(var);
+            }
+        }
+        return new FormalArgumentList(newArgList, variableArgumentName != null);
+    }
 }

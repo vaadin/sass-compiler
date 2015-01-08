@@ -43,6 +43,31 @@ Your contributions are more than welcome. Please read
 https://vaadin.com/contribute for more information on practicalities.
 Because we are using Gerrit we cannot accept pull requests in GitHub.
 
+Changes
+=======
+
+Version 0.9.12
+--------------
+It is now possible to specify how URLs appearing in an imported scss style
+sheet are interpreted. The supported modes are absolute, mixed and
+relative. For example, suppose that a root style sheet styles.scss imports
+common/base.scss and base.scss contains the property definition
+
+background-image: url(image.png);
+
+In absolute mode the url will appear as url(image.png) also in the CSS
+output. In relative and mixed mode it will be output as url(common/image.png).
+The difference between mixed and relative mode is that in the mixed mode
+a url is only modified if it appears in a property, whereas in the relative
+mode the modification also takes place e.g. in variable definitions and
+default values of mixin or function parameters.
+
+Absolute mode can be used for compatibility with the sass-lang compiler.
+For compiling the themes provided with Vaadin mixed or relative mode should
+be used. Mixed mode is the default and was used in previous versions of
+the compiler. For instructions on specifying the url mode from the command
+line, run SassCompiler with no parameters.
+
 License
 =======
 

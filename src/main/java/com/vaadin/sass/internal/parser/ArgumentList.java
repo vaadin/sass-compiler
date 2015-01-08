@@ -122,4 +122,21 @@ public class ArgumentList extends SassList implements Serializable {
         return result;
     }
 
+    @Override
+    public ArgumentList updateUrl(String prefix) {
+        SassList newUnnamedVariables = super.updateUrl(prefix);
+        ArrayList<Variable> newNamedVariables = new ArrayList<Variable>(
+                namedVariables.size());
+        for (Variable var : namedVariables) {
+            if (var.getExpr() != null) {
+                SassListItem newExpr = var.getExpr().updateUrl(prefix);
+                newNamedVariables.add(new Variable(var.getName(), newExpr, var
+                        .isGuarded()));
+            } else {
+                newNamedVariables.add(var);
+            }
+        }
+        return new ArgumentList(getSeparator(), newUnnamedVariables.getItems(),
+                newNamedVariables);
+    }
 }

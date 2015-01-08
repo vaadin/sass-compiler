@@ -1,0 +1,22 @@
+.urls {
+	image1: url(foo/first.png);
+	image2: url(foo/second.png);
+	image3: url(foo/third.png);
+	image4: url(foo/fourth.png);
+	image5: url(foo/fifth.png);
+	image6: url(foo/sixth.png);
+	interpolation1: url(foo/first.png);
+	interpolation2: url(foo/third.png);
+	interpolation3: url(foo/fourth.png);
+	interpolation4: url(foo/second.png);
+}
+
+.urls-2 {
+	image3: url(third.png);
+	image4: url(foo/fourth.png);
+	image5: url(foo/fifth.png);
+	image6: url(foo/sixth.png);
+	interpolation1: url(foo/first.png);
+	interpolation2: url(third.png);
+	interpolation3: url(foo/fourth.png);
+}

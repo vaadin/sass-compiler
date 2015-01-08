@@ -216,4 +216,13 @@ public class ActualArgumentList implements Serializable {
     public List<Variable> getNamedVariables() {
         return arglist.getNamedVariables();
     }
+
+    public ActualArgumentList updateUrl(String prefix) {
+        ArgumentList newArgList = arglist.updateUrl(prefix);
+        SassListItem newVariableArgument = variableArgument;
+        if (variableArgument != null) {
+            newVariableArgument = variableArgument.updateUrl(prefix);
+        }
+        return new ActualArgumentList(newArgList, newVariableArgument);
+    }
 }

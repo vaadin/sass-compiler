@@ -1070,18 +1070,25 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
         return false;
     }
 
-    // TODO mutates this
     @Override
-    public void updateUrl(String prefix) {
+    public LexicalUnitImpl updateUrl(String prefix) {
         if (getLexicalUnitType() == SAC_URI) {
             String path = getStringValue().replaceAll("^\"|\"$", "")
                     .replaceAll("^'|'$", "");
             if (!path.startsWith("/") && !path.contains(":")) {
                 path = prefix + path;
                 path = StringUtil.cleanPath(path);
-                setStringValue(path);
             }
+            LexicalUnitImpl copy = copy();
+            copy.setStringValue(path);
+            return copy;
+        } else if (containsInterpolation()) {
+            // s might contain URLs in its Interpolation objects
+            LexicalUnitImpl copy = copy();
+            copy.s = s.updateUrl(prefix);
+            return copy;
         }
+        return this;
     }
 
     @Override

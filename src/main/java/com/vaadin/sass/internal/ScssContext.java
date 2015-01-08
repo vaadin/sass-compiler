@@ -25,6 +25,23 @@ import com.vaadin.sass.internal.tree.MixinDefNode;
 import com.vaadin.sass.internal.visitor.Extension;
 
 public class ScssContext {
+    /**
+     * Url mode specifies how urls appearing in an scss style sheet are
+     * interpreted. When url mode is absolute, urls will appear in the generated
+     * css as they are in the original scss file. In relative mode the folder of
+     * an imported scss stylesheet is taken into account: for instance, when
+     * importing the stylesheet foo/bar.scss containing url(baz.png), the url
+     * will be output as url(foo/baz.png). Mixed mode is a mixture of absolute
+     * and relative modes: most urls are taken to be absolute, but in simple
+     * properties (handled by RuleNode) they are relative. Mixed mode has been
+     * used in previous versions of Vaadin Sass compiler, whereas absolute mode
+     * is compatible with sass-lang.
+     */
+    public enum UrlMode {
+        ABSOLUTE, MIXED, RELATIVE
+    };
+
+    private UrlMode urlMode;
 
     private Scope scope = new Scope();
 
@@ -40,6 +57,14 @@ public class ScssContext {
      * { (b, a), (b, b), (c, b) }
      */
     private Set<Extension> extendsSet = new LinkedHashSet<Extension>();
+
+    public ScssContext() {
+        this(UrlMode.MIXED);
+    }
+
+    public ScssContext(UrlMode urlMode) {
+        this.urlMode = urlMode;
+    }
 
     public void defineFunction(FunctionDefNode function) {
         scope.defineFunction(function);
@@ -149,6 +174,14 @@ public class ScssContext {
 
     public Iterable<Extension> getExtensions() {
         return Collections.unmodifiableCollection(extendsSet);
+    }
+
+    public UrlMode getUrlMode() {
+        return urlMode;
+    }
+
+    public void setUrlMode(UrlMode urlMode) {
+        this.urlMode = urlMode;
     }
 
 }

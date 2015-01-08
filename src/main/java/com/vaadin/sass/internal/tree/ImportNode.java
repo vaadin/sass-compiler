@@ -22,9 +22,10 @@ import org.w3c.css.sac.SACMediaList;
 
 import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.util.StringUtil;
 import com.vaadin.sass.internal.visitor.ImportNodeHandler;
 
-public class ImportNode extends Node {
+public class ImportNode extends Node implements NodeWithUrlContent {
     private static final long serialVersionUID = 5671255892282668438L;
 
     private String uri;
@@ -111,4 +112,19 @@ public class ImportNode extends Node {
         return new ImportNode(this);
     }
 
+    @Override
+    public ImportNode updateUrl(String prefix) {
+        if (isURL) {
+            String newUri = getUri().replaceAll("^\"|\"$", "").replaceAll(
+                    "^'|'$", "");
+            if (!newUri.startsWith("/") && !newUri.contains(":")) {
+                newUri = prefix + newUri;
+                newUri = StringUtil.cleanPath(newUri);
+            }
+            ImportNode copy = copy();
+            copy.setUri(newUri);
+            return copy;
+        }
+        return this;
+    }
 }

@@ -30,9 +30,9 @@ import org.w3c.css.sac.CSSException;
 import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.parser.ParseException;
-import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.ImportNode;
 import com.vaadin.sass.internal.tree.Node;
+import com.vaadin.sass.internal.tree.NodeWithUrlContent;
 import com.vaadin.sass.internal.tree.RuleNode;
 import com.vaadin.sass.internal.tree.controldirective.TemporaryNode;
 
@@ -72,7 +72,8 @@ public class ImportNodeHandler {
                 if (!"".equals(prefix)) {
                     // support resolving nested imports relative to prefix
                     imported.setPrefix(prefix);
-                    updateUrlInImportedSheet(imported, prefix, imported);
+                    updateUrlInImportedSheet(imported, prefix, imported,
+                            context);
                 }
 
                 importedChildren = new ArrayList<Node>(imported.getChildren());
@@ -114,18 +115,22 @@ public class ImportNodeHandler {
     }
 
     private static void updateUrlInImportedSheet(Node node, String prefix,
-            ScssStylesheet styleSheet) {
-        for (Node child : node.getChildren()) {
-            if (child instanceof RuleNode) {
-                SassListItem value = ((RuleNode) child).getValue();
-                if (value != null) {
-                    value.updateUrl(prefix);
-                }
+            ScssStylesheet styleSheet, ScssContext context) {
+        ScssContext.UrlMode urlMode = context.getUrlMode();
+        List<Node> children = node.getChildren();
+        for (int i = 0; i < children.size(); i++) {
+            Node child = children.get(i);
+            Node newChild = child;
+            if (child instanceof NodeWithUrlContent
+                    && (urlMode.equals(ScssContext.UrlMode.RELATIVE) || (urlMode
+                            .equals(ScssContext.UrlMode.MIXED) && child instanceof RuleNode))) {
+                newChild = (Node) ((NodeWithUrlContent) child)
+                        .updateUrl(prefix);
+                node.replaceNodeAt(i, newChild);
             } else if (child instanceof ImportNode) {
-                ImportNode importNode = (ImportNode) child;
-                importNode.setStylesheet(styleSheet);
+                ((ImportNode) child).setStylesheet(styleSheet);
             }
-            updateUrlInImportedSheet(child, prefix, styleSheet);
+            updateUrlInImportedSheet(newChild, prefix, styleSheet, context);
         }
     }
 }

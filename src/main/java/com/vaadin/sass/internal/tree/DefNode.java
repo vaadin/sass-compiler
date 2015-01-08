@@ -31,7 +31,8 @@ import com.vaadin.sass.internal.parser.Variable;
  * @author Vaadin
  * 
  */
-public abstract class DefNode extends Node implements Definition, IVariableNode {
+public abstract class DefNode extends Node implements Definition,
+        IVariableNode, NodeWithUrlContent {
     private String name;
     private FormalArgumentList arglist;
     private Scope definitionScope;
@@ -80,4 +81,9 @@ public abstract class DefNode extends Node implements Definition, IVariableNode 
         definitionScope = scope;
     }
 
+    public DefNode updateUrl(String prefix) {
+        DefNode newInstance = (DefNode) copy();
+        newInstance.arglist = arglist.updateUrl(prefix);
+        return newInstance;
+    }
 }

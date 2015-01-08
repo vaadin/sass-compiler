@@ -48,7 +48,8 @@ public interface SassListItem {
      * MixinNodeHandler then replaces the variables corresponding to the
      * parameter list of the @mixin but other variables remain unset until the
      * node is traversed again. The evaluation of interpolation and expressions
-     * should then be deferred until all variables of the SassListItem have a value.
+     * should then be deferred until all variables of the SassListItem have a
+     * value.
      * 
      * @return Whether this expression contains variables.
      */
@@ -96,14 +97,14 @@ public interface SassListItem {
     public SassListItem replaceVariables(ScssContext context);
 
     /**
-     * Updates all url's of this item by, e.g., adding the prefix to an url not
-     * starting with slash "/" and not containing the symbol ":". This is a
-     * mutating method, i.e. it modifies the contents of the current object.
+     * Returns a new item that is obtained from this by updating all url's by,
+     * e.g., adding the prefix to an url not starting with slash "/" and not
+     * containing the symbol ":". Does not modify this item.
      * 
      * @param prefix
      *            The prefix to be added.
      */
-    public void updateUrl(String prefix);
+    public SassListItem updateUrl(String prefix);
 
     /**
      * Returns a string representation of this item. See

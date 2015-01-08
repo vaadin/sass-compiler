@@ -92,4 +92,11 @@ public class ImportNodeTest {
         ImportNode node = new ImportNode("test", ml, true);
         Assert.assertEquals("@import url(test) screen;", node.printState());
     }
+
+    @Test
+    public void testUpdateURL() {
+        ImportNode node = new ImportNode("bar.css", null, true);
+        node = node.updateUrl("foo/");
+        Assert.assertEquals("@import url(foo/bar.css);", node.printState());
+    }
 }

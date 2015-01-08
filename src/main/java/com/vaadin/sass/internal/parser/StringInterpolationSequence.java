@@ -164,4 +164,11 @@ public class StringInterpolationSequence implements Serializable {
     public List<SassListItem> getItems() {
         return items.getItems();
     }
+
+    public StringInterpolationSequence updateUrl(String prefix) {
+        if (containsInterpolation()) {
+            return new StringInterpolationSequence(items.updateUrl(prefix));
+        }
+        return this;
+    }
 }

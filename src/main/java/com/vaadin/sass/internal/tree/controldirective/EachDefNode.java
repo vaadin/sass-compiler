@@ -23,9 +23,11 @@ import com.vaadin.sass.internal.parser.SassList;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.IVariableNode;
 import com.vaadin.sass.internal.tree.Node;
+import com.vaadin.sass.internal.tree.NodeWithUrlContent;
 import com.vaadin.sass.internal.visitor.EachNodeHandler;
 
-public class EachDefNode extends Node implements IVariableNode {
+public class EachDefNode extends Node implements IVariableNode,
+        NodeWithUrlContent {
     private static final long serialVersionUID = 7943948981204906221L;
 
     private String var;
@@ -75,5 +77,12 @@ public class EachDefNode extends Node implements IVariableNode {
     @Override
     public EachDefNode copy() {
         return new EachDefNode(this);
+    }
+
+    @Override
+    public NodeWithUrlContent updateUrl(String prefix) {
+        EachDefNode copy = copy();
+        copy.list = list.updateUrl(prefix);
+        return copy;
     }
 }

@@ -72,7 +72,9 @@ public class StringItem implements SassListItem, Serializable {
     }
 
     @Override
-    public void updateUrl(String prefix) {
+    public StringItem updateUrl(String prefix) {
+        // nothing to update
+        return this;
     }
 
     @Override

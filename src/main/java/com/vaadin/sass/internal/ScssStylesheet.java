@@ -235,7 +235,31 @@ public class ScssStylesheet extends Node {
      * @throws Exception
      */
     public void compile() throws Exception {
-        ScssContext context = new ScssContext();
+        compile(ScssContext.UrlMode.MIXED);
+    }
+
+    /**
+     * Applies all the visitors and compiles SCSS into Css.
+     * 
+     * @param urlMode
+     *            Specifies whether urls appearing in an scss style sheet are
+     *            taken to be absolute or relative. It is also possible to use
+     *            old Vaadin style urls (ScssContext.UrlMode.MIXED), where urls
+     *            are relative only when they appear in simple properties such
+     *            as "background-image:url(image.png)".
+     * 
+     *            Absolute url mode means that urls appear in the output css in
+     *            the same form as they are in the source scss files. Relative
+     *            urls take into account the locations of imported scss files.
+     *            For instance, if a style sheets imports foo/bar.scss and
+     *            bar.scss contains url(baz.png), it will be output as
+     *            url(foo/baz.png) in relative mode and as url(baz.png) in
+     *            absolute mode.
+     * 
+     * @throws Exception
+     */
+    public void compile(ScssContext.UrlMode urlMode) throws Exception {
+        ScssContext context = new ScssContext(urlMode);
         traverse(context);
         ExtendNodeHandler.modifyTree(context, this);
     }

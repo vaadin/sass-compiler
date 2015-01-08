@@ -21,7 +21,8 @@ import java.util.Collections;
 import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.parser.SassListItem;
 
-public class ReturnNode extends Node implements IVariableNode {
+public class ReturnNode extends Node implements IVariableNode,
+        NodeWithUrlContent {
 
     private SassListItem expr;
 
@@ -70,4 +71,13 @@ public class ReturnNode extends Node implements IVariableNode {
         return new ReturnNode(this);
     }
 
+    @Override
+    public ReturnNode updateUrl(String prefix) {
+        if (getExpr() != null) {
+            ReturnNode newInstance = copy();
+            newInstance.expr = getExpr().updateUrl(prefix);
+            return newInstance;
+        }
+        return this;
+    }
 }

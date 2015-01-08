@@ -261,9 +261,18 @@ public class SassList implements SassListItem, Iterable<SassListItem>,
     }
 
     @Override
-    public void updateUrl(String prefix) {
-        for (SassListItem item : this) {
-            item.updateUrl(prefix);
+    public SassList updateUrl(String prefix) {
+        if (size() > 0) {
+            ArrayList<SassListItem> newItems = new ArrayList<SassListItem>(
+                    size());
+            for (SassListItem item : this) {
+                newItems.add(item.updateUrl(prefix));
+            }
+            SassList result = new SassList(getSeparator(), newItems);
+            result.setSourcePosition(getLineNumber(), getColumnNumber());
+            return result;
+        } else {
+            return this;
         }
     }
 

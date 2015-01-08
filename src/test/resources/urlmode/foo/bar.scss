@@ -1,0 +1,18 @@
+@mixin url-in-parameter($first, $second: url(fourth.png)) {
+    image3: $first;
+    image4: $second;
+    image5: url(fifth.png);
+    $var: url(sixth.png);
+    image6: $var;
+    interpolation1: #{url(first.png)};
+    interpolation2: #{$first};
+    interpolation3: #{$second};
+}
+
+.urls {
+    image1: url(first.png);
+    $var: url(second.png);
+    image2: $var;
+    @include url-in-parameter(url(third.png));
+    interpolation4: #{$var};
+}

@@ -25,7 +25,8 @@ import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.parser.Variable;
 import com.vaadin.sass.internal.visitor.VariableNodeHandler;
 
-public class VariableNode extends Node implements Definition, IVariableNode {
+public class VariableNode extends Node implements Definition, IVariableNode,
+        NodeWithUrlContent {
     private static final long serialVersionUID = 7003372557547748734L;
 
     private final Variable variable;
@@ -96,5 +97,14 @@ public class VariableNode extends Node implements Definition, IVariableNode {
     @Override
     public VariableNode copy() {
         return new VariableNode(getName(), getExpr(), isGuarded());
+    }
+
+    @Override
+    public VariableNode updateUrl(String prefix) {
+        if (getExpr() != null) {
+            SassListItem newExpr = variable.getExpr().updateUrl(prefix);
+            return new VariableNode(getName(), newExpr, isGuarded());
+        }
+        return this;
     }
 }

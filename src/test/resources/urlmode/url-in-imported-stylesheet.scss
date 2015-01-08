@@ -1,0 +1,5 @@
+@import "foo/bar.scss";
+
+.urls-2{
+    @include url-in-parameter(url(third.png));
+}
