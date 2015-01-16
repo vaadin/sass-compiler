@@ -2,6 +2,7 @@ $blue: #3bbfce;
 $margin: 8px;
 $chameleon-font-family: Arial, Helvetica, "Lucida Grande", "Lucida Sans Unicode", Tahoma, Verdana, sans-serif;
 $font: 12px;
+$img-url: "img/my-img.png";
 
 .content-navigation {
 	border-color: $blue;
@@ -17,4 +18,8 @@ $font: 12px;
 	padding: $margin;
 	margin: $margin;
 	border-color: $blue;
+}
+
+.img-background {
+  background-image: url($img-url);
 }

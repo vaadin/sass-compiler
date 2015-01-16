@@ -11,3 +11,7 @@
 	margin: 8px;
 	border-color: #0000ff;
 }
+
+.img-background {
+	background-image: url("img/my-img.png");
+}

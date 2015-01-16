@@ -649,8 +649,10 @@ TOKEN :
                   ( "'" ( <STRINGCHAR> | "\"" )* "'" ) >
   | < NUMBER	  : ( <D> )+ | ( <D> )* "." ( <D> )+ > 
   | < #_URL       : [ "!","#","$","%","&","*"-"~" ] | <NONASCII> | <ESCAPE> >
+  | < #_URL_FIRST       : [ "!","#","%","&","*"-"~" ] | <NONASCII> | <ESCAPE> >
+  | < #_URL_STRING       : <STRING> | <_URL_FIRST> ( <_URL> )* >
   | < URL         : "url(" ( <S> )*
-                    ( <STRING> | ( <_URL> )* ) ( <S> )* ")" >            
+                    ( <_URL_STRING> ) ( <S> )* ")" >
 }
 
 <DEFAULT, PARSE_FUNCTIONNAME_WHITESPACE_ALLOWED_STATE>
