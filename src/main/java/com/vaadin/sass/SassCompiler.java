@@ -52,7 +52,7 @@ public class SassCompiler {
 
         ScssContext.UrlMode urlMode = getUrlMode(argp.getOptionValue("urlMode"));
 
-        boolean compress = Boolean.parseBoolean(argp.getOptionValue("compress"));
+        boolean minify = Boolean.parseBoolean(argp.getOptionValue("minify"));
 
         File in = new File(input);
         if (!in.canRead()) {
@@ -75,7 +75,7 @@ public class SassCompiler {
             scss.compile(urlMode);
 
             Writer writer = createOutputWriter(output);
-            scss.write(writer, compress);
+            scss.write(writer, minify);
             writer.close();
         } catch (Exception e) {
             System.err.println("Compilation failed:");

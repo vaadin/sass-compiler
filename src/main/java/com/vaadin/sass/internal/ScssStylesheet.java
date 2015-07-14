@@ -390,8 +390,8 @@ public class ScssStylesheet extends Node {
         write(writer, false);
     }
 
-    public void write(Writer writer, boolean compress) throws IOException {
-        if (compress) {
+    public void write(Writer writer, boolean minify) throws IOException {
+        if (minify) {
             InputStreamReader reader = new InputStreamReader(new ByteArrayInputStream(printState().getBytes("UTF-8")));
             CssCompressor compressor = new CssCompressor(reader);
             compressor.compress(writer, -1);
