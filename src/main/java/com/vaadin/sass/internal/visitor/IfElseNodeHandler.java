@@ -32,8 +32,7 @@ import com.vaadin.sass.internal.tree.controldirective.TemporaryNode;
 public class IfElseNodeHandler {
 
     public static Collection<Node> traverse(ScssContext context,
-            IfElseDefNode node)
-            throws Exception {
+            IfElseDefNode node) throws Exception {
         for (final Node child : node.getChildren()) {
             if (child instanceof IfNode) {
                 SassListItem expression = ((IfNode) child).getExpression();

@@ -35,8 +35,7 @@ public class MixinNodeHandler {
     }
 
     private static Collection<Node> replaceMixins(ScssContext context,
-            MixinNode node)
-            throws ParseException {
+            MixinNode node) throws ParseException {
         MixinDefNode mixinDef = context.getMixinDefinition(node.getName());
         if (mixinDef == null) {
             throw new ParseException("Mixin Definition: " + node.getName()
@@ -58,8 +57,7 @@ public class MixinNodeHandler {
 
         // parameters have been evaluated in parent scope, rest should be
         // in the scope where the mixin was defined
-        Scope previousScope = context.openVariableScope(
-                defClone
+        Scope previousScope = context.openVariableScope(defClone
                 .getDefinitionScope());
         try {
             // add variables from argList

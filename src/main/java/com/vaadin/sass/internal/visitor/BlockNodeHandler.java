@@ -62,10 +62,12 @@ public class BlockNodeHandler {
                 ArrayList<Node> newChildren = new ArrayList<Node>();
                 for (Node child : new ArrayList<Node>(node.getChildren())) {
                     if (child instanceof BlockNode) {
-                        ((BlockNode) child).setParentSelectors(node.getSelectorList());
+                        ((BlockNode) child).setParentSelectors(node
+                                .getSelectorList());
                         result.addAll(child.traverse(context));
                     } else {
-                        Collection<Node> childTraversed = child.traverse(context);
+                        Collection<Node> childTraversed = child
+                                .traverse(context);
                         for (Node n : childTraversed) {
                             if (n instanceof BlockNode) {
                                 // already traversed

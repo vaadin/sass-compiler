@@ -32,12 +32,12 @@ public class SassCompiler {
         ArgumentParser argp = ArgumentParser.get();
 
         argp.setProgramName(SassCompiler.class.getSimpleName());
-        
+
         argp.setHelpText("Input file is the .scss file to compile.\n"
                 + "Output file is an optional argument, indicating the file\n"
                 + "in which to store the generated CSS. If it is not defined,\n"
                 + "the compiled CSS will be written to standard output.\n");
-        
+
         argp.defineOption("urlMode").values("mixed", "absolute", "relative")
                 .defaultValue("mixed").help("Set URL handling mode");
 

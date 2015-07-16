@@ -15,7 +15,6 @@
  */
 package com.vaadin.sass.internal.selector;
 
-
 public enum Combinator implements SelectorSegment {
     DESCENDANT(" "), CHILD(" > "), SIBLING(" + "), GENERAL_SIBLING(" ~ ");
 

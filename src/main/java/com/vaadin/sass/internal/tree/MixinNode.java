@@ -128,9 +128,9 @@ public class MixinNode extends Node implements IVariableNode,
 
     @Override
     public NodeWithUrlContent updateUrl(String prefix) {
-         MixinNode newInstance = copy();
-         newInstance.arglist = arglist.updateUrl(prefix);
-         return newInstance;
+        MixinNode newInstance = copy();
+        newInstance.arglist = arglist.updateUrl(prefix);
+        return newInstance;
     }
 
 }

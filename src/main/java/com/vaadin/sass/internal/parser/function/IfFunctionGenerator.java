@@ -58,8 +58,7 @@ public class IfFunctionGenerator implements SCSSFunctionGenerator {
     }
 
     protected SassListItem computeForArgumentList(ScssContext context,
-            LexicalUnitImpl function,
-            FormalArgumentList actualArguments) {
+            LexicalUnitImpl function, FormalArgumentList actualArguments) {
         SassListItem firstParam = AbstractFunctionGenerator.getParam(
                 actualArguments, "condition").evaluateFunctionsAndExpressions(
                 context, true);

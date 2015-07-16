@@ -66,8 +66,7 @@ public class ForNode extends Node {
     @Override
     public String toString() {
         return "For Node: " + "{variable: " + variableName + ", from:" + from
-                + ", to: "
-                + to + ", exclusive: " + exclusive;
+                + ", to: " + to + ", exclusive: " + exclusive;
     }
 
     @Override
