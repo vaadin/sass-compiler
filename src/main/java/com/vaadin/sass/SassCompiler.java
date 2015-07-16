@@ -41,7 +41,7 @@ public class SassCompiler {
         argp.defineOption("urlMode").values("mixed", "absolute", "relative")
                 .defaultValue("mixed").help("Set URL handling mode");
 
-        argp.defineOption("compress").values("true", "false")
+        argp.defineOption("minify").values("true", "false")
                 .defaultValue("true")
                 .help("Minify the compiled CSS with YUI Compressor");
 
