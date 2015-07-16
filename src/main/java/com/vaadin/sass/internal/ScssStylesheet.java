@@ -129,6 +129,7 @@ public class ScssStylesheet extends Node {
             ScssStylesheet parentStylesheet,
             SCSSDocumentHandler documentHandler, SCSSErrorHandler errorHandler)
             throws CSSException, IOException {
+        SCSSErrorHandler.set(errorHandler);
         /*
          * The encoding to be used is passed through "encoding" parameter. the
          * imported children scss node will have the same encoding as their
@@ -163,7 +164,6 @@ public class ScssStylesheet extends Node {
         if (parentStylesheet != null) {
             source.setEncoding(parentStylesheet.getCharset());
         }
-
         Parser parser = new Parser();
         parser.setErrorHandler(errorHandler);
         parser.setDocumentHandler(documentHandler);

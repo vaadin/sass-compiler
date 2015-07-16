@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.vaadin.sass.internal.ScssContext;
+import com.vaadin.sass.internal.handler.SCSSErrorHandler;
 import com.vaadin.sass.internal.selector.Selector;
 import com.vaadin.sass.internal.visitor.BlockNodeHandler;
 
@@ -118,9 +119,7 @@ public class BlockNode extends Node implements IVariableNode {
             replaceVariables(context);
             result.addAll(BlockNodeHandler.traverse(context, this));
         } catch (Exception e) {
-            Logger.getLogger(BlockNode.class.getName()).log(Level.SEVERE, null,
-                    e);
-            // TODO is it correct to ignore the exception
+            SCSSErrorHandler.get().traverseError(e);
         }
         return result;
     }

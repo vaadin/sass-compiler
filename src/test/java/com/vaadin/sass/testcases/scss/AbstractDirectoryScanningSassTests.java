@@ -98,6 +98,18 @@ public abstract class AbstractDirectoryScanningSassTests {
                 super.error(arg0);
                 Assert.fail(arg0.getMessage());
             }
+
+            @Override
+            public void traverseError(Exception e) {
+                super.traverseError(e);
+                Assert.fail(e.getMessage());
+            }
+
+            @Override
+            public void traverseError(String message) {
+                super.traverseError(message);
+                Assert.fail(message);
+            }
         };
 
         ScssStylesheet scssStylesheet = ScssStylesheet.get(

@@ -20,6 +20,7 @@ import java.util.Collection;
 
 import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.expression.BinaryOperator;
+import com.vaadin.sass.internal.handler.SCSSErrorHandler;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.SassListItem;
 import com.vaadin.sass.internal.tree.IVariableNode;
@@ -44,9 +45,10 @@ public class WhileNodeHandler {
         while (evaluateCondition(context, whileNode)) {
             ArrayList<Node> nodes = iteration(context, whileNode);
             if (nodes.size() == 0) {
-                throw new ParseException(
+                SCSSErrorHandler.get().traverseError(new ParseException(
                         "@while loop iteration did nothing, infinite loop",
-                        whileNode);
+                        whileNode));
+                return result;
             }
             TemporaryNode temp = new TemporaryNode(parent, nodes);
             result.addAll(temp.traverse(context));

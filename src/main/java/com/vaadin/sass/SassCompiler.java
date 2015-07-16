@@ -24,8 +24,13 @@ import java.io.Writer;
 
 import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.ScssStylesheet;
+import com.vaadin.sass.internal.handler.SCSSDocumentHandlerImpl;
+import com.vaadin.sass.internal.handler.SCSSErrorHandler;
 
 public class SassCompiler {
+
+    private static final int ERROR_COMPILE_FAILED = 1;
+    private static final int ERROR_FILE_NOT_FOUND = 2;
 
     public static void main(String[] args) throws Exception {
 
@@ -45,6 +50,10 @@ public class SassCompiler {
                 .defaultValue("true")
                 .help("Minify the compiled CSS with YUI Compressor");
 
+        argp.defineOption("ignore-warnings").values("true", "false")
+                .defaultValue("false")
+                .help("Let compilation succeed even though there are warnings");
+
         argp.parse(args);
 
         String input = argp.getInputFile();
@@ -53,34 +62,46 @@ public class SassCompiler {
         ScssContext.UrlMode urlMode = getUrlMode(argp.getOptionValue("urlMode"));
 
         boolean minify = Boolean.parseBoolean(argp.getOptionValue("minify"));
+        boolean ignoreWarnings = Boolean.parseBoolean(argp
+                .getOptionValue("ignore-warnings"));
 
         File in = new File(input);
         if (!in.canRead()) {
             System.err.println(in.getCanonicalPath() + " could not be read!");
-            return;
+            System.exit(ERROR_FILE_NOT_FOUND);
         }
         input = in.getCanonicalPath();
 
         // You can set the resolver; if none is set, VaadinResolver will be used
         // ScssStylesheet.setStylesheetResolvers(new VaadinResolver());
 
-        ScssStylesheet scss = ScssStylesheet.get(input);
-        if (scss == null) {
-            System.err.println("The scss file " + input
-                    + " could not be found.");
-            return;
-        }
-
+        SCSSErrorHandler errorHandler = new SCSSErrorHandler();
+        errorHandler.setWarningsAreErrors(!ignoreWarnings);
         try {
+            // Parse stylesheet
+            ScssStylesheet scss = ScssStylesheet.get(input, null,
+                    new SCSSDocumentHandlerImpl(), errorHandler);
+            if (scss == null) {
+                System.err.println("The scss file " + input
+                        + " could not be found.");
+                System.exit(ERROR_FILE_NOT_FOUND);
+            }
+
+            // Compile scss -> css
             scss.compile(urlMode);
 
+            // Write result
             Writer writer = createOutputWriter(output);
             scss.write(writer, minify);
             writer.close();
         } catch (Exception e) {
-            System.err.println("Compilation failed:");
-            e.printStackTrace();
             throw e;
+        }
+
+        if (errorHandler.isErrorsDetected()) {
+            // Exit with error code so Maven and others can detect compilation
+            // was not successful
+            System.exit(ERROR_COMPILE_FAILED);
         }
     }
 

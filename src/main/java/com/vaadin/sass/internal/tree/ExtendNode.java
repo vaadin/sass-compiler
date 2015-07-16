@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.vaadin.sass.internal.ScssContext;
+import com.vaadin.sass.internal.handler.SCSSErrorHandler;
 import com.vaadin.sass.internal.selector.Selector;
 import com.vaadin.sass.internal.visitor.ExtendNodeHandler;
 
@@ -75,9 +76,7 @@ public class ExtendNode extends Node implements IVariableNode {
             traverseChildren(context);
             return ExtendNodeHandler.traverse(context, this);
         } catch (Exception e) {
-            Logger.getLogger(ExtendNode.class.getName()).log(Level.SEVERE,
-                    null, e);
-            // TODO is it correct to ignore the exception?
+            SCSSErrorHandler.get().traverseError(e);
             return Collections.emptyList();
         }
     }

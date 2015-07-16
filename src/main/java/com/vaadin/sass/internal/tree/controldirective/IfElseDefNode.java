@@ -21,6 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.vaadin.sass.internal.ScssContext;
+import com.vaadin.sass.internal.handler.SCSSErrorHandler;
 import com.vaadin.sass.internal.tree.Node;
 import com.vaadin.sass.internal.visitor.IfElseNodeHandler;
 
@@ -48,9 +49,7 @@ public class IfElseDefNode extends Node {
         try {
             return IfElseNodeHandler.traverse(context, this);
         } catch (Exception e) {
-            Logger.getLogger(IfElseDefNode.class.getName()).log(Level.SEVERE,
-                    null, e);
-            // TODO is ignoring this appropriate?
+            SCSSErrorHandler.get().traverseError(e);
             return Collections.emptyList();
         }
     }

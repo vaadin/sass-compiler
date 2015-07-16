@@ -17,9 +17,11 @@
 package com.vaadin.sass.internal.visitor;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import com.vaadin.sass.internal.Scope;
 import com.vaadin.sass.internal.ScssContext;
+import com.vaadin.sass.internal.handler.SCSSErrorHandler;
 import com.vaadin.sass.internal.parser.ParseException;
 import com.vaadin.sass.internal.parser.Variable;
 import com.vaadin.sass.internal.tree.MixinDefNode;
@@ -29,17 +31,17 @@ import com.vaadin.sass.internal.tree.controldirective.TemporaryNode;
 
 public class MixinNodeHandler {
 
-    public static Collection<Node> traverse(ScssContext context, MixinNode node)
-            throws ParseException {
+    public static Collection<Node> traverse(ScssContext context, MixinNode node) {
         return replaceMixins(context, node);
     }
 
     private static Collection<Node> replaceMixins(ScssContext context,
-            MixinNode node) throws ParseException {
+            MixinNode node) {
         MixinDefNode mixinDef = context.getMixinDefinition(node.getName());
         if (mixinDef == null) {
-            throw new ParseException("Mixin Definition: " + node.getName()
-                    + " not found");
+            SCSSErrorHandler.get().traverseError(
+                    "Mixin Definition: " + node.getName() + " not found");
+            return Collections.emptyList();
         }
         return replaceMixinNode(context, node, mixinDef);
     }
