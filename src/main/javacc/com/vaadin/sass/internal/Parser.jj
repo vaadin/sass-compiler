@@ -2512,7 +2512,7 @@ List<SassListItem> numberTerm(char op) :
     | n=<RAD>
 	{ result = LexicalUnitImpl.createRAD(n.beginLine, n.beginColumn, number(op, n, 3)); }
     | n=<GRAD>
-	{ result = LexicalUnitImpl.createGRAD(n.beginLine, n.beginColumn, number(op, n, 3)); }
+	{ result = LexicalUnitImpl.createGRAD(n.beginLine, n.beginColumn, number(op, n, 4)); }
     | n=<SECOND>
 	{ result = LexicalUnitImpl.createS(n.beginLine, n.beginColumn, number(op, n, 1)); }
     | n=<MS>
