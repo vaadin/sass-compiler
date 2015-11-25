@@ -17,10 +17,14 @@
 package com.vaadin.sass;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.zip.GZIPOutputStream;
 
 import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.ScssStylesheet;
@@ -50,6 +54,10 @@ public class SassCompiler {
                 .defaultValue("true")
                 .help("Minify the compiled CSS with YUI Compressor");
 
+        argp.defineOption("compress").values("true", "false")
+                .defaultValue("false")
+                .help("Create also a compressed version of the compiled CSS (only when output file is given)");
+
         argp.defineOption("ignore-warnings").values("true", "false")
                 .defaultValue("false")
                 .help("Let compilation succeed even though there are warnings");
@@ -62,6 +70,8 @@ public class SassCompiler {
         ScssContext.UrlMode urlMode = getUrlMode(argp.getOptionValue("urlMode"));
 
         boolean minify = Boolean.parseBoolean(argp.getOptionValue("minify"));
+        boolean compress = Boolean
+                .parseBoolean(argp.getOptionValue("compress"));
         boolean ignoreWarnings = Boolean.parseBoolean(argp
                 .getOptionValue("ignore-warnings"));
 
@@ -94,6 +104,11 @@ public class SassCompiler {
             Writer writer = createOutputWriter(output);
             scss.write(writer, minify);
             writer.close();
+
+            if (output != null && compress) {
+                String outputCompressed = output + ".gz";
+                compressFile(output, outputCompressed);
+            }
         } catch (Exception e) {
             throw e;
         }
@@ -103,6 +118,26 @@ public class SassCompiler {
             // was not successful
             System.exit(ERROR_COMPILE_FAILED);
         }
+    }
+
+    private static void compressFile(String uncompressedFileName,
+            String compressedFileName) throws FileNotFoundException,
+            IOException {
+        FileInputStream uncompressedStream = new FileInputStream(
+                uncompressedFileName);
+        GZIPOutputStream gzos = new GZIPOutputStream(new FileOutputStream(
+                compressedFileName));
+
+        byte[] buffer = new byte[1024];
+        int len;
+        while ((len = uncompressedStream.read(buffer)) > 0) {
+            gzos.write(buffer, 0, len);
+        }
+
+        uncompressedStream.close();
+
+        gzos.finish();
+        gzos.close();
     }
 
     private static ScssContext.UrlMode getUrlMode(String urlMode) {
