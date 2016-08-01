@@ -24,6 +24,7 @@ import org.w3c.css.sac.LexicalUnit;
 import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.expression.exception.ArithmeticException;
 import com.vaadin.sass.internal.expression.exception.IncompatibleUnitsException;
+import com.vaadin.sass.internal.expression.exception.UnresolvedReferenceException;
 import com.vaadin.sass.internal.parser.LexicalUnitImpl;
 import com.vaadin.sass.internal.parser.SassListItem;
 
@@ -59,6 +60,8 @@ public class ArithmeticExpressionEvaluatorTest {
             0, 0);
     private final LexicalUnitImpl operatorComma = LexicalUnitImpl.createComma(
             2, 3);
+    private final LexicalUnitImpl unresolved = LexicalUnitImpl.createVariable(
+            0, 0, "myvar");
 
     @Test
     public void testPrecedenceSameAsAppearOrder() {
@@ -80,6 +83,24 @@ public class ArithmeticExpressionEvaluatorTest {
     public void testIncompatibleUnit() {
         // 2cm - 3px
         evaluate(operand2cm, operatorMinus, operand3px);
+    }
+
+    @Test
+    public void testAssumedFirstUnit() {
+        // 2 - 3px
+        LexicalUnitImpl result = evaluate(operand2, operatorMinus, operand3px);
+        Assert.assertEquals(-1, result.getIntegerValue());
+        Assert.assertEquals(LexicalUnit.SAC_PIXEL, result.getLexicalUnitType());
+    }
+
+    @Test(expected = UnresolvedReferenceException.class)
+    public void testUnresolvedFirstOperand() {
+        evaluate(unresolved, operatorMinus, operand2);
+    }
+
+    @Test(expected = UnresolvedReferenceException.class)
+    public void testUnresolvedSecondOperand() {
+        evaluate(operand2, operatorMinus, unresolved);
     }
 
     @Test

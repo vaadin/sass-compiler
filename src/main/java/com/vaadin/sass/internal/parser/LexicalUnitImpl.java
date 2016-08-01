@@ -37,6 +37,7 @@ import org.w3c.css.sac.LexicalUnit;
 
 import com.vaadin.sass.internal.ScssContext;
 import com.vaadin.sass.internal.expression.exception.IncompatibleUnitsException;
+import com.vaadin.sass.internal.expression.exception.UnresolvedReferenceException;
 import com.vaadin.sass.internal.parser.function.AbsFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.AdjustColorFunctionGenerator;
 import com.vaadin.sass.internal.parser.function.AlphaFunctionGenerator;
@@ -401,15 +402,27 @@ public class LexicalUnitImpl implements LexicalUnit, SCSSLexicalUnit,
     }
 
     protected short checkAndGetUnit(LexicalUnitImpl another) {
-        if (getLexicalUnitType() != SAC_INTEGER
-                && getLexicalUnitType() != SAC_REAL
-                && another.getLexicalUnitType() != SAC_INTEGER
-                && another.getLexicalUnitType() != SAC_REAL
-                && getLexicalUnitType() != another.getLexicalUnitType()) {
-            throw new IncompatibleUnitsException(printState());
+        // are any variables still unresolved?
+        if (getLexicalUnitType() == SCSS_VARIABLE) {
+            // still unresolved
+            throw new UnresolvedReferenceException("unresolved:" + this);
         }
-        if (another.getLexicalUnitType() != SAC_INTEGER
-                && another.getLexicalUnitType() != SAC_REAL) {
+        if (another.getLexicalUnitType() == SCSS_VARIABLE) {
+            // still unresolved
+            throw new UnresolvedReferenceException("unresolved:" + another);
+        }
+        // if the units of the operands are not the same, is at least one of
+        // them numeric?
+        boolean isNumeric = getLexicalUnitType() == SAC_INTEGER
+                || getLexicalUnitType() == SAC_REAL;
+        boolean isAnotherNumeric = another.getLexicalUnitType() == SAC_INTEGER
+                || another.getLexicalUnitType() == SAC_REAL;
+        if (!isNumeric && !isAnotherNumeric
+                && getLexicalUnitType() != another.getLexicalUnitType()) {
+            throw new IncompatibleUnitsException(printState() + " and "
+                    + another.printState());
+        }
+        if (!isAnotherNumeric) {
             return another.getLexicalUnitType();
         }
         return getLexicalUnitType();
